@@ -1,7 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-
-// TODO: Replace this placeholder type with the generated types from Supabase CLI once available.
-export type Database = Record<string, never>;
+import { createBrowserClient, type SupabaseClient } from "@supabase/ssr";
+import type { Database } from "@/types/database";
 
 type PublicEnvKey = "NEXT_PUBLIC_SUPABASE_URL" | "NEXT_PUBLIC_SUPABASE_ANON_KEY";
 
@@ -23,7 +21,7 @@ let browserClient: SupabaseClient<Database> | undefined;
  */
 export function createSupabaseBrowserClient(): SupabaseClient<Database> {
   if (!browserClient) {
-    browserClient = createClient<Database>(
+    browserClient = createBrowserClient<Database>(
       getEnvValue("NEXT_PUBLIC_SUPABASE_URL"),
       getEnvValue("NEXT_PUBLIC_SUPABASE_ANON_KEY")
     );
