@@ -8,14 +8,19 @@ export const dynamic = "force-dynamic";
 
 type City = Database["public"]["Tables"]["cities"]["Row"];
 
+type CityWithGuideCount = City & {
+  guide_count: number;
+};
+
 export default async function CitiesPage() {
   const supabase = await createSupabaseServerClient();
 
+  // Fetch active cities with country_name
   const { data, error } = await supabase
     .from("cities")
-    .select("id, country_id, name, slug, is_active, is_featured, hero_image_url, created_at, updated_at")
-    .eq("is_active", true) // Filter out unpublished cities
-    .order("is_featured", { ascending: false }) // Featured cities first
+    .select("*")
+    .eq("is_active", true)
+    .order("is_featured", { ascending: false })
     .order("name", { ascending: true });
 
   if (error) {
@@ -35,7 +40,28 @@ export default async function CitiesPage() {
 
   const cities = (data ?? []) as City[];
 
-  if (cities.length === 0) {
+  // Fetch guide counts for all cities in parallel
+  const cityGuideCountsPromises = cities.map(async (city) => {
+    const { count } = await supabase
+      .from("guides")
+      .select("*", { count: "exact", head: true })
+      .eq("city_id", city.id)
+      .eq("status", "approved");
+    return { cityId: city.id, count: count ?? 0 };
+  });
+
+  const guideCountsResults = await Promise.all(cityGuideCountsPromises);
+  const guideCountsMap = new Map(
+    guideCountsResults.map((r) => [r.cityId, r.count])
+  );
+
+  // Merge guide counts with cities
+  const citiesWithCounts: CityWithGuideCount[] = cities.map((city) => ({
+    ...city,
+    guide_count: guideCountsMap.get(city.id) ?? 0,
+  }));
+
+  if (citiesWithCounts.length === 0) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight">
@@ -65,7 +91,7 @@ export default async function CitiesPage() {
       </header>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {cities.map((city) => (
+        {citiesWithCounts.map((city) => (
           <Link key={city.id} href={`/cities/${city.slug}`}>
             <Card className="h-full transition hover:-translate-y-0.5 hover:shadow-md">
               <CardHeader className="space-y-1">
@@ -77,10 +103,18 @@ export default async function CitiesPage() {
                     </Badge>
                   )}
                 </CardTitle>
+                {city.country_name && (
+                  <p className="text-xs text-muted-foreground">
+                    {city.country_name}
+                  </p>
+                )}
               </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground line-clamp-3">
+              <CardContent className="space-y-2">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   Explore {city.name} with a trusted local LGBTQ+ guide.
+                </p>
+                <p className="text-xs font-medium text-foreground">
+                  {city.guide_count} {city.guide_count === 1 ? "guide" : "guides"}
                 </p>
               </CardContent>
             </Card>
