@@ -1,14 +1,5 @@
 {
-    "name": "supabase",
-    "command": "npx",
-    "args": [
-      "supabase-mcp",
-      "start"
-    ],
-    "env": {
-      "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}",
-      "SUPABASE_PROJECT_ID": "${SUPABASE_PROJECT_ID}"
-    },
-    "description": "Supabase MCP server to let Cursor read/write DB schema, run SQL, set up auth, storage, RLS, and types"
-  }
-  
+  "name": "supabase-rtg-dev",
+  "type": "http",
+  "url": "https://mcp.supabase.com/mcp?project_ref=icepxfjsjawzdkzlflsx&read_only=false"
+}
