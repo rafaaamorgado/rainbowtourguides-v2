@@ -1,6 +1,50 @@
 export type ProfileRole = "traveler" | "guide" | "admin";
 export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
+type CountriesTable = {
+  Row: {
+    id: string;
+    name: string;
+    iso_code: string;
+    created_at: string;
+    updated_at: string;
+  };
+  Insert: {
+    id?: string;
+    name: string;
+    iso_code: string;
+    created_at?: string;
+    updated_at?: string;
+  };
+  Update: Partial<CountriesTable["Row"]>;
+};
+
+type CitiesTable = {
+  Row: {
+    id: string;
+    country_id: string;
+    name: string;
+    slug: string;
+    is_active: boolean;
+    is_featured: boolean;
+    hero_image_url: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  Insert: {
+    id?: string;
+    country_id: string;
+    name: string;
+    slug: string;
+    is_active?: boolean;
+    is_featured?: boolean;
+    hero_image_url?: string | null;
+    created_at?: string;
+    updated_at?: string;
+  };
+  Update: Partial<CitiesTable["Row"]>;
+};
+
 type ProfilesTable = {
   Row: {
     id: string;
@@ -156,6 +200,8 @@ type ReviewsTable = {
 export interface Database {
   public: {
     Tables: {
+      countries: CountriesTable;
+      cities: CitiesTable;
       profiles: ProfilesTable;
       travelers: TravelersTable;
       guides: GuidesTable;

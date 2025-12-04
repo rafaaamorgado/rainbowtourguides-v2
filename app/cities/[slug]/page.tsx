@@ -11,5 +11,3 @@ export default async function CityPage({ params }: CityPageProps) {
     </div>
   );
 }
-
-
