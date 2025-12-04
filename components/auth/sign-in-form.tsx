@@ -9,11 +9,23 @@ import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
 } from "@/lib/supabase-browser";
+import type { ProfileRole } from "@/types/database";
+
+function getRedirectPathForRole(role: ProfileRole): string {
+  switch (role) {
+    case "admin":
+      return "/admin";
+    case "guide":
+      return "/guide/dashboard";
+    case "traveler":
+    default:
+      return "/traveler/bookings";
+  }
+}
 
 export function SignInForm() {
   const router = useRouter();
   const isConfigured = isSupabaseConfiguredOnClient();
-  const supabase = isConfigured ? createSupabaseBrowserClient() : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,29 +34,57 @@ export function SignInForm() {
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    
+    const supabase = createSupabaseBrowserClient();
     if (!supabase) {
       setError("Supabase client is not configured.");
       return;
     }
+    
     setIsSubmitting(true);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    setIsSubmitting(false);
-
     if (signInError) {
+      setIsSubmitting(false);
       setError(signInError.message);
       return;
     }
 
-    router.replace("/traveler/bookings");
+    // Fetch user profile to determine redirect
+    const userId = data.user?.id;
+    if (!userId) {
+      setIsSubmitting(false);
+      setError("Sign in succeeded but no user returned.");
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: profile, error: profileError } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    setIsSubmitting(false);
+
+    if (profileError || !profile) {
+      // Profile doesn't exist - rare edge case, default to traveler
+      console.error("[SignInForm] Profile not found, defaulting to traveler redirect");
+      router.replace("/traveler/bookings");
+      router.refresh();
+      return;
+    }
+
+    const redirectPath = getRedirectPathForRole(profile.role as ProfileRole);
+    router.replace(redirectPath);
     router.refresh();
   };
 
-  if (!isConfigured || !supabase) {
+  if (!isConfigured) {
     return (
       <p className="text-sm text-muted-foreground">
         Supabase client is not configured. Check your NEXT_PUBLIC_SUPABASE_* env vars.
@@ -85,4 +125,3 @@ export function SignInForm() {
     </form>
   );
 }
-

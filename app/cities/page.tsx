@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 type City = Database["public"]["Tables"]["cities"]["Row"];
 
 export default async function CitiesPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("cities")
@@ -42,7 +42,7 @@ export default async function CitiesPage() {
           LGBTQ+ friendly cities, curated for you
         </h1>
         <p className="text-sm text-muted-foreground">
-          We're still setting up our first wave of destinations. Check back soon
+          We&apos;re still setting up our first wave of destinations. Check back soon
           as we roll out vetted cities and local guides.
         </p>
       </div>

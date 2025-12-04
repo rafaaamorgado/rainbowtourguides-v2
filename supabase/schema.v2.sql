@@ -1,4 +1,4 @@
--- Rainbow Tour Guides v2 initial schema
+-- Rainbow Tour Guides v2 canonical schema
 -- Run in Supabase SQL editor (one transaction suggested)
 
 -- Core reference tables ------------------------------------------------------
@@ -19,6 +19,8 @@ create table if not exists public.cities (
   is_active boolean not null default true,
   is_featured boolean not null default false,
   hero_image_url text,
+  country_code text,
+  country_name text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -53,22 +55,31 @@ create table if not exists public.travelers (
 );
 -- TODO: Enable RLS on public.travelers to restrict traveler self-access.
 
+create type public.guide_status as enum ('pending', 'approved', 'rejected');
+
 create table if not exists public.guides (
   id uuid primary key references public.profiles(id) on delete cascade,
   city_id uuid not null references public.cities(id) on delete restrict,
   tagline text,
   bio text,
+  headline text,
+  about text,
   languages text[] default '{}',
+  themes text[] default '{}',
   is_verified boolean not null default false,
   base_price_4h numeric(10, 2),
   base_price_6h numeric(10, 2),
   base_price_8h numeric(10, 2),
+  hourly_rate numeric(10, 2),
   currency char(3) default 'USD',
+  status public.guide_status not null default 'pending',
+  slug text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 create index if not exists guides_city_id_idx on public.guides(city_id);
 create index if not exists guides_is_verified_idx on public.guides(is_verified);
+create unique index if not exists guides_slug_unique_idx on public.guides (slug) where slug is not null;
 -- TODO: Enable RLS on public.guides to enforce guide ownership.
 
 -- Experiences ---------------------------------------------------------------
@@ -105,7 +116,7 @@ create index if not exists availability_slots_time_idx on public.availability_sl
 
 -- Bookings -------------------------------------------------------------------
 
-create type public.booking_status as enum ('pending', 'confirmed', 'completed', 'cancelled');
+create type public.booking_status as enum ('pending', 'confirmed', 'completed', 'cancelled', 'accepted', 'declined', 'paid');
 
 create table if not exists public.bookings (
   id uuid primary key default gen_random_uuid(),
@@ -119,7 +130,10 @@ create table if not exists public.bookings (
   currency char(3) default 'USD',
   starts_at timestamptz not null,
   ends_at timestamptz not null,
+  duration_hours integer,
   special_requests text,
+  notes text,
+  stripe_checkout_session_id text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -157,6 +171,19 @@ create index if not exists reviews_guide_id_idx on public.reviews(guide_id);
 create index if not exists reviews_traveler_id_idx on public.reviews(traveler_id);
 -- TODO: Enable RLS on public.reviews to allow travelers to manage their own reviews.
 
+-- Admin Events ---------------------------------------------------------------
+
+create table if not exists public.admin_events (
+  id uuid primary key default gen_random_uuid(),
+  actor_id uuid references public.profiles(id) on delete set null,
+  type text not null,
+  payload jsonb default '{}',
+  created_at timestamptz not null default now()
+);
+create index if not exists admin_events_actor_id_idx on public.admin_events(actor_id);
+create index if not exists admin_events_type_idx on public.admin_events(type);
+create index if not exists admin_events_created_at_idx on public.admin_events(created_at desc);
+-- TODO: Enable RLS on public.admin_events to restrict to admin role.
+
 -- Audit triggers placeholder -------------------------------------------------
 -- Optionally add updated_at triggers for automatic timestamp maintenance later.
-

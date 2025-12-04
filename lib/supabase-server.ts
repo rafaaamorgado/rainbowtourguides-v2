@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { createServerClient, type SupabaseClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 
 function resolveServerKeys() {
@@ -23,8 +23,8 @@ function resolveServerKeys() {
  * Uses the anon key by default so row-level security stays enforced. Switch to SUPABASE_SERVICE_ROLE_KEY
  * in specialized server actions when elevated privileges are needed.
  */
-export function createSupabaseServerClient(): SupabaseClient<Database> {
-  const cookieStore = cookies();
+export async function createSupabaseServerClient() {
+  const cookieStore = await cookies();
   const { supabaseUrl, supabaseKey } = resolveServerKeys();
 
   return createServerClient<Database>(supabaseUrl, supabaseKey, {
@@ -34,7 +34,6 @@ export function createSupabaseServerClient(): SupabaseClient<Database> {
       },
       set(name, value, options) {
         try {
-          // @ts-expect-error Next exposes set only in mutable contexts (route handlers).
           cookieStore.set?.({ name, value, ...options });
         } catch {
           /* no-op */
@@ -42,7 +41,6 @@ export function createSupabaseServerClient(): SupabaseClient<Database> {
       },
       remove(name, options) {
         try {
-          // @ts-expect-error Next exposes delete only in mutable contexts.
           cookieStore.delete?.({ name, ...options });
         } catch {
           /* no-op */
@@ -51,4 +49,3 @@ export function createSupabaseServerClient(): SupabaseClient<Database> {
     },
   });
 }
-

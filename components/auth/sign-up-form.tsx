@@ -9,11 +9,15 @@ import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
 } from "@/lib/supabase-browser";
+import type { ProfileRole } from "@/types/database";
 
-export function SignUpForm() {
+type SignUpFormProps = {
+  initialRole?: ProfileRole;
+};
+
+export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
   const router = useRouter();
   const isConfigured = isSupabaseConfiguredOnClient();
-  const supabase = isConfigured ? createSupabaseBrowserClient() : null;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,17 +27,20 @@ export function SignUpForm() {
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    
+    const supabase = createSupabaseBrowserClient();
     if (!supabase) {
       setError("Supabase client is not configured.");
       return;
     }
+    
     setIsSubmitting(true);
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { display_name: name },
+        data: { display_name: name, role: initialRole },
       },
     });
 
@@ -50,9 +57,10 @@ export function SignUpForm() {
       return;
     }
 
-    const { error: profileError } = await supabase.from("profiles").insert({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: profileError } = await (supabase as any).from("profiles").insert({
       id: userId,
-      role: "traveler",
+      role: initialRole,
       display_name: name,
     });
 
@@ -63,11 +71,15 @@ export function SignUpForm() {
       return;
     }
 
-    router.replace("/traveler/bookings");
+    // Redirect based on role
+    const redirectPath = initialRole === "guide" 
+      ? "/guide/onboarding" 
+      : "/traveler/bookings";
+    router.replace(redirectPath);
     router.refresh();
   };
 
-  if (!isConfigured || !supabase) {
+  if (!isConfigured) {
     return (
       <p className="text-sm text-muted-foreground">
         Supabase client is not configured. Check your NEXT_PUBLIC_SUPABASE_* env vars.
@@ -110,9 +122,8 @@ export function SignUpForm() {
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button className="w-full" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Creating account..." : "Create account"}
+        {isSubmitting ? "Creating account..." : initialRole === "guide" ? "Sign up as Guide" : "Create account"}
       </Button>
     </form>
   );
 }
-

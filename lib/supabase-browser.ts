@@ -1,4 +1,4 @@
-import { createBrowserClient, type SupabaseClient } from "@supabase/ssr";
+import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 
 type PublicEnvKeys = {
@@ -16,12 +16,12 @@ export function isSupabaseConfiguredOnClient(): boolean {
   return Boolean(url && anonKey);
 }
 
-let browserClient: SupabaseClient<Database> | null = null;
+let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = null;
 
 /**
  * Client-side Supabase helper. Returns null if the public env vars are missing so components can render a fallback.
  */
-export function createSupabaseBrowserClient(): SupabaseClient<Database> | null {
+export function createSupabaseBrowserClient() {
   if (!isSupabaseConfiguredOnClient()) {
     if (process.env.NODE_ENV === "development") {
       console.error(
@@ -38,4 +38,3 @@ export function createSupabaseBrowserClient(): SupabaseClient<Database> | null {
 
   return browserClient;
 }
-
