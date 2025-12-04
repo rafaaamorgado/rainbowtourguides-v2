@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import {
+  createSupabaseBrowserClient,
+  isSupabaseConfiguredOnClient,
+} from "@/lib/supabase-browser";
 
 export function SignUpForm() {
   const router = useRouter();
-  const supabase = createSupabaseBrowserClient();
+  const isConfigured = isSupabaseConfiguredOnClient();
+  const supabase = isConfigured ? createSupabaseBrowserClient() : null;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +23,10 @@ export function SignUpForm() {
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    if (!supabase) {
+      setError("Supabase client is not configured.");
+      return;
+    }
     setIsSubmitting(true);
 
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -58,6 +66,14 @@ export function SignUpForm() {
     router.replace("/traveler/bookings");
     router.refresh();
   };
+
+  if (!isConfigured || !supabase) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Supabase client is not configured. Check your NEXT_PUBLIC_SUPABASE_* env vars.
+      </p>
+    );
+  }
 
   return (
     <form className="space-y-4" onSubmit={handleSignUp}>

@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import {
+  createSupabaseBrowserClient,
+  isSupabaseConfiguredOnClient,
+} from "@/lib/supabase-browser";
 
 export function SignInForm() {
   const router = useRouter();
-  const supabase = createSupabaseBrowserClient();
+  const isConfigured = isSupabaseConfiguredOnClient();
+  const supabase = isConfigured ? createSupabaseBrowserClient() : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +22,10 @@ export function SignInForm() {
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    if (!supabase) {
+      setError("Supabase client is not configured.");
+      return;
+    }
     setIsSubmitting(true);
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -35,6 +43,14 @@ export function SignInForm() {
     router.replace("/traveler/bookings");
     router.refresh();
   };
+
+  if (!isConfigured || !supabase) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Supabase client is not configured. Check your NEXT_PUBLIC_SUPABASE_* env vars.
+      </p>
+    );
+  }
 
   return (
     <form className="space-y-4" onSubmit={handleSignIn}>
