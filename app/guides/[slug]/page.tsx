@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
+import Image from "next/image";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -173,9 +174,11 @@ export default async function GuidePage({ params }: GuidePageProps) {
       <section className="space-y-6">
         <div className="flex items-start gap-6">
           {guideWithRelations.profile.avatar_url ? (
-            <img
+            <Image
               src={guideWithRelations.profile.avatar_url}
               alt={guideWithRelations.profile.display_name}
+              width={96}
+              height={96}
               className="w-24 h-24 rounded-full object-cover"
             />
           ) : (
@@ -255,7 +258,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
             </CardHeader>
             <CardContent>
               {user ? (
-                <BookingForm guideId={guideWithRelations.id} onSubmit={createBooking} />
+                <BookingForm onSubmit={createBooking} />
               ) : (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
@@ -282,10 +285,8 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
 // Client component for the booking form
 function BookingForm({
-  guideId,
   onSubmit,
 }: {
-  guideId: string;
   onSubmit: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
 }) {
   return (
