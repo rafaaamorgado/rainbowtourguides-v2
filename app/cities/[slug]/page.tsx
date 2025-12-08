@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,36 @@ export const dynamic = "force-dynamic";
 type CityPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: CityPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createSupabaseServerClient();
+
+  const { data: city } = await supabase
+    .from("cities")
+    .select("name, country_name")
+    .eq("slug", slug)
+    .single();
+
+  if (!city) {
+    return {
+      title: "City Not Found - Rainbow Tour Guides",
+    };
+  }
+
+  const typedCity = city as { name: string; country_name: string | null };
+  const location = typedCity.country_name ? `${typedCity.name}, ${typedCity.country_name}` : typedCity.name;
+
+  return {
+    title: `${location} - LGBTQ+ Travel Guides | Rainbow Tour Guides`,
+    description: `Discover ${location} with vetted LGBTQ+ local guides. Safe, authentic travel experiences with expert local knowledge.`,
+    openGraph: {
+      title: `${location} - LGBTQ+ Travel Guides`,
+      description: `Discover ${location} with vetted LGBTQ+ local guides.`,
+      type: "website",
+    },
+  };
+}
 
 type City = Database["public"]["Tables"]["cities"]["Row"];
 type Guide = Database["public"]["Tables"]["guides"]["Row"];
@@ -38,6 +69,21 @@ export default async function CityPage({ params }: CityPageProps) {
 
   const typedCity = city as City;
 
+  // Fetch country name if not present in city
+  if (!typedCity.country_name) {
+    const { data: countryData } = await supabase
+      .from("countries")
+      .select("name")
+      .eq("id", typedCity.country_id)
+      .single();
+    
+    // Type assertion needed because select("name") returns a narrowed type
+    const country = countryData as { name: string } | null;
+    if (country) {
+      typedCity.country_name = country.name;
+    }
+  }
+
   // Fetch approved guides for this city with their profile data
   const { data: guidesData, error: guidesError } = await supabase
     .from("guides")
@@ -52,15 +98,18 @@ export default async function CityPage({ params }: CityPageProps) {
 
   const guides = (guidesData ?? []) as Guide[];
 
-  // Fetch profiles for all guides
-  const guideIds = guides.map((g) => g.id);
-  const { data: profilesData } = await supabase
-    .from("profiles")
-    .select("*")
-    .in("id", guideIds);
+  // Fetch profiles for all guides (only if there are guides)
+  let profilesMap = new Map<string, Profile>();
+  if (guides.length > 0) {
+    const guideIds = guides.map((g) => g.id);
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("id", guideIds);
 
-  const profiles = (profilesData ?? []) as Profile[];
-  const profilesMap = new Map(profiles.map((p) => [p.id, p]));
+    const profiles = (profilesData ?? []) as Profile[];
+    profilesMap = new Map(profiles.map((p) => [p.id, p]));
+  }
 
   // Merge guides with their profiles
   const guidesWithProfiles: GuideWithProfile[] = guides

@@ -19,9 +19,7 @@ export const metadata: Metadata = {
 };
 
 const navLinks = [
-  { href: "/cities/barcelona", label: "Cities" },
-  { href: "/guides/example", label: "Guides" },
-  { href: "/traveler/bookings", label: "Bookings" },
+  { href: "/cities", label: "Cities" },
 ];
 
 function SiteHeader() {
@@ -52,11 +50,14 @@ function SiteFooter() {
       <div className="container flex flex-wrap items-center justify-between gap-4 py-8 text-sm text-muted-foreground">
         <p>© {new Date().getFullYear()} Rainbow Tour Guides</p>
         <div className="flex gap-4">
-          <Link href="/admin" className="hover:text-foreground">
-            Admin
+          <Link href="/legal/terms" className="hover:text-foreground">
+            Terms
           </Link>
-          <Link href="/guide/dashboard" className="hover:text-foreground">
-            Guide Portal
+          <Link href="/legal/privacy" className="hover:text-foreground">
+            Privacy
+          </Link>
+          <Link href="/legal/safety" className="hover:text-foreground">
+            Safety
           </Link>
         </div>
       </div>

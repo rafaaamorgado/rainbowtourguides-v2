@@ -1,13 +1,15 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { requireUser } from "@/lib/auth-helpers";
+import { sendBookingRequestEmail } from "@/lib/email";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { BookingForm } from "@/components/guide/BookingForm";
 import type { Database } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +17,47 @@ export const dynamic = "force-dynamic";
 type GuidePageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createSupabaseServerClient();
+
+  const { data: guide } = await supabase
+    .from("guides")
+    .select("id, headline")
+    .eq("slug", slug)
+    .eq("status", "approved")
+    .single();
+
+  if (!guide) {
+    return {
+      title: "Guide Not Found - Rainbow Tour Guides",
+    };
+  }
+
+  const typedGuide = guide as { id: string; headline: string | null };
+
+  // Fetch profile name
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", typedGuide.id)
+    .single();
+
+  const typedProfile = profile as { display_name: string } | null;
+  const guideName = typedProfile?.display_name || "Local Guide";
+  const headline = typedGuide.headline || "LGBTQ+ Local Guide";
+
+  return {
+    title: `${guideName} - ${headline} | Rainbow Tour Guides`,
+    description: `Book an authentic LGBTQ+ travel experience with ${guideName}. Verified local guide offering safe, personalized tours.`,
+    openGraph: {
+      title: `${guideName} - LGBTQ+ Local Guide`,
+      description: `Book an authentic LGBTQ+ travel experience with ${guideName}.`,
+      type: "profile",
+    },
+  };
+}
 
 type Guide = Database["public"]["Tables"]["guides"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -75,35 +118,31 @@ export default async function GuidePage({ params }: GuidePageProps) {
     city: city as City,
   };
 
-  // Check if user is logged in
+  // Check if user is logged in and get their profile
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Server action to create a booking
-  async function createBooking(formData: FormData): Promise<{ success: boolean; error?: string }> {
-    "use server";
-
-    const supabase = await createSupabaseServerClient();
-
-    // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: "You must be logged in to request a booking." };
-    }
-
-    // Get user profile
-    const { data: profile } = await supabase
+  let userProfile: Profile | null = null;
+  if (user) {
+    const { data } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user.id)
       .single();
+    userProfile = data as Profile | null;
+  }
 
-    if (!profile) {
-      return { success: false, error: "Profile not found." };
+  // Server action to create a booking
+  async function createBooking(formData: FormData): Promise<{ success: boolean; error?: string; guideName?: string }> {
+    "use server";
+
+    // Use requireUser() helper for consistent auth handling
+    const { supabase, profile } = await requireUser();
+
+    // Ensure user is a traveler
+    if (profile.role !== "traveler") {
+      return { success: false, error: "Only travelers can request bookings." };
     }
 
     // Parse form data
@@ -128,24 +167,26 @@ export default async function GuidePage({ params }: GuidePageProps) {
     endsAt.setHours(endsAt.getHours() + durationHours);
 
     // Get guide details for this booking
-    const { data: guide } = await supabase
+    const { data: guideData } = await supabase
       .from("guides")
       .select("*")
       .eq("slug", slug)
       .single();
 
-    if (!guide) {
+    if (!guideData) {
       return { success: false, error: "Guide not found." };
     }
+
+    // Type assertion needed because select("*") returns a narrowed type
+    const guide = guideData as Guide;
 
     // Calculate price (using hourly_rate if available, otherwise use a default)
     const hourlyRate = guide.hourly_rate ? parseFloat(guide.hourly_rate) : 50;
     const priceTotal = (hourlyRate * durationHours).toFixed(2);
 
-    // Create booking
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from("bookings").insert({
-      traveler_id: user.id,
+    // Create booking with typed insert
+    const bookingInsert: Database["public"]["Tables"]["bookings"]["Insert"] = {
+      traveler_id: profile.id,
       guide_id: guide.id,
       city_id: guide.city_id,
       starts_at: startsAt.toISOString(),
@@ -155,7 +196,13 @@ export default async function GuidePage({ params }: GuidePageProps) {
       price_total: priceTotal,
       currency: guide.currency || "USD",
       status: "pending",
-    });
+    };
+
+    // Type assertion needed for Supabase insert operation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from("bookings")
+      .insert(bookingInsert);
 
     if (error) {
       console.error("[createBooking] Error:", error);
@@ -165,7 +212,52 @@ export default async function GuidePage({ params }: GuidePageProps) {
     revalidatePath(`/guides/${slug}`);
     revalidatePath("/traveler/bookings");
 
-    return { success: true };
+    // Get guide name for success message
+    const { data: guideProfile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", guide.id)
+      .single();
+
+    const guideName = (guideProfile as { display_name: string } | null)?.display_name || "the guide";
+
+    // Send email to guide (fire-and-forget, don't await)
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                   "http://localhost:3000");
+    
+    // Get city name
+    const { data: cityData } = await supabase
+      .from("cities")
+      .select("name")
+      .eq("id", guide.city_id)
+      .single();
+    
+    const cityName = (cityData as { name: string } | null)?.name || "the city";
+    const formattedDate = startsAt.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+    sendBookingRequestEmail({
+      guideUserId: guide.id,
+      guideName,
+      travelerName: profile.display_name,
+      cityName,
+      date: formattedDate,
+      link: `${baseUrl}/guide/dashboard`,
+    }).catch((error) => {
+      console.error("[createBooking] Failed to send email:", error);
+    });
+
+    return { 
+      success: true, 
+      guideName
+    };
   }
 
   return (
@@ -257,9 +349,11 @@ export default async function GuidePage({ params }: GuidePageProps) {
               <CardTitle>Request a booking</CardTitle>
             </CardHeader>
             <CardContent>
-              {user ? (
-                <BookingForm onSubmit={createBooking} />
-              ) : (
+              <p className="text-xs text-muted-foreground mb-4 pb-4 border-b">
+                Use public meeting points for first meetups. No sexual services are allowed on Rainbow Tour Guides.
+              </p>
+              {!user ? (
+                // Not logged in - show sign in CTA
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     Sign in to request a booking with {guideWithRelations.profile.display_name}.
@@ -269,10 +363,27 @@ export default async function GuidePage({ params }: GuidePageProps) {
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
                     Don&apos;t have an account?{" "}
-                    <Link href="/auth/sign-up" className="text-primary underline">
-                      Sign up
+                    <Link href="/auth/sign-up?role=traveler" className="text-primary underline">
+                      Sign up as a traveler
                     </Link>
                   </p>
+                </div>
+              ) : userProfile?.role === "traveler" ? (
+                // Logged in as traveler - show booking form
+                <BookingForm onSubmit={createBooking} guideName={guideWithRelations.profile.display_name} />
+              ) : (
+                // Logged in as guide or admin - show message
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    {userProfile?.role === "guide"
+                      ? "Guides cannot request bookings with other guides."
+                      : "Admins cannot request bookings. Please use a traveler account."}
+                  </p>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={userProfile?.role === "guide" ? "/guide/dashboard" : "/admin"}>
+                      Go to dashboard
+                    </Link>
+                  </Button>
                 </div>
               )}
             </CardContent>
@@ -283,75 +394,4 @@ export default async function GuidePage({ params }: GuidePageProps) {
   );
 }
 
-// Client component for the booking form
-function BookingForm({
-  onSubmit,
-}: {
-  onSubmit: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
-}) {
-  return (
-    <form
-      action={async (formData: FormData) => {
-        const result = await onSubmit(formData);
-        if (result.success) {
-          // Redirect to bookings page on success
-          redirect("/traveler/bookings?booking_created=true");
-        } else if (result.error) {
-          alert(result.error);
-        }
-      }}
-      className="space-y-4"
-    >
-      <div className="space-y-2">
-        <label htmlFor="date" className="text-sm font-medium">
-          Date
-        </label>
-        <Input id="date" name="date" type="date" required />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="time" className="text-sm font-medium">
-          Time
-        </label>
-        <Input id="time" name="time" type="time" required />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="duration" className="text-sm font-medium">
-          Duration (hours)
-        </label>
-        <Input
-          id="duration"
-          name="duration"
-          type="number"
-          min="1"
-          max="12"
-          step="0.5"
-          defaultValue="4"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="notes" className="text-sm font-medium">
-          Notes (optional)
-        </label>
-        <Textarea
-          id="notes"
-          name="notes"
-          placeholder="Any special requests or information for the guide..."
-          rows={4}
-        />
-      </div>
-
-      <Button type="submit" className="w-full">
-        Send booking request
-      </Button>
-
-      <p className="text-xs text-muted-foreground">
-        Your request will be sent to the guide for approval. You&apos;ll be notified once they respond.
-      </p>
-    </form>
-  );
-}
 

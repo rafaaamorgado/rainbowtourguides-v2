@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-helpers";
+import { sendBookingStatusEmail } from "@/lib/email";
 import { GuideStatusBadge } from "@/components/guide/GuideStatusBadge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,8 +47,8 @@ export default async function GuideDashboardPage() {
     .single();
 
   // Load bookings for this guide with traveler and city info
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: bookings } = await (supabase as any)
+  // Note: Supabase types don't handle nested selects well, so we use a type assertion
+  const { data: bookings } = await supabase
     .from("bookings")
     .select(`
       id,
@@ -77,28 +78,73 @@ export default async function GuideDashboardPage() {
     if (!bookingId || !newStatus) return;
 
     // Verify the booking belongs to this guide
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: booking } = await (supabase as any)
+    const { data: bookingData } = await supabase
       .from("bookings")
       .select("guide_id")
       .eq("id", bookingId)
       .single();
+
+    // Type assertion needed because select("guide_id") returns a narrowed type
+    const booking = bookingData as { guide_id: string } | null;
 
     if (booking?.guide_id !== profile.id) {
       console.error("[updateBookingStatus] Unauthorized attempt");
       return;
     }
 
-    // Update booking status
+    // Update booking status with typed update
+    const bookingUpdate: Database["public"]["Tables"]["bookings"]["Update"] = {
+      status: newStatus,
+    };
+
+    // Type assertion needed for Supabase update operation
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
       .from("bookings")
-      .update({ status: newStatus })
+      .update(bookingUpdate)
       .eq("id", bookingId);
 
     revalidatePath("/guide/dashboard");
+
+    // Send email to traveler if status is accepted or declined (fire-and-forget)
+    if (newStatus === "accepted" || newStatus === "declined") {
+      // Get booking details for email
+      const { data: bookingDetails } = await supabase
+        .from("bookings")
+        .select("traveler_id")
+        .eq("id", bookingId)
+        .single();
+
+      const travelerId = (bookingDetails as { traveler_id: string } | null)?.traveler_id;
+
+      if (travelerId) {
+        // Get traveler profile
+        const { data: travelerProfile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", travelerId)
+          .single();
+
+        const travelerName = (travelerProfile as { display_name: string } | null)?.display_name || "Traveler";
+
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                       "http://localhost:3000");
+
+        sendBookingStatusEmail({
+          travelerUserId: travelerId,
+          travelerName,
+          guideName: profile.display_name,
+          status: newStatus as "accepted" | "declined",
+          link: `${baseUrl}/traveler/bookings`,
+        }).catch((error) => {
+          console.error("[updateBookingStatus] Failed to send email:", error);
+        });
+      }
+    }
   }
 
+  // Type assertion for bookings with joined data (Supabase types don't handle nested selects)
   const typedBookings = (bookings ?? []) as BookingWithDetails[];
   const typedGuide = guide as Guide | null;
 

@@ -1,10 +1,21 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Database } from "@/types/database";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "LGBTQ+ Friendly Cities - Rainbow Tour Guides",
+  description: "Discover LGBTQ+ friendly cities around the world with vetted local guides. Safe, authentic travel experiences in curated destinations.",
+  openGraph: {
+    title: "LGBTQ+ Friendly Cities - Rainbow Tour Guides",
+    description: "Discover LGBTQ+ friendly cities around the world with vetted local guides.",
+    type: "website",
+  },
+};
 
 type City = Database["public"]["Tables"]["cities"]["Row"];
 
@@ -39,6 +50,29 @@ export default async function CitiesPage() {
   }
 
   const cities = (data ?? []) as City[];
+
+  // Fetch country names for cities that don't have country_name set
+  const citiesNeedingCountryName = cities.filter((city) => !city.country_name);
+  if (citiesNeedingCountryName.length > 0) {
+    const countryIds = [...new Set(citiesNeedingCountryName.map((c) => c.country_id))];
+    const { data: countriesData } = await supabase
+      .from("countries")
+      .select("id, name")
+      .in("id", countryIds);
+
+    // Type assertion needed because select("id, name") returns a narrowed type
+    const countries = (countriesData ?? []) as Array<{ id: string; name: string }>;
+    const countriesMap = new Map(
+      countries.map((c) => [c.id, c.name])
+    );
+
+    // Update cities with country names from countries table
+    cities.forEach((city) => {
+      if (!city.country_name) {
+        city.country_name = countriesMap.get(city.country_id) ?? null;
+      }
+    });
+  }
 
   // Fetch guide counts for all cities in parallel
   const cityGuideCountsPromises = cities.map(async (city) => {

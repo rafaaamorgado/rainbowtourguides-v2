@@ -69,8 +69,7 @@ export default async function GuideOnboardingPage() {
     const hourlyRate = hourlyRateRaw ? parseFloat(hourlyRateRaw) : null;
 
     // Get city slug for generating guide slug
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: cityData } = await (supabase as any)
+    const { data: cityData } = await supabase
       .from("cities")
       .select("slug")
       .eq("id", cityId)
@@ -79,8 +78,7 @@ export default async function GuideOnboardingPage() {
     const city = cityData as { slug: string } | null;
 
     // Check if guide already exists
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existingGuideData } = await (supabase as any)
+    const { data: existingGuideData } = await supabase
       .from("guides")
       .select("id, slug")
       .eq("id", profile.id)
@@ -91,21 +89,24 @@ export default async function GuideOnboardingPage() {
     // Generate slug if needed (only for new guides or if slug is null)
     const slug = typedExistingGuide?.slug || generateSlug(city?.slug || "city", profile.display_name);
 
-    // Upsert guide profile
+    // Upsert guide profile with typed insert
+    const guideInsert: Database["public"]["Tables"]["guides"]["Insert"] = {
+      id: profile.id,
+      city_id: cityId,
+      headline: headline || null,
+      about: about || null,
+      languages: languages.length > 0 ? languages : null,
+      themes: themes.length > 0 ? themes : null,
+      hourly_rate: hourlyRate !== null ? hourlyRate.toString() : null,
+      status: "pending", // Always set to pending on edit
+      slug,
+    };
+
+    // Type assertion needed for Supabase upsert operation
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
       .from("guides")
-      .upsert({
-        id: profile.id,
-        city_id: cityId,
-        headline: headline || null,
-        about: about || null,
-        languages,
-        themes,
-        hourly_rate: hourlyRate,
-        status: "pending", // Always set to pending on edit
-        slug,
-      }, {
+      .upsert(guideInsert, {
         onConflict: "id",
       });
 

@@ -20,6 +20,14 @@ export function getRedirectPathForRole(role: ProfileRole): string {
 }
 
 /**
+ * Alias for getRedirectPathForRole - redirects user based on their role.
+ * Use this helper to get the redirect path for a given role.
+ */
+export function redirectUserByRole(role: ProfileRole): string {
+  return getRedirectPathForRole(role);
+}
+
+/**
  * Validates that a string is a valid ProfileRole.
  */
 export function isValidRole(role: string | null | undefined): role is ProfileRole {

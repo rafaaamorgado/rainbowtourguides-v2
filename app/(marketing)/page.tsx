@@ -1,6 +1,18 @@
+import Link from "next/link";
+import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences",
+  description: "Connect with verified local LGBTQ+ guides for safe, authentic travel experiences. Curated destinations, vetted guides, and 24/7 traveler support.",
+  openGraph: {
+    title: "Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences",
+    description: "Connect with verified local LGBTQ+ guides for safe, authentic travel experiences.",
+    type: "website",
+  },
+};
 
 export default function MarketingPage() {
   return (
@@ -15,11 +27,16 @@ export default function MarketingPage() {
             A premium marketplace connecting LGBTQ+ travelers with verified local guides, curated
             experiences, and safe places to stay in every corner of the world.
           </p>
+          <p className="text-sm text-muted-foreground italic">
+            Private, safe, LGBTQ+ friendly experiences with vetted local guides.
+          </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button size="lg">Explore destinations</Button>
-          <Button size="lg" variant="outline">
-            Become a guide
+          <Button asChild size="lg">
+            <Link href="/cities">Explore destinations</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link href="/auth/sign-up?role=guide">Become a guide</Link>
           </Button>
         </div>
       </div>
@@ -41,4 +58,3 @@ export default function MarketingPage() {
     </section>
   );
 }
-

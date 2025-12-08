@@ -9,7 +9,7 @@ import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
 } from "@/lib/supabase-browser";
-import type { ProfileRole } from "@/types/database";
+import type { ProfileRole, Database } from "@/types/database";
 
 type SignUpFormProps = {
   initialRole?: ProfileRole;
@@ -57,12 +57,18 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: profileError } = await (supabase as any).from("profiles").insert({
+    // Insert profile with typed insert
+    const profileInsert: Database["public"]["Tables"]["profiles"]["Insert"] = {
       id: userId,
       role: initialRole,
       display_name: name,
-    });
+    };
+
+    // Type assertion needed for browser client - Supabase browser client typing can be strict
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: profileError } = await (supabase as any)
+      .from("profiles")
+      .insert(profileInsert);
 
     setIsSubmitting(false);
 

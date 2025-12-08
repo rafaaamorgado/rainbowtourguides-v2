@@ -120,7 +120,7 @@ create type public.booking_status as enum ('pending', 'confirmed', 'completed', 
 
 create table if not exists public.bookings (
   id uuid primary key default gen_random_uuid(),
-  traveler_id uuid not null references public.travelers(id) on delete restrict,
+  traveler_id uuid not null references public.profiles(id) on delete restrict,
   guide_id uuid not null references public.guides(id) on delete restrict,
   city_id uuid not null references public.cities(id) on delete restrict,
   experience_id uuid references public.experiences(id) on delete set null,
