@@ -19,6 +19,7 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // Shadcn UI colors (keep for component compatibility)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -52,15 +53,43 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+
+        // Brand colors from design system
+        brand: {
+          DEFAULT: '#ff3a3a',
+          dark: '#c92a2a',
+          soft: '#ffe4e4',
+        },
+        ink: {
+          DEFAULT: '#111827',
+          soft: '#4b5563',
+        },
+        panel: {
+          light: '#ffffff',
+          dark: '#020617',
+        },
+        pride: {
+          amber: '#fcd79b',
+          lilac: '#e2d2ff',
+          mint: '#c9f2df',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        '2xl': '1.5rem',
+        '3xl': '2rem',
+        '4xl': '2.5rem',
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", ...defaultTheme.fontFamily.sans],
         mono: ["var(--font-geist-mono)", ...defaultTheme.fontFamily.mono],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+      },
+      boxShadow: {
+        glass: '0 8px 32px 0 rgba(0, 0, 0, 0.05)',
+        float: '0 20px 40px -5px rgba(0, 0, 0, 0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.04)',
       },
       keyframes: {
         "accordion-down": {
@@ -71,10 +100,20 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "scale-slow": {
+          "0%": { transform: "scale(1)" },
+          "100%": { transform: "scale(1.1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in-up": "fade-in-up 0.8s ease-out forwards",
+        "scale-slow": "scale-slow 20s linear infinite alternate",
       },
     },
   },
@@ -82,4 +121,3 @@ const config: Config = {
 };
 
 export default config;
-
