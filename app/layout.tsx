@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 const dmSerifDisplay = DM_Serif_Display({
-  weight: ["400"],
+  weight: "400",
   subsets: ["latin"],
   variable: "--font-serif",
 });
