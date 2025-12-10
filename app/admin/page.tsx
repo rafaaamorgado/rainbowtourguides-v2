@@ -1,7 +1,8 @@
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
+import { Users, UserCheck, Calendar, Clock, CheckCircle2, XCircle, RotateCcw, Shield } from "lucide-react";
 import { requireRole } from "@/lib/auth-helpers";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Database, GuideStatus, BookingStatus, ProfileRole } from "@/types/database";
@@ -78,6 +79,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const typedBookings = (bookings ?? []) as BookingWithDetails[];
   const typedUsers = (users ?? []) as Profile[];
 
+  // Calculate stats
+  const pendingGuides = typedGuides.filter((g) => g.status === "pending").length;
+  const approvedGuides = typedGuides.filter((g) => g.status === "approved").length;
+  const pendingBookings = typedBookings.filter((b) => b.status === "pending").length;
+
   // Server action: Update guide status
   async function updateGuideStatus(formData: FormData): Promise<void> {
     "use server";
@@ -148,108 +154,187 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   return (
-    <div className="py-12 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-semibold">Admin Console</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">
+          Admin Console
+        </h1>
+        <p className="text-slate-600 font-light mt-2">
           Logged in as {profile.display_name}
         </p>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-slate-600">Total Guides</CardTitle>
+              <UserCheck size={20} className="text-slate-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-slate-900">{typedGuides.length}</p>
+            <p className="text-xs text-slate-500 mt-1">{approvedGuides} approved</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-slate-600">Pending Reviews</CardTitle>
+              <Clock size={20} className="text-amber-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-slate-900">{pendingGuides}</p>
+            <p className="text-xs text-slate-500 mt-1">Guides awaiting approval</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-slate-600">Bookings</CardTitle>
+              <Calendar size={20} className="text-slate-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-slate-900">{typedBookings.length}</p>
+            <p className="text-xs text-slate-500 mt-1">{pendingBookings} pending</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-slate-600">Total Users</CardTitle>
+              <Users size={20} className="text-slate-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-slate-900">{typedUsers.length}</p>
+            <p className="text-xs text-slate-500 mt-1">All registered users</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b pb-2">
+      <div className="flex gap-2 border-b-2 border-slate-100 pb-1">
         <Button
           asChild
           variant={activeTab === "guides" ? "default" : "ghost"}
+          size="lg"
         >
-          <Link href="/admin?tab=guides">Guides</Link>
+          <Link href="/admin?tab=guides" className="gap-2">
+            <UserCheck size={18} />
+            Guides
+          </Link>
         </Button>
         <Button
           asChild
           variant={activeTab === "bookings" ? "default" : "ghost"}
+          size="lg"
         >
-          <Link href="/admin?tab=bookings">Bookings</Link>
+          <Link href="/admin?tab=bookings" className="gap-2">
+            <Calendar size={18} />
+            Bookings
+          </Link>
         </Button>
         <Button
           asChild
           variant={activeTab === "users" ? "default" : "ghost"}
+          size="lg"
         >
-          <Link href="/admin?tab=users">Users</Link>
+          <Link href="/admin?tab=users" className="gap-2">
+            <Users size={18} />
+            Users
+          </Link>
         </Button>
       </div>
 
       {/* Guides Tab */}
       {activeTab === "guides" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Guides Management</h2>
-            <p className="text-sm text-muted-foreground">
-              {typedGuides.length} total guides
-            </p>
+            <h2 className="text-3xl font-serif font-bold text-slate-900">Guides Management</h2>
+            <Badge variant="secondary" className="text-sm px-3 py-1">
+              {typedGuides.length} total
+            </Badge>
           </div>
 
           {typedGuides.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
+            <Card className="shadow-md">
+              <CardContent className="py-16 text-center text-slate-500">
                 No guides found.
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {typedGuides.map((guide) => {
                 const statusInfo = guideStatusConfig[guide.status];
                 const createdDate = new Date(guide.created_at);
 
                 return (
-                  <Card key={guide.id}>
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">
-                              {guide.profile?.display_name || "Unknown"}
-                            </p>
-                            <Badge variant={statusInfo.variant}>
-                              {statusInfo.label}
-                            </Badge>
+                  <Card key={guide.id} className="shadow-md hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                              <UserCheck size={20} className="text-slate-600" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-lg text-slate-900">
+                                {guide.profile?.display_name || "Unknown"}
+                              </p>
+                              <Badge variant={statusInfo.variant} className="mt-1">
+                                {statusInfo.label}
+                              </Badge>
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {guide.city?.name || "No city"} •{" "}
-                            {guide.hourly_rate ? `$${guide.hourly_rate}/hr` : "No rate"} •{" "}
-                            Joined {createdDate.toLocaleDateString()}
-                          </p>
-                          {guide.headline && (
-                            <p className="text-sm text-muted-foreground italic">
-                              {guide.headline}
+                          <div className="pl-13 space-y-1">
+                            <p className="text-sm text-slate-600">
+                              {guide.city?.name || "No city"} •{" "}
+                              {guide.hourly_rate ? `$${guide.hourly_rate}/hr` : "No rate set"} •{" "}
+                              Joined {createdDate.toLocaleDateString()}
                             </p>
-                          )}
+                            {guide.headline && (
+                              <p className="text-sm text-slate-500 italic">
+                                "{guide.headline}"
+                              </p>
+                            )}
+                          </div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 lg:flex-col">
                           {guide.status !== "approved" && (
-                            <form action={updateGuideStatus}>
+                            <form action={updateGuideStatus} className="flex-1 lg:flex-none">
                               <input type="hidden" name="guide_id" value={guide.id} />
                               <input type="hidden" name="status" value="approved" />
-                              <Button type="submit" size="sm" variant="default">
+                              <Button type="submit" size="sm" variant="default" className="w-full lg:w-28 gap-2">
+                                <CheckCircle2 size={16} />
                                 Approve
                               </Button>
                             </form>
                           )}
                           {guide.status !== "rejected" && (
-                            <form action={updateGuideStatus}>
+                            <form action={updateGuideStatus} className="flex-1 lg:flex-none">
                               <input type="hidden" name="guide_id" value={guide.id} />
                               <input type="hidden" name="status" value="rejected" />
-                              <Button type="submit" size="sm" variant="destructive">
+                              <Button type="submit" size="sm" variant="destructive" className="w-full lg:w-28 gap-2">
+                                <XCircle size={16} />
                                 Reject
                               </Button>
                             </form>
                           )}
                           {guide.status !== "pending" && (
-                            <form action={updateGuideStatus}>
+                            <form action={updateGuideStatus} className="flex-1 lg:flex-none">
                               <input type="hidden" name="guide_id" value={guide.id} />
                               <input type="hidden" name="status" value="pending" />
-                              <Button type="submit" size="sm" variant="outline">
+                              <Button type="submit" size="sm" variant="outline" className="w-full lg:w-28 gap-2">
+                                <RotateCcw size={16} />
                                 Reset
                               </Button>
                             </form>
@@ -267,65 +352,67 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
       {/* Bookings Tab */}
       {activeTab === "bookings" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Bookings Management</h2>
-            <p className="text-sm text-muted-foreground">
-              {typedBookings.length} recent bookings
-            </p>
+            <h2 className="text-3xl font-serif font-bold text-slate-900">Bookings Management</h2>
+            <Badge variant="secondary" className="text-sm px-3 py-1">
+              {typedBookings.length} recent
+            </Badge>
           </div>
 
           {typedBookings.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
+            <Card className="shadow-md">
+              <CardContent className="py-16 text-center text-slate-500">
                 No bookings found.
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {typedBookings.map((booking) => {
                 const statusInfo = bookingStatusConfig[booking.status];
                 const startDate = new Date(booking.starts_at);
 
                 return (
-                  <Card key={booking.id}>
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1 flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">
-                                {booking.traveler?.display_name || "Unknown"} →{" "}
-                                {booking.guide?.display_name || "Unknown"}
-                              </p>
-                              <Badge variant={statusInfo.variant}>
-                                {statusInfo.label}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {booking.city?.name || "Unknown city"} •{" "}
-                              {startDate.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}{" "}
-                              at{" "}
-                              {startDate.toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}
+                  <Card key={booking.id} className="shadow-md">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                            <Calendar size={20} className="text-slate-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-slate-900">
+                              {booking.traveler?.display_name || "Unknown"} → {booking.guide?.display_name || "Unknown"}
                             </p>
-                            <p className="text-sm text-muted-foreground">
-                              {booking.duration_hours}h •{" "}
-                              {booking.currency || "USD"} {booking.price_total}
-                            </p>
+                            <Badge variant={statusInfo.variant} className="mt-1">
+                              {statusInfo.label}
+                            </Badge>
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 pt-2 border-t">
-                          <p className="text-xs text-muted-foreground self-center">
-                            Override status:
+                        <div className="pl-13 text-sm text-slate-600 space-y-1">
+                          <p>
+                            {booking.city?.name || "Unknown city"} •{" "}
+                            {startDate.toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}{" "}
+                            at{" "}
+                            {startDate.toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
                           </p>
+                          <p>
+                            {booking.duration_hours}h • {booking.currency || "USD"} {booking.price_total}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 pt-4 border-t">
+                          <span className="text-xs text-slate-500 self-center font-medium">
+                            Override status:
+                          </span>
                           {(["pending", "accepted", "confirmed", "declined", "cancelled", "paid"] as BookingStatus[]).map(
                             (status) => (
                               <form key={status} action={updateBookingStatus}>
@@ -336,6 +423,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                   size="sm"
                                   variant={booking.status === status ? "default" : "outline"}
                                   disabled={booking.status === status}
+                                  className="text-xs"
                                 >
                                   {status}
                                 </Button>
@@ -355,56 +443,60 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
       {/* Users Tab */}
       {activeTab === "users" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Users Management</h2>
-            <p className="text-sm text-muted-foreground">
-              {typedUsers.length} total users
-            </p>
+            <h2 className="text-3xl font-serif font-bold text-slate-900">Users Management</h2>
+            <Badge variant="secondary" className="text-sm px-3 py-1">
+              {typedUsers.length} total
+            </Badge>
           </div>
 
           {typedUsers.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
+            <Card className="shadow-md">
+              <CardContent className="py-16 text-center text-slate-500">
                 No users found.
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {typedUsers.map((user) => {
                 const createdDate = new Date(user.created_at);
 
                 return (
-                  <Card key={user.id}>
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1 flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">{user.display_name}</p>
-                              <Badge
-                                variant={
-                                  user.role === "admin"
-                                    ? "default"
-                                    : user.role === "guide"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                              >
-                                {user.role}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              ID: {user.id.substring(0, 8)}... •{" "}
-                              Joined {createdDate.toLocaleDateString()}
-                            </p>
+                  <Card key={user.id} className="shadow-md">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                            <Shield size={20} className="text-slate-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-slate-900">{user.display_name}</p>
+                            <Badge
+                              variant={
+                                user.role === "admin"
+                                  ? "default"
+                                  : user.role === "guide"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              className="mt-1"
+                            >
+                              {user.role}
+                            </Badge>
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 pt-2 border-t">
-                          <p className="text-xs text-muted-foreground self-center">
-                            Change role:
+                        <div className="pl-13 text-sm text-slate-600">
+                          <p>
+                            ID: {user.id.substring(0, 8)}... • Joined {createdDate.toLocaleDateString()}
                           </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 pt-4 border-t">
+                          <span className="text-xs text-slate-500 self-center font-medium">
+                            Change role:
+                          </span>
                           {(["traveler", "guide", "admin"] as ProfileRole[]).map((role) => (
                             <form key={role} action={updateUserRole}>
                               <input type="hidden" name="user_id" value={user.id} />
@@ -414,6 +506,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                 size="sm"
                                 variant={user.role === role ? "default" : "outline"}
                                 disabled={user.role === role}
+                                className="text-xs capitalize"
                               >
                                 {role}
                               </Button>
