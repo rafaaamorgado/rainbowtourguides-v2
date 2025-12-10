@@ -1,8 +1,6 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { CityCard } from "@/components/ui/CityCard";
 import type { Database } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -110,49 +108,25 @@ export default async function CitiesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 space-y-8">
-      <header className="space-y-2">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 space-y-12">
+      <header className="space-y-4 text-center max-w-3xl mx-auto">
+        <span className="text-brand font-bold uppercase tracking-widest text-xs block">
           Destinations
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          LGBTQ+ friendly cities, curated for you
+        </span>
+        <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 tracking-tight">
+          LGBTQ+ friendly cities,
+          <br />
+          curated for you
         </h1>
-        <p className="text-sm text-muted-foreground max-w-2xl">
-          Choose a city where we have vetted local guides and up-to-date
-          LGBTQ+ context — then dive into their profiles and experiences.
+        <p className="text-lg text-slate-600 font-light leading-relaxed">
+          Choose a city where we have vetted local guides and up-to-date LGBTQ+ context — then dive
+          into their profiles and experiences.
         </p>
       </header>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {citiesWithCounts.map((city) => (
-          <Link key={city.id} href={`/cities/${city.slug}`}>
-            <Card className="h-full transition hover:-translate-y-0.5 hover:shadow-md">
-              <CardHeader className="space-y-1">
-                <CardTitle className="flex items-center justify-between text-base">
-                  <span>{city.name}</span>
-                  {city.is_featured && (
-                    <Badge variant="secondary" className="text-[11px]">
-                      Featured
-                    </Badge>
-                  )}
-                </CardTitle>
-                {city.country_name && (
-                  <p className="text-xs text-muted-foreground">
-                    {city.country_name}
-                  </p>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  Explore {city.name} with a trusted local LGBTQ+ guide.
-                </p>
-                <p className="text-xs font-medium text-foreground">
-                  {city.guide_count} {city.guide_count === 1 ? "guide" : "guides"}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
+          <CityCard key={city.id} city={city as any} />
         ))}
       </div>
     </div>
