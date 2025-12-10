@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { Calendar, Clock, User, DollarSign, CheckCircle2, XCircle } from "lucide-react";
 import { requireRole } from "@/lib/auth-helpers";
 import { sendBookingStatusEmail } from "@/lib/email";
 import { GuideStatusBadge } from "@/components/guide/GuideStatusBadge";
@@ -70,7 +71,7 @@ export default async function GuideDashboardPage() {
   // Server action to update booking status
   async function updateBookingStatus(formData: FormData): Promise<void> {
     "use server";
-    
+
     const { supabase, profile } = await requireRole("guide");
     const bookingId = formData.get("booking_id") as string;
     const newStatus = formData.get("status") as BookingStatus;
@@ -127,8 +128,8 @@ export default async function GuideDashboardPage() {
 
         const travelerName = (travelerProfile as { display_name: string } | null)?.display_name || "Traveler";
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+                       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
                        "http://localhost:3000");
 
         sendBookingStatusEmail({
@@ -149,32 +150,34 @@ export default async function GuideDashboardPage() {
   const typedGuide = guide as Guide | null;
 
   return (
-    <div className="py-12 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold">Guide Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">
+            Guide Dashboard
+          </h1>
+          <p className="text-slate-600 font-light mt-2">
             Welcome back, {profile.display_name}
           </p>
         </div>
-        <Button asChild variant="outline">
+        <Button asChild size="lg" variant="outline">
           <Link href="/guide/onboarding">Edit Profile</Link>
         </Button>
       </div>
 
       {/* Guide Status Card */}
-      <Card>
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            Profile Status
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-serif">Profile Status</CardTitle>
             {typedGuide && <GuideStatusBadge status={typedGuide.status} />}
-          </CardTitle>
-          <CardDescription>
+          </div>
+          <CardDescription className="text-base">
             {!typedGuide && (
               <span className="text-amber-600">
                 You haven&apos;t completed your guide profile yet.{" "}
-                <Link href="/guide/onboarding" className="underline">
+                <Link href="/guide/onboarding" className="underline font-semibold">
                   Complete it now
                 </Link>
                 .
@@ -194,36 +197,48 @@ export default async function GuideDashboardPage() {
           </CardDescription>
         </CardHeader>
         {typedGuide && (
-          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Headline</p>
-              <p className="font-medium">{typedGuide.headline || "—"}</p>
+          <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500 flex items-center gap-2">
+                <User size={16} />
+                Headline
+              </p>
+              <p className="font-medium text-slate-900">{typedGuide.headline || "—"}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Languages</p>
-              <p className="font-medium">
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500 flex items-center gap-2">
+                <Calendar size={16} />
+                Languages
+              </p>
+              <p className="font-medium text-slate-900">
                 {typedGuide.languages?.join(", ") || "—"}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Hourly Rate</p>
-              <p className="font-medium">
-                {typedGuide.hourly_rate
-                  ? `$${typedGuide.hourly_rate}`
-                  : "—"}
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500 flex items-center gap-2">
+                <DollarSign size={16} />
+                Hourly Rate
+              </p>
+              <p className="font-medium text-slate-900">
+                {typedGuide.hourly_rate ? `$${typedGuide.hourly_rate}/hr` : "—"}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Themes</p>
-              <div className="flex flex-wrap gap-1 mt-1">
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500">Themes</p>
+              <div className="flex flex-wrap gap-1">
                 {typedGuide.themes?.length ? (
-                  typedGuide.themes.map((theme) => (
+                  typedGuide.themes.slice(0, 2).map((theme) => (
                     <Badge key={theme} variant="outline" className="text-xs">
                       {theme}
                     </Badge>
                   ))
                 ) : (
-                  <span className="font-medium">—</span>
+                  <span className="font-medium text-slate-900">—</span>
+                )}
+                {typedGuide.themes && typedGuide.themes.length > 2 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{typedGuide.themes.length - 2}
+                  </Badge>
                 )}
               </div>
             </div>
@@ -232,18 +247,30 @@ export default async function GuideDashboardPage() {
       </Card>
 
       {/* Bookings Section */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Your Bookings</h2>
-        
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-serif font-bold text-slate-900">Your Bookings</h2>
+          {typedBookings.length > 0 && (
+            <Badge variant="secondary" className="text-sm px-3 py-1">
+              {typedBookings.length} total
+            </Badge>
+          )}
+        </div>
+
         {typedBookings.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <p>No bookings yet.</p>
-              <p className="text-sm mt-1">
-                {typedGuide?.status === "approved"
-                  ? "When travelers book with you, they'll appear here."
-                  : "Complete your profile and get approved to start receiving bookings."}
-              </p>
+          <Card className="shadow-md">
+            <CardContent className="py-16 text-center">
+              <div className="max-w-md mx-auto space-y-4">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
+                  <Calendar size={32} className="text-slate-400" />
+                </div>
+                <p className="text-slate-600 font-light text-lg">No bookings yet.</p>
+                <p className="text-sm text-slate-500">
+                  {typedGuide?.status === "approved"
+                    ? "When travelers book with you, they'll appear here."
+                    : "Complete your profile and get approved to start receiving bookings."}
+                </p>
+              </div>
             </CardContent>
           </Card>
         ) : (
@@ -254,57 +281,79 @@ export default async function GuideDashboardPage() {
               const canRespond = booking.status === "pending";
 
               return (
-                <Card key={booking.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">
-                            {booking.traveler?.display_name || "Unknown Traveler"}
-                          </p>
-                          <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                <Card key={booking.id} className="shadow-md hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                            <User size={20} className="text-slate-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-lg text-slate-900">
+                              {booking.traveler?.display_name || "Unknown Traveler"}
+                            </p>
+                            <Badge variant={statusInfo.variant} className="mt-1">
+                              {statusInfo.label}
+                            </Badge>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {booking.city?.name || "Unknown City"} •{" "}
-                          {startDate.toLocaleDateString("en-US", {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}{" "}
-                          at{" "}
-                          {startDate.toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                        {booking.duration_hours && (
-                          <p className="text-sm text-muted-foreground">
-                            Duration: {booking.duration_hours} hours •{" "}
-                            {booking.currency || "USD"} {booking.price_total}
-                          </p>
-                        )}
+
+                        <div className="grid sm:grid-cols-2 gap-4 pl-13">
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <Calendar size={16} />
+                            <span>
+                              {startDate.toLocaleDateString("en-US", {
+                                weekday: "short",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <Clock size={16} />
+                            <span>
+                              {startDate.toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}{" "}
+                              ({booking.duration_hours || 0}h)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <DollarSign size={16} />
+                            <span>
+                              {booking.currency || "USD"} {booking.price_total}
+                            </span>
+                          </div>
+                        </div>
+
                         {(booking.notes || booking.special_requests) && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            <span className="font-medium">Notes:</span>{" "}
-                            {booking.notes || booking.special_requests}
-                          </p>
+                          <div className="pl-13 pt-2 border-t">
+                            <p className="text-sm text-slate-600">
+                              <span className="font-semibold">Notes:</span>{" "}
+                              {booking.notes || booking.special_requests}
+                            </p>
+                          </div>
                         )}
                       </div>
 
                       {canRespond && (
-                        <div className="flex gap-2">
-                          <form action={updateBookingStatus}>
+                        <div className="flex gap-3 lg:flex-col">
+                          <form action={updateBookingStatus} className="flex-1 lg:flex-none">
                             <input type="hidden" name="booking_id" value={booking.id} />
                             <input type="hidden" name="status" value="accepted" />
-                            <Button type="submit" size="sm">
+                            <Button type="submit" size="lg" className="w-full lg:w-32 gap-2">
+                              <CheckCircle2 size={18} />
                               Accept
                             </Button>
                           </form>
-                          <form action={updateBookingStatus}>
+                          <form action={updateBookingStatus} className="flex-1 lg:flex-none">
                             <input type="hidden" name="booking_id" value={booking.id} />
                             <input type="hidden" name="status" value="declined" />
-                            <Button type="submit" size="sm" variant="outline">
+                            <Button type="submit" size="lg" variant="outline" className="w-full lg:w-32 gap-2">
+                              <XCircle size={18} />
                               Decline
                             </Button>
                           </form>

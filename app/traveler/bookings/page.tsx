@@ -1,6 +1,9 @@
+import Link from "next/link";
+import { Calendar, Clock, User, DollarSign, MapPin } from "lucide-react";
 import { requireUser } from "@/lib/auth-helpers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PayButton } from "@/components/traveler/PayButton";
 import { VerifySession } from "@/components/traveler/VerifySession";
 import type { BookingStatus } from "@/types/database";
@@ -66,27 +69,44 @@ export default async function TravelerBookingsPage({ searchParams }: TravelerBoo
   const typedBookings = (bookings ?? []) as BookingWithDetails[];
 
   return (
-    <div className="py-12 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
       {/* Verify session if returning from Stripe */}
       {params.session && <VerifySession sessionId={params.session} />}
-      
+
       {/* Header Section */}
-      <div>
-        <h1 className="text-3xl font-semibold">Your Bookings</h1>
-        <p className="text-muted-foreground mt-1">
-          View and manage your tour bookings
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">
+            Your Bookings
+          </h1>
+          <p className="text-slate-600 font-light mt-2">
+            View and manage your tour bookings
+          </p>
+        </div>
+        <Button asChild size="lg">
+          <Link href="/cities">Browse Guides</Link>
+        </Button>
       </div>
 
       {/* Bookings List */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {typedBookings.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <p>You haven&apos;t made any bookings yet.</p>
-              <p className="text-sm mt-1">
-                Browse our guides and request your first tour!
-              </p>
+          <Card className="shadow-md">
+            <CardContent className="py-16 text-center">
+              <div className="max-w-md mx-auto space-y-4">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
+                  <Calendar size={32} className="text-slate-400" />
+                </div>
+                <p className="text-slate-600 font-light text-lg">
+                  You haven&apos;t made any bookings yet.
+                </p>
+                <p className="text-sm text-slate-500">
+                  Browse our guides and request your first tour!
+                </p>
+                <Button asChild size="lg" className="mt-4">
+                  <Link href="/cities">Explore Destinations</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (
@@ -97,45 +117,83 @@ export default async function TravelerBookingsPage({ searchParams }: TravelerBoo
               const canPay = booking.status === "accepted" && !booking.stripe_checkout_session_id;
 
               return (
-                <Card key={booking.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">
-                            {booking.guide?.display_name || "Unknown Guide"}
-                          </p>
-                          <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                <Card key={booking.id} className="shadow-md hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                            <User size={20} className="text-slate-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-lg text-slate-900">
+                              {booking.guide?.display_name || "Unknown Guide"}
+                            </p>
+                            <Badge variant={statusInfo.variant} className="mt-1">
+                              {statusInfo.label}
+                            </Badge>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {booking.city?.name || "Unknown City"} •{" "}
-                          {startDate.toLocaleDateString("en-US", {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}{" "}
-                          at{" "}
-                          {startDate.toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                        {booking.duration_hours && (
-                          <p className="text-sm text-muted-foreground">
-                            Duration: {booking.duration_hours} hours •{" "}
-                            {booking.currency || "USD"} {booking.price_total}
-                          </p>
-                        )}
+
+                        <div className="grid sm:grid-cols-2 gap-4 pl-13">
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <MapPin size={16} />
+                            <span>{booking.city?.name || "Unknown City"}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <Calendar size={16} />
+                            <span>
+                              {startDate.toLocaleDateString("en-US", {
+                                weekday: "short",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <Clock size={16} />
+                            <span>
+                              {startDate.toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}{" "}
+                              ({booking.duration_hours || 0}h)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <DollarSign size={16} />
+                            <span>
+                              {booking.currency || "USD"} {booking.price_total}
+                            </span>
+                          </div>
+                        </div>
+
                         {(booking.notes || booking.special_requests) && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            <span className="font-medium">Your notes:</span>{" "}
-                            {booking.notes || booking.special_requests}
-                          </p>
+                          <div className="pl-13 pt-2 border-t">
+                            <p className="text-sm text-slate-600">
+                              <span className="font-semibold">Your notes:</span>{" "}
+                              {booking.notes || booking.special_requests}
+                            </p>
+                          </div>
+                        )}
+
+                        {booking.status === "accepted" && (
+                          <div className="pl-13 pt-2">
+                            <div className="inline-flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+                              <span className="text-sm text-green-700">
+                                ✓ Booking accepted! Complete payment to confirm.
+                              </span>
+                            </div>
+                          </div>
                         )}
                       </div>
 
-                      {canPay && <PayButton bookingId={booking.id} />}
+                      {canPay && (
+                        <div className="lg:w-32">
+                          <PayButton bookingId={booking.id} />
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
