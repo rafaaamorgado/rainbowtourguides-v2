@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { Star, ShieldCheck, MapPin, Languages, Clock } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { requireUser } from "@/lib/auth-helpers";
 import { sendBookingRequestEmail } from "@/lib/email";
@@ -133,6 +134,10 @@ export default async function GuidePage({ params }: GuidePageProps) {
     userProfile = data as Profile | null;
   }
 
+  const isVerified = guideWithRelations.status === "approved";
+  const rating = (guideWithRelations as any).rating_avg || 5.0;
+  const hourlyRate = guideWithRelations.hourly_rate ? parseFloat(guideWithRelations.hourly_rate) : 50;
+
   // Server action to create a booking
   async function createBooking(formData: FormData): Promise<{ success: boolean; error?: string; guideName?: string }> {
     "use server";
@@ -222,17 +227,17 @@ export default async function GuidePage({ params }: GuidePageProps) {
     const guideName = (guideProfile as { display_name: string } | null)?.display_name || "the guide";
 
     // Send email to guide (fire-and-forget, don't await)
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
                    "http://localhost:3000");
-    
+
     // Get city name
     const { data: cityData } = await supabase
       .from("cities")
       .select("name")
       .eq("id", guide.city_id)
       .single();
-    
+
     const cityName = (cityData as { name: string } | null)?.name || "the city";
     const formattedDate = startsAt.toLocaleDateString("en-US", {
       weekday: "long",
@@ -254,144 +259,234 @@ export default async function GuidePage({ params }: GuidePageProps) {
       console.error("[createBooking] Failed to send email:", error);
     });
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       guideName
     };
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 space-y-12">
-      {/* Hero Section */}
-      <section className="space-y-6">
-        <div className="flex items-start gap-6">
-          {guideWithRelations.profile.avatar_url ? (
+    <div className="pb-16">
+      {/* Hero Section with Avatar */}
+      <section className="relative h-[50vh] min-h-[400px] bg-slate-950 overflow-hidden">
+        {guideWithRelations.profile.avatar_url ? (
+          <>
             <Image
               src={guideWithRelations.profile.avatar_url}
               alt={guideWithRelations.profile.display_name}
-              width={96}
-              height={96}
-              className="w-24 h-24 rounded-full object-cover"
+              fill
+              className="object-cover opacity-40 filter grayscale-[30%]"
+              priority
             />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
-              <span className="text-3xl font-medium text-muted-foreground">
-                {guideWithRelations.profile.display_name.charAt(0).toUpperCase()}
-              </span>
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-950" />
+        )}
+
+        <div className="absolute inset-0 flex items-end">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+            <div className="flex items-end gap-6">
+              {/* Large Avatar Circle */}
+              <div className="relative">
+                {guideWithRelations.profile.avatar_url ? (
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 overflow-hidden shadow-2xl">
+                    <Image
+                      src={guideWithRelations.profile.avatar_url}
+                      alt={guideWithRelations.profile.display_name}
+                      width={160}
+                      height={160}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 bg-slate-800 flex items-center justify-center shadow-2xl">
+                    <span className="text-5xl md:text-6xl font-bold text-white">
+                      {guideWithRelations.profile.display_name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                {isVerified && (
+                  <div className="absolute -bottom-2 -right-2 bg-brand p-2 rounded-full shadow-lg">
+                    <ShieldCheck size={20} className="text-white" />
+                  </div>
+                )}
+              </div>
+
+              {/* Name and Location */}
+              <div className="flex-1 pb-2">
+                <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-2">
+                  {guideWithRelations.profile.display_name}
+                </h1>
+                <div className="flex flex-wrap items-center gap-4 text-white/80">
+                  <div className="flex items-center gap-2">
+                    <MapPin size={16} />
+                    <span className="text-sm font-medium">
+                      {guideWithRelations.city.name}
+                      {guideWithRelations.city.country_name && `, ${guideWithRelations.city.country_name}`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full">
+                    <Star size={14} className="fill-brand text-brand" />
+                    <span className="text-sm font-bold">{rating.toFixed(1)}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
-          <div className="flex-1 space-y-3">
-            <div>
-              <h1 className="text-4xl font-semibold tracking-tight">
-                {guideWithRelations.profile.display_name}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {guideWithRelations.city.name}
-                {guideWithRelations.city.country_name && `, ${guideWithRelations.city.country_name}`}
-              </p>
-            </div>
-            {guideWithRelations.headline && (
-              <p className="text-lg text-foreground">{guideWithRelations.headline}</p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {guideWithRelations.themes?.map((theme, idx) => (
-                <Badge key={idx} variant="secondary">
-                  {formatTheme(theme)}
-                </Badge>
-              ))}
-            </div>
-            {guideWithRelations.languages && guideWithRelations.languages.length > 0 && (
-              <p className="text-sm text-muted-foreground">
-                Speaks: {guideWithRelations.languages.join(", ")}
-              </p>
-            )}
-            {guideWithRelations.hourly_rate && (
-              <p className="text-xl font-semibold text-foreground">
-                From ${parseFloat(guideWithRelations.hourly_rate).toFixed(0)}/hour
-              </p>
-            )}
           </div>
         </div>
       </section>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* About Section */}
-          {guideWithRelations.about && (
-            <section className="space-y-4">
-              <h2 className="text-2xl font-semibold tracking-tight">About</h2>
-              <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                {guideWithRelations.about}
-              </p>
-            </section>
-          )}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column - Details */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Headline Card */}
+            {guideWithRelations.headline && (
+              <Card className="bg-white shadow-lg">
+                <CardContent className="p-8">
+                  <p className="text-xl font-light text-slate-700 leading-relaxed">
+                    {guideWithRelations.headline}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
-          {/* What We Can Do Together */}
-          {guideWithRelations.themes && guideWithRelations.themes.length > 0 && (
-            <section className="space-y-4">
-              <h2 className="text-2xl font-semibold tracking-tight">What we can do together</h2>
-              <ul className="space-y-2 list-disc list-inside">
-                {guideWithRelations.themes.map((theme, idx) => (
-                  <li key={idx} className="text-sm text-muted-foreground">
-                    {formatTheme(theme)} experiences
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
+            {/* Key Info Grid */}
+            <div className="grid sm:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="flex justify-center mb-3">
+                    <div className="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center">
+                      <Clock size={24} className="text-brand" />
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-1">Starting at</p>
+                  <p className="text-2xl font-bold text-slate-900">${hourlyRate}/hr</p>
+                </CardContent>
+              </Card>
 
-        {/* Booking Form Sidebar */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-4">
-            <CardHeader>
-              <CardTitle>Request a booking</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground mb-4 pb-4 border-b">
-                Use public meeting points for first meetups. No sexual services are allowed on Rainbow Tour Guides.
-              </p>
-              {!user ? (
-                // Not logged in - show sign in CTA
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Sign in to request a booking with {guideWithRelations.profile.display_name}.
-                  </p>
-                  <Button asChild className="w-full">
-                    <Link href="/auth/sign-in">Sign in</Link>
-                  </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Don&apos;t have an account?{" "}
-                    <Link href="/auth/sign-up?role=traveler" className="text-primary underline">
-                      Sign up as a traveler
-                    </Link>
-                  </p>
-                </div>
-              ) : userProfile?.role === "traveler" ? (
-                // Logged in as traveler - show booking form
-                <BookingForm onSubmit={createBooking} guideName={guideWithRelations.profile.display_name} />
-              ) : (
-                // Logged in as guide or admin - show message
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    {userProfile?.role === "guide"
-                      ? "Guides cannot request bookings with other guides."
-                      : "Admins cannot request bookings. Please use a traveler account."}
-                  </p>
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href={userProfile?.role === "guide" ? "/guide/dashboard" : "/admin"}>
-                      Go to dashboard
-                    </Link>
-                  </Button>
-                </div>
+              {guideWithRelations.languages && guideWithRelations.languages.length > 0 && (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <div className="flex justify-center mb-3">
+                      <div className="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center">
+                        <Languages size={24} className="text-brand" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-600 mb-1">Languages</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {guideWithRelations.languages.join(", ")}
+                    </p>
+                  </CardContent>
+                </Card>
               )}
-            </CardContent>
-          </Card>
+
+              {guideWithRelations.themes && guideWithRelations.themes.length > 0 && (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <div className="flex justify-center mb-3">
+                      <div className="w-12 h-12 bg-brand/10 rounded-2xl flex items-center justify-center">
+                        <Star size={24} className="text-brand" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-600 mb-1">Specialties</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {guideWithRelations.themes.length} themes
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* About Section */}
+            {guideWithRelations.about && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-3xl font-serif font-bold">About Me</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-slate-600 font-light leading-relaxed whitespace-pre-wrap">
+                    {guideWithRelations.about}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Themes Section */}
+            {guideWithRelations.themes && guideWithRelations.themes.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-3xl font-serif font-bold">
+                    What We Can Do Together
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {guideWithRelations.themes.map((theme, idx) => (
+                      <Badge key={idx} variant="outline" className="text-sm px-4 py-2">
+                        {formatTheme(theme)}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Right Column - Booking Form */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl font-serif">Book an Experience</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    ⚠️ Use public meeting points for first meetups. No sexual services are allowed
+                    on Rainbow Tour Guides.
+                  </p>
+                </div>
+                {!user ? (
+                  // Not logged in - show sign in CTA
+                  <div className="space-y-4">
+                    <p className="text-sm text-slate-600">
+                      Sign in to request a booking with {guideWithRelations.profile.display_name}.
+                    </p>
+                    <Button asChild className="w-full" size="lg">
+                      <Link href="/auth/sign-in">Sign in</Link>
+                    </Button>
+                    <p className="text-xs text-slate-600 text-center">
+                      Don&apos;t have an account?{" "}
+                      <Link href="/auth/sign-up?role=traveler" className="text-brand font-semibold underline">
+                        Sign up as a traveler
+                      </Link>
+                    </p>
+                  </div>
+                ) : userProfile?.role === "traveler" ? (
+                  // Logged in as traveler - show booking form
+                  <BookingForm onSubmit={createBooking} guideName={guideWithRelations.profile.display_name} />
+                ) : (
+                  // Logged in as guide or admin - show message
+                  <div className="space-y-4">
+                    <p className="text-sm text-slate-600">
+                      {userProfile?.role === "guide"
+                        ? "Guides cannot request bookings with other guides."
+                        : "Admins cannot request bookings. Please use a traveler account."}
+                    </p>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href={userProfile?.role === "guide" ? "/guide/dashboard" : "/admin"}>
+                        Go to dashboard
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-
