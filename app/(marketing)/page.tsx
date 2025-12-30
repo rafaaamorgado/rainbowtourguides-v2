@@ -1,19 +1,21 @@
-import Link from "next/link";
-import Image from "next/image";
-import type { Metadata } from "next";
-import { Shield, Map, Users, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { CityCard } from "@/components/ui/CityCard";
-import { GuideCard } from "@/components/ui/GuideCard";
+import Link from 'next/link';
+import Image from 'next/image';
+import type { Metadata } from 'next';
+import { Shield, Map, Users, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { CityCard } from '@/components/ui/CityCard';
+import { GuideCard } from '@/components/ui/GuideCard';
 
 export const metadata: Metadata = {
-  title: "Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences",
-  description: "Connect with verified local LGBTQ+ guides for safe, authentic travel experiences. Curated destinations, vetted guides, and 24/7 traveler support.",
+  title: 'Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences',
+  description:
+    'Connect with verified local LGBTQ+ guides for safe, authentic travel experiences. Curated destinations, vetted guides, and 24/7 traveler support.',
   openGraph: {
-    title: "Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences",
-    description: "Connect with verified local LGBTQ+ guides for safe, authentic travel experiences.",
-    type: "website",
+    title: 'Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences',
+    description:
+      'Connect with verified local LGBTQ+ guides for safe, authentic travel experiences.',
+    type: 'website',
   },
 };
 
@@ -22,10 +24,10 @@ export default async function MarketingPage() {
 
   // Fetch featured cities
   const { data: cities } = await supabase
-    .from("cities")
-    .select("*, guides:guides(count)")
-    .eq("is_active", true)
-    .eq("is_featured", true)
+    .from('cities')
+    .select('*, guides:guides(count)')
+    .eq('is_active', true)
+    .eq('is_featured', true)
     .limit(4);
 
   const citiesWithCounts = (cities ?? []).map((city: any) => ({
@@ -35,9 +37,9 @@ export default async function MarketingPage() {
 
   // Fetch featured guides
   const { data: guidesData } = await supabase
-    .from("guides")
-    .select("*, profile:profiles(display_name, avatar_url)")
-    .eq("status", "approved")
+    .from('guides')
+    .select('*, profile:profiles(display_name, avatar_url)')
+    .eq('status', 'approved')
     .limit(3);
 
   const guides = (guidesData ?? []) as any[];
@@ -80,8 +82,8 @@ export default async function MarketingPage() {
             </h1>
 
             <p className="text-lg md:text-2xl text-white/80 max-w-xl font-light leading-relaxed">
-              Curated local companions for gay men who value authentic connection, safety, and
-              culture over crowds.
+              Curated local companions for gay men who value authentic
+              connection, safety, and culture over crowds.
             </p>
           </div>
 
@@ -89,7 +91,12 @@ export default async function MarketingPage() {
             <Button asChild size="lg">
               <Link href="/cities">Start Exploring</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-white border-white/30 hover:bg-white/10">
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="text-white border-white/30 hover:bg-white/10"
+            >
               <Link href="/auth/sign-up?role=guide">Become a Guide</Link>
             </Button>
           </div>
@@ -107,12 +114,14 @@ export default async function MarketingPage() {
             </h2>
             <div className="space-y-6 text-lg font-light text-slate-600 leading-relaxed">
               <p>
-                We believe travel is about who you meet, not just what you see. Traditional tours
-                feel transactional. Dating apps feel risky. We built the middle ground.
+                We believe travel is about who you meet, not just what you see.
+                Traditional tours feel transactional. Dating apps feel risky. We
+                built the middle ground.
               </p>
               <p>
-                Our guides are "Cultural Curators"—locals who share your community, know the hidden
-                history, and create a safe space for you to be your authentic self.
+                Our guides are "Cultural Curators"—locals who share your
+                community, know the hidden history, and create a safe space for
+                you to be your authentic self.
               </p>
             </div>
           </div>
@@ -141,22 +150,22 @@ export default async function MarketingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
               {
-                num: "01",
+                num: '01',
                 icon: Map,
-                title: "Curated Cities",
-                desc: "We only launch in destinations with thriving, safe LGBTQ+ communities.",
+                title: 'Curated Cities',
+                desc: 'We only launch in destinations with thriving, safe LGBTQ+ communities.',
               },
               {
-                num: "02",
+                num: '02',
                 icon: Users,
-                title: "Vetted Locals",
-                desc: "Every guide is ID-verified and interviewed. No randoms. No ambiguity.",
+                title: 'Vetted Locals',
+                desc: 'Every guide is ID-verified and interviewed. No randoms. No ambiguity.',
               },
               {
-                num: "03",
+                num: '03',
                 icon: Shield,
-                title: "Total Safety",
-                desc: "Secure payments, support, and a code of conduct that protects you.",
+                title: 'Total Safety',
+                desc: 'Secure payments, support, and a code of conduct that protects you.',
               },
             ].map((item, idx) => (
               <div
@@ -226,10 +235,16 @@ export default async function MarketingPage() {
                   Meet the Insiders
                 </h2>
                 <p className="text-xl text-slate-400 font-light">
-                  Skip the tourist traps. Our guides unlock the city&apos;s authentic pulse.
+                  Skip the tourist traps. Our guides unlock the city&apos;s
+                  authentic pulse.
                 </p>
               </div>
-              <Button asChild variant="secondary" size="lg" className="mt-8 md:mt-0">
+              <Button
+                asChild
+                variant="secondary"
+                size="lg"
+                className="mt-8 md:mt-0"
+              >
                 <Link href="/cities">Browse All Guides</Link>
               </Button>
             </div>
@@ -257,15 +272,18 @@ export default async function MarketingPage() {
             YOUR RULES.
           </h2>
           <p className="text-xl md:text-2xl text-slate-500 mb-16 max-w-2xl mx-auto font-light">
-            Whether you want to explore history, architecture, or the underground scene, do it with
-            someone who gets it.
+            Whether you want to explore history, architecture, or the
+            underground scene, do it with someone who gets it.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Button asChild size="lg">
               <Link href="/cities">Start Exploring</Link>
             </Button>
             <Button asChild variant="ghost" size="lg">
-              <Link href="/auth/sign-up?role=guide" className="flex items-center gap-2">
+              <Link
+                href="/auth/sign-up?role=guide"
+                className="flex items-center gap-2"
+              >
                 Become a Guide <ArrowRight size={20} />
               </Link>
             </Button>
