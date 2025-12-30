@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import type { Database } from '@/types/database';
 
 function resolveServerKeys() {
@@ -21,25 +22,25 @@ function resolveServerKeys() {
 
 /**
  * Server-only Supabase client for App Router route handlers and React Server Components.
- * Uses the anon key by default so row-level security stays enforced. Switch to SUPABASE_SERVICE_ROLE_KEY
- * in specialized server actions when elevated privileges are needed.
- *
- * TODO: Implement proper cookie handling for auth sessions
+ * Uses the anon key by default so row-level security stays enforced.
  */
-export function createSupabaseServerClient() {
+export async function createSupabaseServerClient() {
   const { supabaseUrl, supabaseKey } = resolveServerKeys();
+  const cookieStore = await cookies(); // ← В Next.js 16 это async!
 
   return createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
-      get(name) {
-        // TODO: Implement cookie reading from next/headers
-        return undefined;
+      getAll() {
+        return cookieStore.getAll();
       },
-      set(name, value, options) {
-        // TODO: Implement cookie setting
-      },
-      remove(name, options) {
-        // TODO: Implement cookie removal
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        } catch (error) {
+          // Игнорируем ошибки в middleware/layouts где cookies read-only
+        }
       },
     },
   });

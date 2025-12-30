@@ -1,9 +1,22 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Upload, X, Shield, FileText, CheckCircle, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { uploadFile, getCurrentUserId } from "@/lib/storage-helpers";
+import { useState } from 'react';
+import {
+  Upload,
+  X,
+  Shield,
+  FileText,
+  CheckCircle,
+  Loader2,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { getCurrentUserId, uploadFile } from '@/lib/storage-helpers';
 
 export type Step6Data = {
   idDocumentUrl: string | null;
@@ -16,10 +29,10 @@ type Step6IDUploadProps = {
 };
 
 const ID_TYPES = [
-  { value: "passport", label: "Passport" },
-  { value: "drivers-license", label: "Driver's License" },
-  { value: "national-id", label: "National ID Card" },
-  { value: "government-id", label: "Other Government-Issued ID" },
+  { value: 'passport', label: 'Passport' },
+  { value: 'drivers-license', label: "Driver's License" },
+  { value: 'national-id', label: 'National ID Card' },
+  { value: 'government-id', label: 'Other Government-Issued ID' },
 ];
 
 export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
@@ -37,22 +50,27 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
       // Get current user ID for folder path
       const userId = await getCurrentUserId();
       if (!userId) {
-        setUploadError("You must be logged in to upload documents");
+        setUploadError('You must be logged in to upload documents');
         setIsUploading(false);
         return;
       }
 
       // Upload to Supabase Storage (private bucket)
-      const result = await uploadFile(file, "guide-documents", userId, "id-document");
+      const result = await uploadFile(
+        file,
+        'guide-documents',
+        userId,
+        'id-document',
+      );
 
       if (result.success && result.url) {
         onChange({ idDocumentUrl: result.url });
       } else {
-        setUploadError(result.error || "Failed to upload document");
+        setUploadError(result.error || 'Failed to upload document');
       }
     } catch (error) {
-      console.error("[Step6IDUpload] Document upload error:", error);
-      setUploadError("An unexpected error occurred");
+      console.error('[Step6IDUpload] Document upload error:', error);
+      setUploadError('An unexpected error occurred');
     } finally {
       setIsUploading(false);
     }
@@ -63,13 +81,17 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
       <CardHeader>
         <CardTitle className="text-3xl font-serif">ID Verification</CardTitle>
         <CardDescription>
-          To ensure safety and trust, we need to verify your identity. Upload a government-issued ID.
+          To ensure safety and trust, we need to verify your identity. Upload a
+          government-issued ID.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* ID Type Selection */}
         <div className="space-y-2">
-          <label htmlFor="idType" className="text-sm font-medium text-slate-700">
+          <label
+            htmlFor="idType"
+            className="text-sm font-medium text-slate-700"
+          >
             ID Document Type <span className="text-destructive">*</span>
           </label>
           <select
@@ -97,8 +119,12 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
           {isUploading ? (
             <div className="flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-brand rounded-2xl bg-brand/5">
               <Loader2 size={48} className="text-brand animate-spin mb-4" />
-              <p className="text-sm font-medium text-slate-700">Uploading document securely...</p>
-              <p className="text-xs text-slate-500 mt-2">This may take a moment</p>
+              <p className="text-sm font-medium text-slate-700">
+                Uploading document securely...
+              </p>
+              <p className="text-xs text-slate-500 mt-2">
+                This may take a moment
+              </p>
             </div>
           ) : data.idDocumentUrl ? (
             <div className="space-y-3">
@@ -109,9 +135,12 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
                     <CheckCircle size={24} className="text-green-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-green-900 mb-1">ID Document Uploaded</h4>
+                    <h4 className="font-semibold text-green-900 mb-1">
+                      ID Document Uploaded
+                    </h4>
                     <p className="text-sm text-green-700 leading-relaxed">
-                      Your ID has been uploaded successfully. Our team will review it during the approval process.
+                      Your ID has been uploaded successfully. Our team will
+                      review it during the approval process.
                     </p>
                   </div>
                   <button
@@ -145,8 +174,8 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
               htmlFor="idUpload"
               className={`flex flex-col items-center justify-center w-full h-56 border-2 border-dashed rounded-2xl transition-all ${
                 uploadError
-                  ? "border-red-300 bg-red-50"
-                  : "border-slate-300 cursor-pointer hover:border-brand hover:bg-slate-50"
+                  ? 'border-red-300 bg-red-50'
+                  : 'border-slate-300 cursor-pointer hover:border-brand hover:bg-slate-50'
               }`}
             >
               <div className="flex flex-col items-center space-y-3 px-6">
@@ -183,7 +212,9 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
 
           {!uploadError && (
             <p className="text-xs text-slate-500 leading-relaxed">
-              Make sure your full name and photo are clearly visible. Sensitive information will be handled securely and used only for verification.
+              Make sure your full name and photo are clearly visible. Sensitive
+              information will be handled securely and used only for
+              verification.
             </p>
           )}
         </div>
@@ -213,7 +244,10 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
 
           <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200">
             <p className="text-sm text-slate-700 leading-relaxed">
-              <span className="font-semibold">Privacy:</span> Your ID is encrypted, stored securely, and only accessible to our verification team. It will never be shared publicly or with travelers.
+              <span className="font-semibold">Privacy:</span> Your ID is
+              encrypted, stored securely, and only accessible to our
+              verification team. It will never be shared publicly or with
+              travelers.
             </p>
           </div>
         </div>

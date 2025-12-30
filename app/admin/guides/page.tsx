@@ -1,5 +1,5 @@
-import { revalidatePath } from "next/cache";
-import Link from "next/link";
+import { revalidatePath } from 'next/cache';
+import Link from 'next/link';
 import {
   CheckCircle2,
   XCircle,
@@ -8,13 +8,13 @@ import {
   UserCheck,
   Mail,
   MapPin,
-  Clock
-} from "lucide-react";
-import { requireRole } from "@/lib/auth-helpers";
-import { getStoragePublicUrlServer } from "@/lib/storage-helpers";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Clock,
+} from 'lucide-react';
+import { requireRole } from '@/lib/auth-helpers';
+import { getStoragePublicUrlServer } from '@/lib/storage-helpers-server';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -22,10 +22,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import type { Database, GuideStatus } from "@/types/database";
+} from '@/components/ui/table';
+import type { Database } from '@/types/database';
 
-type Guide = Database["public"]["Tables"]["guides"]["Row"];
+type Guide = Database['public']['Tables']['guides']['Row'];
 
 type PendingGuideWithDetails = Guide & {
   profile: {
@@ -46,12 +46,13 @@ type PendingGuideWithDetails = Guide & {
 
 // Note: This route is protected - only admin users can access
 export default async function AdminGuidesPage() {
-  const { supabase, profile } = await requireRole("admin");
+  const { supabase, profile } = await requireRole('admin');
 
   // Fetch all guides with status = "pending"
   const { data: pendingGuidesData } = await supabase
-    .from("guides")
-    .select(`
+    .from('guides')
+    .select(
+      `
       *,
       profile:id(id, display_name, avatar_url),
       city:city_id(name, country_name),
@@ -60,12 +61,14 @@ export default async function AdminGuidesPage() {
         id_document_type,
         verification_status
       )
-    `)
-    .eq("status", "pending")
-    .order("created_at", { ascending: false });
+    `,
+    )
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
 
-  const pendingGuides = (pendingGuidesData ?? []) as unknown as PendingGuideWithDetails[];
-  
+  const pendingGuides = (pendingGuidesData ??
+    []) as unknown as PendingGuideWithDetails[];
+
   // Process avatar URLs for all guides
   const guidesWithProcessedAvatars = await Promise.all(
     pendingGuides.map(async (guide) => ({
@@ -73,75 +76,78 @@ export default async function AdminGuidesPage() {
       profile: guide.profile
         ? {
             ...guide.profile,
-            avatar_url: await getStoragePublicUrlServer(guide.profile.avatar_url, "guide-photos"),
+            avatar_url: await getStoragePublicUrlServer(
+              guide.profile.avatar_url,
+              'guide-photos',
+            ),
           }
         : null,
-    }))
+    })),
   );
 
   // Server action: Approve guide
   async function approveGuide(formData: FormData): Promise<void> {
-    "use server";
+    'use server';
 
-    const { supabase } = await requireRole("admin");
-    const guideId = formData.get("guide_id") as string;
+    const { supabase } = await requireRole('admin');
+    const guideId = formData.get('guide_id') as string;
 
     if (!guideId) return;
 
     // Update guide status to approved
-    const guideUpdate: Database["public"]["Tables"]["guides"]["Update"] = {
-      status: "approved",
+    const guideUpdate: Database['public']['Tables']['guides']['Update'] = {
+      status: 'approved',
       is_verified: true,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
-      .from("guides")
+      .from('guides')
       .update(guideUpdate)
-      .eq("id", guideId);
+      .eq('id', guideId);
 
     // Update verification status if exists
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
-      .from("guide_verifications")
-      .update({ verification_status: "approved" })
-      .eq("guide_id", guideId);
+      .from('guide_verifications')
+      .update({ verification_status: 'approved' })
+      .eq('guide_id', guideId);
 
-    revalidatePath("/admin/guides");
+    revalidatePath('/admin/guides');
   }
 
   // Server action: Reject guide
   async function rejectGuide(formData: FormData): Promise<void> {
-    "use server";
+    'use server';
 
-    const { supabase } = await requireRole("admin");
-    const guideId = formData.get("guide_id") as string;
-    const reason = formData.get("reason") as string | null;
+    const { supabase } = await requireRole('admin');
+    const guideId = formData.get('guide_id') as string;
+    const reason = formData.get('reason') as string | null;
 
     if (!guideId) return;
 
     // Update guide status to rejected
-    const guideUpdate: Database["public"]["Tables"]["guides"]["Update"] = {
-      status: "rejected",
+    const guideUpdate: Database['public']['Tables']['guides']['Update'] = {
+      status: 'rejected',
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
-      .from("guides")
+      .from('guides')
       .update(guideUpdate)
-      .eq("id", guideId);
+      .eq('id', guideId);
 
     // Update verification status if exists
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
-      .from("guide_verifications")
+      .from('guide_verifications')
       .update({
-        verification_status: "rejected",
-        rejection_reason: reason
+        verification_status: 'rejected',
+        rejection_reason: reason,
       })
-      .eq("guide_id", guideId);
+      .eq('guide_id', guideId);
 
-    revalidatePath("/admin/guides");
+    revalidatePath('/admin/guides');
   }
 
   return (
@@ -175,10 +181,10 @@ export default async function AdminGuidesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-bold text-slate-900">{pendingGuides.length}</p>
-          <p className="text-xs text-slate-500 mt-1">
-            Guides awaiting review
+          <p className="text-3xl font-bold text-slate-900">
+            {pendingGuides.length}
           </p>
+          <p className="text-xs text-slate-500 mt-1">Guides awaiting review</p>
         </CardContent>
       </Card>
 
@@ -231,14 +237,20 @@ export default async function AdminGuidesPage() {
                               />
                             ) : (
                               <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-                                <UserCheck size={20} className="text-slate-400" />
+                                <UserCheck
+                                  size={20}
+                                  className="text-slate-400"
+                                />
                               </div>
                             )}
                             <div>
                               <p className="font-semibold text-slate-900">
-                                {guide.profile?.display_name || "Unknown"}
+                                {guide.profile?.display_name || 'Unknown'}
                               </p>
-                              <Badge variant="secondary" className="text-xs mt-1">
+                              <Badge
+                                variant="secondary"
+                                className="text-xs mt-1"
+                              >
                                 Pending
                               </Badge>
                             </div>
@@ -250,7 +262,7 @@ export default async function AdminGuidesPage() {
                           <div className="flex items-center gap-2">
                             <MapPin size={14} className="text-slate-400" />
                             <span className="text-sm text-slate-700">
-                              {guide.city?.name || "N/A"}
+                              {guide.city?.name || 'N/A'}
                               {guide.city?.country_name && (
                                 <span className="text-slate-500">
                                   , {guide.city.country_name}
@@ -276,16 +288,16 @@ export default async function AdminGuidesPage() {
                         {/* Applied Date */}
                         <TableCell>
                           <p className="text-sm text-slate-700">
-                            {createdDate.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
+                            {createdDate.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
                             })}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {createdDate.toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
+                            {createdDate.toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
                             })}
                           </p>
                         </TableCell>
