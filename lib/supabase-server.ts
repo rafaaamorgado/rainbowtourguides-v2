@@ -1,6 +1,5 @@
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
-import type { Database } from "@/types/database";
+import { createServerClient } from '@supabase/ssr';
+import type { Database } from '@/types/database';
 
 function resolveServerKeys() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -8,11 +7,13 @@ function resolveServerKeys() {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     const message =
-      "Supabase server env vars are missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.";
-    if (process.env.NODE_ENV === "development") {
+      'Supabase server env vars are missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.';
+    if (process.env.NODE_ENV === 'development') {
       console.error(message);
     }
-    throw new Error("Supabase server client is not configured. See console for details.");
+    throw new Error(
+      'Supabase server client is not configured. See console for details.',
+    );
   }
 
   return { supabaseUrl, supabaseKey: supabaseAnonKey };
@@ -22,29 +23,23 @@ function resolveServerKeys() {
  * Server-only Supabase client for App Router route handlers and React Server Components.
  * Uses the anon key by default so row-level security stays enforced. Switch to SUPABASE_SERVICE_ROLE_KEY
  * in specialized server actions when elevated privileges are needed.
+ *
+ * TODO: Implement proper cookie handling for auth sessions
  */
-export async function createSupabaseServerClient() {
-  const cookieStore = await cookies();
+export function createSupabaseServerClient() {
   const { supabaseUrl, supabaseKey } = resolveServerKeys();
 
   return createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
       get(name) {
-        return cookieStore.get(name)?.value;
+        // TODO: Implement cookie reading from next/headers
+        return undefined;
       },
       set(name, value, options) {
-        try {
-          cookieStore.set?.({ name, value, ...options });
-        } catch {
-          /* no-op */
-        }
+        // TODO: Implement cookie setting
       },
       remove(name, options) {
-        try {
-          cookieStore.delete?.({ name, ...options });
-        } catch {
-          /* no-op */
-        }
+        // TODO: Implement cookie removal
       },
     },
   });
