@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Star, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import type { GuideStatus } from "@/types/database";
+import { getStoragePublicUrl } from "@/lib/storage-helpers";
 
 type GuideCardProps = {
   guide: {
@@ -23,7 +24,7 @@ type GuideCardProps = {
 export function GuideCard({ guide }: GuideCardProps) {
   const isVerified = guide.status === "approved";
   const displayName = guide.profile?.display_name || "Guide";
-  const avatarUrl = guide.profile?.avatar_url || "/placeholder-avatar.svg";
+  const avatarUrl = getStoragePublicUrl(guide.profile?.avatar_url, "guide-photos") || "/placeholder-avatar.svg";
   const rating = guide.rating_avg || 5.0;
   const price = parseFloat(guide.hourly_rate);
   const themes = guide.themes || [];

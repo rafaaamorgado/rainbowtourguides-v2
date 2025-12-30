@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star, MapPin, Languages as LanguagesIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getStoragePublicUrl } from "@/lib/storage-helpers";
 
 export interface GuideCardProps {
   id: string;
@@ -66,6 +67,9 @@ export function GuideCard({
 
   // Use slug for routing if available, otherwise fall back to id
   const href = `/guides/${slug || id}`;
+  
+  // Get public URL for photo
+  const photoUrl = getStoragePublicUrl(photo_url, "guide-photos") || "/placeholder-avatar.svg";
 
   return (
     <Link href={href} className="block group">
@@ -73,7 +77,7 @@ export function GuideCard({
         {/* Guide Photo */}
         <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
           <Image
-            src={photo_url || "/placeholder-avatar.svg"}
+            src={photoUrl}
             alt={name}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"

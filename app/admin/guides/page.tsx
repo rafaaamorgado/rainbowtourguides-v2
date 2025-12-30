@@ -11,6 +11,7 @@ import {
   Clock
 } from "lucide-react";
 import { requireRole } from "@/lib/auth-helpers";
+import { getStoragePublicUrlServer } from "@/lib/storage-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +65,19 @@ export default async function AdminGuidesPage() {
     .order("created_at", { ascending: false });
 
   const pendingGuides = (pendingGuidesData ?? []) as unknown as PendingGuideWithDetails[];
+  
+  // Process avatar URLs for all guides
+  const guidesWithProcessedAvatars = await Promise.all(
+    pendingGuides.map(async (guide) => ({
+      ...guide,
+      profile: guide.profile
+        ? {
+            ...guide.profile,
+            avatar_url: await getStoragePublicUrlServer(guide.profile.avatar_url, "guide-photos"),
+          }
+        : null,
+    }))
+  );
 
   // Server action: Approve guide
   async function approveGuide(formData: FormData): Promise<void> {
@@ -198,7 +212,7 @@ export default async function AdminGuidesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pendingGuides.map((guide) => {
+                  {guidesWithProcessedAvatars.map((guide) => {
                     const createdDate = new Date(guide.created_at);
                     const verification = Array.isArray(guide.verification)
                       ? guide.verification[0]

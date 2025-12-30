@@ -7,6 +7,7 @@ import { Star, ShieldCheck, MapPin, Languages, Clock, Calendar, MessageSquare, D
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { requireUser } from "@/lib/auth-helpers";
 import { sendBookingRequestEmail } from "@/lib/email";
+import { getStoragePublicUrlServer } from "@/lib/storage-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -138,6 +139,9 @@ export default async function GuidePage({ params }: GuidePageProps) {
   const rating = (guideWithRelations as any).rating_avg || 5.0;
   const hourlyRate = guideWithRelations.hourly_rate ? parseFloat(guideWithRelations.hourly_rate) : 50;
   const currency = guideWithRelations.currency || "USD";
+  
+  // Get public URL for avatar image
+  const avatarUrl = await getStoragePublicUrlServer(guideWithRelations.profile.avatar_url, "guide-photos");
 
   // Server action to create a booking
   async function createBooking(formData: FormData): Promise<{ success: boolean; error?: string; guideName?: string }> {
@@ -270,10 +274,10 @@ export default async function GuidePage({ params }: GuidePageProps) {
     <div className="pb-16">
       {/* Hero Section with Avatar */}
       <section className="relative h-[50vh] min-h-[400px] bg-slate-950 overflow-hidden">
-        {guideWithRelations.profile.avatar_url ? (
+        {avatarUrl ? (
           <>
             <Image
-              src={guideWithRelations.profile.avatar_url}
+              src={avatarUrl}
               alt={guideWithRelations.profile.display_name}
               fill
               className="object-cover opacity-40 filter grayscale-[30%]"
@@ -290,10 +294,10 @@ export default async function GuidePage({ params }: GuidePageProps) {
             <div className="flex items-end gap-6">
               {/* Large Avatar Circle */}
               <div className="relative">
-                {guideWithRelations.profile.avatar_url ? (
+                {avatarUrl ? (
                   <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 overflow-hidden shadow-2xl">
                     <Image
-                      src={guideWithRelations.profile.avatar_url}
+                      src={avatarUrl}
                       alt={guideWithRelations.profile.display_name}
                       width={160}
                       height={160}

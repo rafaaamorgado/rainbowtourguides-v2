@@ -1,4 +1,5 @@
 import { createSupabaseBrowserClient } from "./supabase-browser";
+import { createSupabaseServerClient } from "./supabase-server";
 
 export type UploadResult = {
   success: boolean;
@@ -123,4 +124,74 @@ export async function getCurrentUserId(): Promise<string | null> {
 
   const { data: { user } } = await supabase.auth.getUser();
   return user?.id || null;
+}
+
+/**
+ * Get public URL for a Supabase Storage file (client-side)
+ * Works with both full URLs and storage paths
+ * @param urlOrPath - Full URL or storage path (e.g., "userId/filename.jpg")
+ * @param bucket - Storage bucket name (default: "guide-photos")
+ * @returns Public URL string
+ */
+export function getStoragePublicUrl(
+  urlOrPath: string | null | undefined,
+  bucket: string = "guide-photos"
+): string | null {
+  if (!urlOrPath) {
+    return null;
+  }
+
+  // If it's already a full URL, return it
+  if (urlOrPath.startsWith("http://") || urlOrPath.startsWith("https://")) {
+    return urlOrPath;
+  }
+
+  // If it's a storage path, construct the public URL
+  const supabase = createSupabaseBrowserClient();
+  if (!supabase) {
+    // Fallback: construct URL manually if client not available
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+      return null;
+    }
+    return `${supabaseUrl}/storage/v1/object/public/${bucket}/${urlOrPath}`;
+  }
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(urlOrPath);
+  return data.publicUrl;
+}
+
+/**
+ * Get public URL for a Supabase Storage file (server-side)
+ * Works with both full URLs and storage paths
+ * @param urlOrPath - Full URL or storage path (e.g., "userId/filename.jpg")
+ * @param bucket - Storage bucket name (default: "guide-photos")
+ * @returns Public URL string
+ */
+export async function getStoragePublicUrlServer(
+  urlOrPath: string | null | undefined,
+  bucket: string = "guide-photos"
+): Promise<string | null> {
+  if (!urlOrPath) {
+    return null;
+  }
+
+  // If it's already a full URL, return it
+  if (urlOrPath.startsWith("http://") || urlOrPath.startsWith("https://")) {
+    return urlOrPath;
+  }
+
+  // If it's a storage path, construct the public URL
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data } = supabase.storage.from(bucket).getPublicUrl(urlOrPath);
+    return data.publicUrl;
+  } catch {
+    // Fallback: construct URL manually if client not available
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+      return null;
+    }
+    return `${supabaseUrl}/storage/v1/object/public/${bucket}/${urlOrPath}`;
+  }
 }
