@@ -13,9 +13,9 @@ ON CONFLICT (id) DO NOTHING;
 -- Create test guide profiles
 INSERT INTO public.profiles (id, role, display_name, avatar_url)
 VALUES
-  ('10000000-0000-0000-0000-000000000001', 'guide', 'Maria Silva', null),
-  ('10000000-0000-0000-0000-000000000002', 'guide', 'João Santos', null),
-  ('10000000-0000-0000-0000-000000000003', 'guide', 'Alex Chen', null)
+  ('10000000-0000-0000-0000-000000000001', 'guide', 'Maria Silva', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1000&auto=format&fit=crop'),
+  ('10000000-0000-0000-0000-000000000002', 'guide', 'João Santos', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop'),
+  ('10000000-0000-0000-0000-000000000003', 'guide', 'Alex Chen', 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=1000&auto=format&fit=crop')
 ON CONFLICT (id) DO NOTHING;
 
 -- Create guide profiles with detailed information

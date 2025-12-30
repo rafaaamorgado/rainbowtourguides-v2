@@ -58,6 +58,12 @@ function SiteHeader() {
           >
             Cities
           </Link>
+          <Link
+            href="/auth/sign-up?role=guide"
+            className="text-sm font-medium transition-colors text-slate-700 hover:text-brand"
+          >
+            Become a Guide
+          </Link>
 
           {/* Auth Links - TODO: Make dynamic based on auth state */}
           <Link
@@ -67,10 +73,10 @@ function SiteHeader() {
             Sign In
           </Link>
           <Link
-            href="/auth/sign-up?role=guide"
+            href="/auth/sign-up?role=traveler"
             className="inline-flex items-center justify-center px-5 py-2 text-sm font-medium transition-all duration-300 rounded-full bg-brand hover:bg-brand-dark text-white shadow-lg active:scale-95"
           >
-            Become a Guide
+            Sign Up
           </Link>
         </nav>
 

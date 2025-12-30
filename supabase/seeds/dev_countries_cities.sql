@@ -29,7 +29,7 @@ VALUES
     'lisbon',
     true,
     true,  -- Featured: historic LGBTQ+ scene, Príncipe Real neighborhood
-    null
+    'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?q=80&w=2340&auto=format&fit=crop'
   ),
   (
     (SELECT id FROM public.countries WHERE iso_code = 'ES'),
@@ -37,7 +37,7 @@ VALUES
     'barcelona',
     true,
     true,  -- Featured: Eixample "Gaixample" district, Pride events
-    null
+    'https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=2340&auto=format&fit=crop'
   ),
   (
     (SELECT id FROM public.countries WHERE iso_code = 'BR'),
@@ -45,7 +45,7 @@ VALUES
     'rio-de-janeiro',
     true,
     true,  -- Featured: largest Pride parade in the world
-    null
+    'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=2340&auto=format&fit=crop'
   ),
   (
     (SELECT id FROM public.countries WHERE iso_code = 'TH'),
@@ -53,7 +53,7 @@ VALUES
     'bangkok',
     true,
     false, -- Active but not featured yet
-    null
+    'https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=2340&auto=format&fit=crop'
   ),
   (
     (SELECT id FROM public.countries WHERE iso_code = 'VN'),
@@ -61,7 +61,7 @@ VALUES
     'da-nang',
     true,
     false, -- Active but not featured yet
-    null
+    'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?q=80&w=2340&auto=format&fit=crop'
   )
 ON CONFLICT (slug) DO NOTHING;
 
