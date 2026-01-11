@@ -53,6 +53,12 @@ function SiteHeader() {
             Home
           </Link>
           <Link
+            href="/guides"
+            className="text-sm font-medium transition-colors text-slate-700 hover:text-brand"
+          >
+            Guides
+          </Link>
+          <Link
             href="/cities"
             className="text-sm font-medium transition-colors text-slate-700 hover:text-brand"
           >
