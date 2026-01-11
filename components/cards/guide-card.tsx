@@ -11,7 +11,7 @@ export interface GuideCardProps {
     name: string;
     slug: string;
     city_name: string;
-    country_name: string;
+    country_name?: string;
     photo_url: string;
     tagline: string;
     rating: number;
@@ -99,7 +99,9 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
 
               {/* Location */}
               <p className="text-sm text-ink-soft mb-2">
-                {guide.city_name}, {guide.country_name}
+                {guide.country_name
+                  ? `${guide.city_name}, ${guide.country_name}`
+                  : guide.city_name}
               </p>
 
               {/* Rating */}
