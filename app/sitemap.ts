@@ -68,7 +68,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // City pages
   const cityPages: MetadataRoute.Sitemap = cities.map((city) => ({
     url: `${baseUrl}/cities/${city.slug}`,
-    lastModified: new Date(city.updated_at || city.created_at),
+    lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.8,
   }));
@@ -76,7 +76,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Guide pages
   const guidePages: MetadataRoute.Sitemap = guides.map((guide) => ({
     url: `${baseUrl}/guides/${guide.slug}`,
-    lastModified: new Date(guide.updated_at || guide.created_at),
+    lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.7,
   }));

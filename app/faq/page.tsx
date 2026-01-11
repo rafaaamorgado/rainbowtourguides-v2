@@ -1,4 +1,5 @@
-import { Metadata } from "next";
+"use client";
+
 import { Search } from "lucide-react";
 import {
   Accordion,
@@ -8,12 +9,6 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-export const metadata: Metadata = {
-  title: "FAQ - Rainbow Tour Guides",
-  description:
-    "Find answers to frequently asked questions about booking LGBTQ+ tours, becoming a guide, safety, and payments.",
-};
 
 export default function FAQPage() {
   return (
