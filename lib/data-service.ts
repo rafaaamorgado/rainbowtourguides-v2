@@ -151,6 +151,22 @@ export async function searchGuides(query: string): Promise<Guide[]> {
   return searchMockGuides(query);
 }
 
+/**
+ * Get top-rated guides
+ * @todo: Replace with Supabase query when ready
+ * @supabase: SELECT * FROM guides WHERE status = 'approved' ORDER BY rating DESC, review_count DESC LIMIT $1
+ */
+export async function getTopGuides(limit: number = 10): Promise<Guide[]> {
+  await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 200));
+  const allGuides = getMockGuides();
+  return [...allGuides]
+    .sort((a, b) => {
+      if (b.rating !== a.rating) return b.rating - a.rating;
+      return b.review_count - a.review_count;
+    })
+    .slice(0, limit);
+}
+
 // ============================================================================
 // Bookings
 // ============================================================================

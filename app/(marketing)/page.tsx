@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
-import { Shield, Map, Users, ArrowRight } from 'lucide-react';
+import { Shield, Map, Users, ArrowRight, Search, CheckCircle, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { CityCard } from '@/components/ui/CityCard';
 import { GuideCard } from '@/components/ui/GuideCard';
 import { HeroSearch } from '@/components/home/hero-search';
-import { getCities } from '@/lib/data-service';
+import { getCities, getTopGuides } from '@/lib/data-service';
 
 export const metadata: Metadata = {
   title: 'Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences',
@@ -40,14 +40,8 @@ export default async function MarketingPage() {
     guide_count: city.guides?.[0]?.count ?? 0,
   }));
 
-  // Fetch featured guides
-  const { data: guidesData } = await supabase
-    .from('guides')
-    .select('*, profile:profiles(display_name, avatar_url)')
-    .eq('status', 'approved')
-    .limit(4);
-
-  const guides = (guidesData ?? []) as any[];
+  // Fetch top guides from data service
+  const topGuides = await getTopGuides(4);
 
   return (
     <>
@@ -231,40 +225,208 @@ export default async function MarketingPage() {
         </section>
       )}
 
-      {/* Top Guides */}
-      {guides && guides.length > 0 && (
-        <section className="py-32 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-16">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
-                  Meet Our Top Guides
-                </h2>
-                <p className="text-lg text-slate-500 font-light max-w-2xl">
-                  Verified locals who share authentic experiences and safe
-                  spaces in their cities.
-                </p>
+      {/* Meet Our Top Guides */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-16">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
+                Meet Our Top Guides
+              </h2>
+              <p className="text-lg text-slate-500 font-light max-w-2xl">
+                Verified locals who share authentic experiences and safe
+                spaces in their cities.
+              </p>
+            </div>
+            <Button asChild variant="ghost" className="mt-2 md:mt-0">
+              <Link href="/guides" className="flex items-center gap-2">
+                View all guides <ArrowRight size={18} />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {topGuides.map((guide) => (
+              <div
+                key={guide.id}
+                className="group hover:-translate-y-1 transition-transform duration-300"
+              >
+                <GuideCard guide={guide as any} />
               </div>
-              <Button asChild variant="ghost" className="mt-2 md:mt-0">
-                <Link href="/guides" className="flex items-center gap-2">
-                  View all guides <ArrowRight size={18} />
-                </Link>
-              </Button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-32 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Image */}
+            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-slate-200 shadow-2xl">
+              <Image
+                src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
+                alt="How it works"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {guides.map((guide) => (
-                <div
-                  key={guide.id}
-                  className="bg-white rounded-3xl border border-slate-100 p-3 shadow-sm hover:shadow-lg transition-shadow duration-300"
-                >
-                  <GuideCard guide={guide} />
-                </div>
-              ))}
+            {/* Content */}
+            <div className="space-y-12">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
+                  How It Works
+                </h2>
+                <p className="text-lg text-slate-500 font-light">
+                  Three simple steps to authentic local experiences
+                </p>
+              </div>
+
+              {/* Steps */}
+              <div className="space-y-8">
+                {[
+                  {
+                    number: '01',
+                    icon: Search,
+                    title: 'Find Your Guide',
+                    description:
+                      'Browse verified LGBTQ+ guides in your destination. Filter by interests, languages, and availability.',
+                  },
+                  {
+                    number: '02',
+                    icon: CheckCircle,
+                    title: 'Request Your Experience',
+                    description:
+                      'Send a booking request with your preferences. Your guide will confirm and personalize the itinerary.',
+                  },
+                  {
+                    number: '03',
+                    icon: Heart,
+                    title: 'Explore Together',
+                    description:
+                      'Meet your guide and discover hidden gems, safe spaces, and authentic culture together.',
+                  },
+                ].map((step) => (
+                  <div key={step.number} className="flex gap-6">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center shadow-md">
+                        <step.icon className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-4xl font-serif font-bold text-slate-200">
+                          {step.number}
+                        </span>
+                        <h3 className="text-xl font-bold text-slate-900">
+                          {step.title}
+                        </h3>
+                      </div>
+                      <p className="text-slate-600 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Button asChild size="lg">
+                <Link href="/cities">Browse Cities</Link>
+              </Button>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
+
+      {/* Why a Local LGBTQ+ Guide? */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Content */}
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
+                  Why a Local LGBTQ+ Guide?
+                </h2>
+                <p className="text-lg text-slate-500 font-light">
+                  More than just sightseeing—it's about connection, safety, and
+                  authentic experiences.
+                </p>
+              </div>
+
+              {/* Benefits */}
+              <div className="space-y-6">
+                <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Shield size={24} className="text-brand" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 mb-1">
+                      Safer First Impressions
+                    </h4>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      All guides are ID-verified, interviewed, and background-checked.
+                      Know who you're meeting before you arrive.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Map size={24} className="text-brand" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 mb-1">
+                      Cultural Context
+                    </h4>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Navigate queer-friendly spaces, local etiquette, and LGBTQ+
+                      rights with someone who knows the community intimately.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Users size={24} className="text-brand" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 mb-1">
+                      Personal Fit
+                    </h4>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Match with guides based on interests, pace, and vibe. Whether
+                      you want nightlife or museums, find your perfect companion.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button asChild variant="outline">
+                  <Link href="/legal/safety">Learn About Safety</Link>
+                </Button>
+                <Button asChild variant="ghost">
+                  <Link href="/legal/terms">Community Guidelines</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Image */}
+            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-slate-200 shadow-2xl lg:order-last">
+              <Image
+                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800"
+                alt="Why a local LGBTQ+ guide"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Avant-Garde CTA */}
       <section className="relative py-40 bg-white overflow-hidden">
