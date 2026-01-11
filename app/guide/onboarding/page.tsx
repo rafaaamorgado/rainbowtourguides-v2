@@ -1,193 +1,304 @@
-import { revalidatePath } from "next/cache";
-import { requireRole } from "@/lib/auth-helpers";
-import { OnboardingWizard } from "@/components/guide/onboarding/OnboardingWizard";
-import type { Database } from "@/types/database";
+"use client";
 
-type City = Database["public"]["Tables"]["cities"]["Row"];
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Save, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { getCities } from "@/lib/data-service";
+import type { City } from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
+import { ProgressIndicator } from "./progress-indicator";
+import {
+  Step1BasicInfo,
+  Step2LGBTQAlignment,
+  Step3ExperienceTags,
+  Step4Pricing,
+  Step5Availability,
+  Step6IDUpload,
+  Step7Review,
+} from "./steps";
 
-/**
- * Generate a URL-safe slug from city slug and display name
- */
-function generateSlug(citySlug: string, displayName: string): string {
-  const safeName = (displayName || "guide")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  return `${citySlug}-${safeName}`;
-}
+const STORAGE_KEY = "guide_onboarding_draft";
 
-export default async function GuideOnboardingPage() {
-  const { supabase, profile } = await requireRole("guide");
+export default function GuideOnboardingPage() {
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [cities, setCities] = useState<City[]>([]);
+  const [formData, setFormData] = useState<any>({
+    // Step 1
+    photo_url: "",
+    name: "",
+    city_id: "",
+    languages: [],
+    bio: "",
+    tagline: "",
+    // Step 2
+    identifies_lgbtq: false,
+    is_ally: false,
+    why_guide_lgbtq: "",
+    safety_commitment: false,
+    // Step 3
+    experience_tags: [],
+    tour_description: "",
+    // Step 4
+    price_4h: 0,
+    price_6h: 0,
+    price_8h: 0,
+    // Step 5
+    available_days: [],
+    time_ranges: [],
+    availability_notes: "",
+    // Step 6
+    id_document: "",
+    // Step 7
+    terms_accepted: false,
+  });
+  const [errors, setErrors] = useState<any>({});
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Load active cities for the dropdown
-  const { data: cities } = await supabase
-    .from("cities")
-    .select("*")
-    .eq("is_active", true)
-    .order("name");
+  useEffect(() => {
+    // Load cities
+    getCities().then(setCities);
 
-  // Server action to create/update guide profile from wizard data
-  async function submitGuideProfile(formData: FormData): Promise<{ success: boolean; error?: string }> {
-    "use server";
-
-    const { supabase, profile } = await requireRole("guide");
-
-    // Extract all form data
-    const cityId = formData.get("city_id") as string;
-    const shortBio = formData.get("short_bio") as string;
-    const languagesRaw = formData.get("languages") as string;
-    const whyGuideQueer = formData.get("why_guide_queer") as string;
-    const experienceTagsRaw = formData.get("experience_tags") as string;
-    const rate4h = formData.get("rate_4h") as string;
-    const rate6h = formData.get("rate_6h") as string;
-    const rate8h = formData.get("rate_8h") as string;
-    const currency = formData.get("currency") as string;
-    const availableDaysRaw = formData.get("available_days") as string;
-    const startTime = formData.get("start_time") as string;
-    const endTime = formData.get("end_time") as string;
-    const idDocumentType = formData.get("id_document_type") as string;
-
-    // Validate required fields
-    if (!cityId) {
-      return { success: false, error: "Please select a city." };
-    }
-
-    // Parse languages from comma-separated string
-    const languages = languagesRaw
-      ? languagesRaw.split(",").map((l) => l.trim()).filter(Boolean)
-      : [];
-
-    // Parse experience tags
-    let experienceTags: string[] = [];
-    try {
-      experienceTags = experienceTagsRaw ? JSON.parse(experienceTagsRaw) : [];
-    } catch {
-      experienceTags = [];
-    }
-
-    // Parse available days
-    let availableDays: string[] = [];
-    try {
-      availableDays = availableDaysRaw ? JSON.parse(availableDaysRaw) : [];
-    } catch {
-      availableDays = [];
-    }
-
-    // Calculate hourly rate from package rates (use 6h rate as base)
-    const hourlyRate = rate6h ? (parseFloat(rate6h) / 6).toFixed(2) : null;
-
-    // Get photo URL from FormData
-    const photoUrl = formData.get("photo_url") as string | null;
-    const idDocumentUrl = formData.get("id_document_url") as string | null;
-
-    // Parse LGBTQ+ alignment data
-    let lgbtqAlignment: Record<string, unknown> | null = null;
-    try {
-      const lgbtqAlignmentRaw = formData.get("lgbtq_alignment") as string;
-      lgbtqAlignment = lgbtqAlignmentRaw ? JSON.parse(lgbtqAlignmentRaw) : null;
-    } catch {
-      lgbtqAlignment = null;
-    }
-
-    // Get city slug for generating guide slug
-    const { data: cityData } = await supabase
-      .from("cities")
-      .select("slug")
-      .eq("id", cityId)
-      .single();
-
-    const city = cityData as { slug: string } | null;
-
-    // Check if guide already exists
-    const { data: existingGuideData } = await supabase
-      .from("guides")
-      .select("id, slug")
-      .eq("id", profile.id)
-      .single();
-
-    const typedExistingGuide = existingGuideData as { id: string; slug: string | null } | null;
-
-    // Generate slug if needed
-    const slug = typedExistingGuide?.slug || generateSlug(city?.slug || "city", profile.display_name);
-
-    // Build the about section from bio and why guide queer
-    const about = `${shortBio}\n\n${whyGuideQueer}`;
-
-    // Update profile avatar if photo URL provided
-    if (photoUrl) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
-        .from("profiles")
-        .update({ avatar_url: photoUrl })
-        .eq("id", profile.id);
-    }
-
-    // Upsert guide profile with all wizard data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const guideInsert: any = {
-      id: profile.id,
-      city_id: cityId,
-      headline: shortBio.substring(0, 120), // Use first 120 chars of bio as headline
-      about: about,
-      languages: languages.length > 0 ? languages : null,
-      themes: experienceTags.length > 0 ? experienceTags : null,
-      hourly_rate: hourlyRate || null,
-      base_price_4h: rate4h || null,
-      base_price_6h: rate6h || null,
-      base_price_8h: rate8h || null,
-      currency: currency || "USD",
-      available_days: availableDays.length > 0 ? availableDays : null,
-      typical_start_time: startTime || null,
-      typical_end_time: endTime || null,
-      lgbtq_alignment: lgbtqAlignment,
-      status: "pending", // Always set to pending on submission
-      slug,
-    };
-
-    // Type assertion needed for Supabase upsert operation
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: guideError } = await (supabase as any)
-      .from("guides")
-      .upsert(guideInsert, {
-        onConflict: "id",
-      });
-
-    if (guideError) {
-      console.error("[submitGuideProfile] Guide upsert error:", guideError);
-      return { success: false, error: "Failed to save profile. Please try again." };
-    }
-
-    // Store ID verification document if provided
-    if (idDocumentUrl && idDocumentType) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: verificationError } = await (supabase as any)
-        .from("guide_verifications")
-        .upsert({
-          guide_id: profile.id,
-          id_document_url: idDocumentUrl,
-          id_document_type: idDocumentType,
-          verification_status: "pending",
-        }, {
-          onConflict: "guide_id",
-        });
-
-      if (verificationError) {
-        console.error("[submitGuideProfile] Verification error:", verificationError);
-        // Don't fail the whole submission if just verification fails
+    // Load draft from localStorage
+    const draft = localStorage.getItem(STORAGE_KEY);
+    if (draft) {
+      try {
+        setFormData(JSON.parse(draft));
+      } catch (e) {
+        console.error("Failed to load draft:", e);
       }
     }
+  }, []);
 
-    revalidatePath("/guide/onboarding");
-    revalidatePath("/guide/dashboard");
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
+    // Clear error for this field
+    setErrors((prev: any) => ({ ...prev, [field]: undefined }));
+  };
 
-    return { success: true };
+  const saveDraft = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    alert("Draft saved successfully!");
+  };
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: any = {};
+
+    switch (step) {
+      case 1:
+        if (!formData.name) newErrors.name = "Name is required";
+        if (!formData.city_id) newErrors.city_id = "City is required";
+        if (!formData.languages || formData.languages.length === 0)
+          newErrors.languages = "Select at least one language";
+        if (!formData.bio || formData.bio.length < 200)
+          newErrors.bio = "Bio must be at least 200 characters";
+        if (!formData.tagline) newErrors.tagline = "Tagline is required";
+        break;
+
+      case 2:
+        if (!formData.why_guide_lgbtq || formData.why_guide_lgbtq.length < 100)
+          newErrors.why_guide_lgbtq = "Please write at least 100 characters";
+        if (!formData.safety_commitment)
+          newErrors.safety_commitment = "You must commit to safety standards";
+        break;
+
+      case 3:
+        if (!formData.experience_tags || formData.experience_tags.length < 3)
+          newErrors.experience_tags = "Select at least 3 experience tags";
+        if (!formData.tour_description || formData.tour_description.length < 150)
+          newErrors.tour_description = "Description must be at least 150 characters";
+        break;
+
+      case 4:
+        if (!formData.price_4h || formData.price_4h < 50)
+          newErrors.price_4h = "Minimum price is $50";
+        if (!formData.price_6h || formData.price_6h < 75)
+          newErrors.price_6h = "Minimum price is $75";
+        if (!formData.price_8h || formData.price_8h < 100)
+          newErrors.price_8h = "Minimum price is $100";
+        break;
+
+      case 5:
+        if (!formData.available_days || formData.available_days.length === 0)
+          newErrors.available_days = "Select at least one day";
+        if (!formData.time_ranges || formData.time_ranges.length === 0)
+          newErrors.time_ranges = "Select at least one time range";
+        break;
+
+      case 6:
+        if (!formData.id_document)
+          newErrors.id_document = "ID document is required";
+        break;
+
+      case 7:
+        if (!formData.terms_accepted)
+          newErrors.terms_accepted = "You must accept the terms";
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(prev + 1, 7));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleBack = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSubmit = async () => {
+    if (!validateStep(7)) return;
+
+    // Mock: Save to localStorage
+    localStorage.setItem("guide_profile_submitted", JSON.stringify(formData));
+    localStorage.removeItem(STORAGE_KEY); // Clear draft
+
+    setShowSuccess(true);
+
+    // Redirect after 2 seconds
+    setTimeout(() => {
+      router.push("/guide/dashboard");
+    }, 2000);
+  };
+
+  if (showSuccess) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md">
+          <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto">
+            <CheckCircle className="h-10 w-10 text-emerald-600" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-ink mb-2">
+              Profile Submitted!
+            </h2>
+            <p className="text-ink-soft">
+              Your profile has been submitted for review. We'll notify you once
+              it's approved, usually within 24-48 hours.
+            </p>
+          </div>
+          <p className="text-sm text-ink-soft">Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <OnboardingWizard
-      cities={(cities ?? []) as City[]}
-      profileName={profile.display_name}
-      onSubmit={submitGuideProfile}
-    />
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-ink mb-2">Guide Onboarding</h1>
+        <p className="text-ink-soft">
+          Complete your profile to start accepting bookings
+        </p>
+      </div>
+
+      {/* Progress Indicator */}
+      <ProgressIndicator currentStep={currentStep} />
+
+      {/* Step Content */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+        {currentStep === 1 && (
+          <Step1BasicInfo
+            data={formData}
+            cities={cities}
+            onChange={handleChange}
+            errors={errors}
+          />
+        )}
+        {currentStep === 2 && (
+          <Step2LGBTQAlignment
+            data={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+        )}
+        {currentStep === 3 && (
+          <Step3ExperienceTags
+            data={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+        )}
+        {currentStep === 4 && (
+          <Step4Pricing
+            data={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+        )}
+        {currentStep === 5 && (
+          <Step5Availability
+            data={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+        )}
+        {currentStep === 6 && (
+          <Step6IDUpload
+            data={formData}
+            onChange={handleChange}
+            errors={errors}
+          />
+        )}
+        {currentStep === 7 && (
+          <Step7Review
+            data={formData}
+            cities={cities}
+            onChange={handleChange}
+            errors={errors}
+          />
+        )}
+      </div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-3">
+          {currentStep > 1 && (
+            <Button
+              onClick={handleBack}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+          )}
+
+          <Button
+            onClick={saveDraft}
+            variant="ghost"
+            className="flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            Save Draft
+          </Button>
+        </div>
+
+        {currentStep < 7 ? (
+          <Button
+            onClick={handleNext}
+            className="flex items-center gap-2"
+          >
+            Next
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSubmit}
+            className="flex items-center gap-2 px-8"
+          >
+            Submit for Review
+            <CheckCircle className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
