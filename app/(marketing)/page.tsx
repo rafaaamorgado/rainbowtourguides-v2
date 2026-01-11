@@ -51,7 +51,7 @@ export default async function MarketingPage() {
         {/* Cinematic Background */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.unsplash.com/photo-1519671482538-581b5db3acc6?q=80&w=2574&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=2574&auto=format&fit=crop"
             alt="Authentic Connection"
             fill
             className="object-cover object-center animate-scale-slow"
@@ -127,14 +127,14 @@ export default async function MarketingPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Image
-              src="https://images.unsplash.com/photo-1535497258079-22a8323630f9?q=80&w=1000&auto=format&fit=crop"
+              src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1000&auto=format&fit=crop"
               alt="Men talking in city"
               width={400}
               height={320}
               className="rounded-3xl w-full h-80 object-cover mt-12"
             />
             <Image
-              src="https://images.unsplash.com/photo-1523588289457-36c1ae360707?q=80&w=1000&auto=format&fit=crop"
+              src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1000&auto=format&fit=crop"
               alt="Authentic moment"
               width={400}
               height={320}
