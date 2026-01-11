@@ -1,206 +1,375 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Clock, User, DollarSign, MapPin } from "lucide-react";
-import { requireUser } from "@/lib/auth-helpers";
-import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  MessageSquare,
+  Star,
+  AlertTriangle,
+} from "lucide-react";
+import { getBookings } from "@/lib/data-service";
+import type { Booking } from "@/lib/mock-data";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PayButton } from "@/components/traveler/PayButton";
-import { VerifySession } from "@/components/traveler/VerifySession";
-import type { BookingStatus } from "@/types/database";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
-// Booking with joined data
-type BookingWithDetails = {
-  id: string;
-  status: BookingStatus;
-  starts_at: string;
-  ends_at: string;
-  duration_hours: number | null;
-  price_total: string;
-  currency: string | null;
-  notes: string | null;
-  special_requests: string | null;
-  stripe_checkout_session_id: string | null;
-  created_at: string;
-  guide: { display_name: string } | null;
-  city: { name: string } | null;
-};
+export default function TravelerBookingsPage() {
+  const router = useRouter();
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
 
-const bookingStatusConfig: Record<BookingStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Pending", variant: "secondary" },
-  accepted: { label: "Accepted", variant: "default" },
-  confirmed: { label: "Confirmed", variant: "default" },
-  declined: { label: "Declined", variant: "destructive" },
-  cancelled: { label: "Cancelled", variant: "outline" },
-  completed: { label: "Completed", variant: "default" },
-  paid: { label: "Paid", variant: "default" },
-};
+  useEffect(() => {
+    // Mock user ID - in production, get from auth
+    const mockUserId = "u3";
+    
+    getBookings(mockUserId, "traveler").then((data) => {
+      setBookings(data);
+      setIsLoading(false);
+    });
+  }, []);
 
-type TravelerBookingsPageProps = {
-  searchParams: Promise<{ session?: string; cancelled?: string }>;
-};
+  // Filter bookings by status
+  const upcomingBookings = bookings.filter(
+    (b) =>
+      (b.status === "confirmed" || b.status === "accepted") &&
+      new Date(b.date) >= new Date()
+  );
 
-export default async function TravelerBookingsPage({ searchParams }: TravelerBookingsPageProps) {
-  const { supabase, profile } = await requireUser();
-  const params = await searchParams;
+  const pendingBookings = bookings.filter((b) => b.status === "pending");
 
-  // Load bookings for this traveler with guide and city info
-  // Note: Supabase types don't handle nested selects well, so we use a type assertion
-  const { data: bookings } = await supabase
-    .from("bookings")
-    .select(`
-      id,
-      status,
-      starts_at,
-      ends_at,
-      duration_hours,
-      price_total,
-      currency,
-      notes,
-      special_requests,
-      stripe_checkout_session_id,
-      created_at,
-      guide:guide_id(display_name),
-      city:city_id(name)
-    `)
-    .eq("traveler_id", profile.id)
-    .order("created_at", { ascending: false });
+  const pastBookings = bookings.filter(
+    (b) =>
+      (b.status === "completed" || b.status === "cancelled") &&
+      new Date(b.date) < new Date()
+  );
 
-  // Type assertion for bookings with joined data (Supabase types don't handle nested selects)
-  const typedBookings = (bookings ?? []) as BookingWithDetails[];
+  const handleCancelClick = (bookingId: string) => {
+    setBookingToCancel(bookingId);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelConfirm = async () => {
+    if (!bookingToCancel) return;
+
+    // TODO: Update booking status via data-service
+    // await updateBookingStatus(bookingToCancel, "cancelled");
+    
+    // For now, update local state
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === bookingToCancel ? { ...b, status: "cancelled" } : b
+      )
+    );
+
+    setCancelDialogOpen(false);
+    setBookingToCancel(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-ink mb-2">My Bookings</h1>
+          <p className="text-ink-soft">Loading your bookings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      {/* Verify session if returning from Stripe */}
-      {params.session && <VerifySession sessionId={params.session} />}
-
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">
-            Your Bookings
-          </h1>
-          <p className="text-slate-600 font-light mt-2">
-            View and manage your tour bookings
-          </p>
-        </div>
-        <Button asChild size="lg">
-          <Link href="/cities">Browse Guides</Link>
-        </Button>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-ink mb-2">My Bookings</h1>
+        <p className="text-ink-soft">Manage your tour bookings and requests</p>
       </div>
 
-      {/* Bookings List */}
-      <div className="space-y-6">
-        {typedBookings.length === 0 ? (
-          <Card className="shadow-md">
-            <CardContent className="py-16 text-center">
-              <div className="max-w-md mx-auto space-y-4">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
-                  <Calendar size={32} className="text-slate-400" />
-                </div>
-                <p className="text-slate-600 font-light text-lg">
-                  You haven&apos;t made any bookings yet.
-                </p>
-                <p className="text-sm text-slate-500">
-                  Browse our guides and request your first tour!
-                </p>
-                <Button asChild size="lg" className="mt-4">
-                  <Link href="/cities">Explore Destinations</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {typedBookings.map((booking) => {
-              const statusInfo = bookingStatusConfig[booking.status];
-              const startDate = new Date(booking.starts_at);
-              const canPay = booking.status === "accepted" && !booking.stripe_checkout_session_id;
+      {/* Tabs */}
+      <Tabs defaultValue="all">
+        <TabsList>
+          <TabsTrigger value="all">
+            All ({bookings.length})
+          </TabsTrigger>
+          <TabsTrigger value="upcoming">
+            Upcoming ({upcomingBookings.length})
+          </TabsTrigger>
+          <TabsTrigger value="pending">
+            Pending ({pendingBookings.length})
+          </TabsTrigger>
+          <TabsTrigger value="past">
+            Past ({pastBookings.length})
+          </TabsTrigger>
+        </TabsList>
 
-              return (
-                <Card key={booking.id} className="shadow-md hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-                            <User size={20} className="text-slate-600" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-lg text-slate-900">
-                              {booking.guide?.display_name || "Unknown Guide"}
-                            </p>
-                            <Badge variant={statusInfo.variant} className="mt-1">
-                              {statusInfo.label}
-                            </Badge>
-                          </div>
-                        </div>
+        {/* All Tab */}
+        <TabsContent value="all">
+          {bookings.length === 0 ? (
+            <EmptyState
+              title="No bookings yet"
+              description="Start your adventure by booking a tour with one of our amazing guides."
+              icon="calendar"
+              actionLabel="Find a Guide"
+              actionHref="/cities"
+            />
+          ) : (
+            <div className="space-y-4">
+              {bookings.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  onCancel={handleCancelClick}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
-                        <div className="grid sm:grid-cols-2 gap-4 pl-13">
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <MapPin size={16} />
-                            <span>{booking.city?.name || "Unknown City"}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Calendar size={16} />
-                            <span>
-                              {startDate.toLocaleDateString("en-US", {
-                                weekday: "short",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Clock size={16} />
-                            <span>
-                              {startDate.toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}{" "}
-                              ({booking.duration_hours || 0}h)
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <DollarSign size={16} />
-                            <span>
-                              {booking.currency || "USD"} {booking.price_total}
-                            </span>
-                          </div>
-                        </div>
+        {/* Upcoming Tab */}
+        <TabsContent value="upcoming">
+          {upcomingBookings.length === 0 ? (
+            <EmptyState
+              title="No upcoming tours"
+              description="Start exploring! Browse our verified guides and book your next adventure."
+              icon="calendar"
+              actionLabel="Find a Guide"
+              actionHref="/cities"
+            />
+          ) : (
+            <div className="space-y-4">
+              {upcomingBookings.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  onCancel={handleCancelClick}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
-                        {(booking.notes || booking.special_requests) && (
-                          <div className="pl-13 pt-2 border-t">
-                            <p className="text-sm text-slate-600">
-                              <span className="font-semibold">Your notes:</span>{" "}
-                              {booking.notes || booking.special_requests}
-                            </p>
-                          </div>
-                        )}
+        {/* Pending Tab */}
+        <TabsContent value="pending">
+          {pendingBookings.length === 0 ? (
+            <EmptyState
+              title="No pending requests"
+              description="All your booking requests have been processed."
+              icon="clock"
+              variant="minimal"
+            />
+          ) : (
+            <div className="space-y-4">
+              {pendingBookings.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  onCancel={handleCancelClick}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
-                        {booking.status === "accepted" && (
-                          <div className="pl-13 pt-2">
-                            <div className="inline-flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
-                              <span className="text-sm text-green-700">
-                                ✓ Booking accepted! Complete payment to confirm.
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+        {/* Past Tab */}
+        <TabsContent value="past">
+          {pastBookings.length === 0 ? (
+            <EmptyState
+              title="No past tours yet"
+              description="You haven't completed any tours yet. Book your first adventure!"
+              icon="map"
+              actionLabel="Browse Cities"
+              actionHref="/cities"
+            />
+          ) : (
+            <div className="space-y-4">
+              {pastBookings.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  onCancel={handleCancelClick}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
-                      {canPay && (
-                        <div className="lg:w-32">
-                          <PayButton bookingId={booking.id} />
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+            </div>
+            <AlertDialogTitle>Cancel Booking?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this booking? Our cancellation
+              policy applies, and you may be charged a fee depending on how
+              close to the tour date you are cancelling.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCancelDialogOpen(false)}>
+              Keep Booking
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelConfirm}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Yes, Cancel
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+interface BookingCardProps {
+  booking: Booking;
+  onCancel: (bookingId: string) => void;
+}
+
+function BookingCard({ booking, onCancel }: BookingCardProps) {
+  const isPending = booking.status === "pending";
+  const isUpcoming =
+    (booking.status === "confirmed" || booking.status === "accepted") &&
+    new Date(booking.date) >= new Date();
+  const isCompleted = booking.status === "completed";
+  const isCancelled = booking.status === "cancelled";
+
+  // Mock: Check if reviewed (in production, check reviews table)
+  const hasReview = false;
+
+  return (
+    <div className="bg-panel-light border border-slate-200 rounded-2xl p-6 hover:shadow-glass transition-all">
+      <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-6">
+        {/* Guide Photo */}
+        <div className="flex items-start">
+          <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-pride-lilac to-pride-mint flex-shrink-0">
+            <div className="w-full h-full flex items-center justify-center text-white font-semibold text-2xl">
+              {booking.guide_name.charAt(0)}
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Booking Details */}
+        <div className="space-y-3">
+          <div>
+            <h3 className="text-xl font-semibold text-ink mb-1">
+              {booking.guide_name}
+            </h3>
+            <p className="text-ink-soft flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
+              {booking.city_name}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-sm text-ink-soft">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              {new Date(booking.date).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              {booking.duration} hours
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Badge
+              className={cn(
+                "text-xs font-medium border-0",
+                booking.status === "pending" &&
+                  "bg-amber-100 text-amber-700",
+                booking.status === "accepted" &&
+                  "bg-blue-100 text-blue-700",
+                booking.status === "confirmed" &&
+                  "bg-emerald-100 text-emerald-700",
+                booking.status === "completed" &&
+                  "bg-slate-100 text-slate-700",
+                booking.status === "cancelled" &&
+                  "bg-red-100 text-red-700"
+              )}
+            >
+              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+            </Badge>
+
+            <span className="text-2xl font-bold text-ink">
+              ${booking.price_total}
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col gap-2 lg:min-w-[160px]">
+          <Button asChild variant="outline" size="sm" className="w-full">
+            <Link href={`/traveler/bookings/${booking.id}`}>
+              View Details
+            </Link>
+          </Button>
+
+          <Button asChild variant="outline" size="sm" className="w-full">
+            <Link
+              href={`/traveler/messages?booking=${booking.id}`}
+              className="flex items-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Message
+            </Link>
+          </Button>
+
+          {(isPending || isUpcoming) && !isCancelled && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onCancel(booking.id)}
+              className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              Cancel {isPending ? "Request" : "Booking"}
+            </Button>
+          )}
+
+          {isCompleted && !hasReview && (
+            <Button asChild variant="default" size="sm" className="w-full">
+              <Link
+                href={`/traveler/bookings/${booking.id}/review`}
+                className="flex items-center gap-2"
+              >
+                <Star className="h-4 w-4" />
+                Leave Review
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
