@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { CityCard } from '@/components/ui/CityCard';
 import { GuideCard } from '@/components/ui/GuideCard';
+import { HeroSearch } from '@/components/home/hero-search';
+import { getCities } from '@/lib/data-service';
 
 export const metadata: Metadata = {
   title: 'Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences',
@@ -21,6 +23,9 @@ export const metadata: Metadata = {
 
 export default async function MarketingPage() {
   const supabase = await createSupabaseServerClient();
+
+  // Fetch all cities for search
+  const allCities = await getCities();
 
   // Fetch featured cities
   const { data: cities } = await supabase
@@ -85,6 +90,11 @@ export default async function MarketingPage() {
               Curated local companions for gay men who value authentic
               connection, safety, and culture over crowds.
             </p>
+          </div>
+
+          {/* Hero Search Bar */}
+          <div className="pt-8">
+            <HeroSearch cities={allCities} />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-8">
