@@ -1,0 +1,25 @@
+# robots.txt for Rainbow Tour Guides
+
+# Allow all bots to crawl
+User-agent: *
+Allow: /
+
+# Disallow admin and dashboard pages
+Disallow: /admin/
+Disallow: /guide/dashboard/
+Disallow: /traveler/
+Disallow: /api/
+
+# Disallow auth pages
+Disallow: /auth/
+
+# Allow crawling of public pages
+Allow: /guides/
+Allow: /cities/
+Allow: /blog/
+Allow: /how-it-works
+Allow: /faq
+Allow: /legal/
+
+# Sitemap location
+Sitemap: https://rainbowtourguides.com/sitemap.xml
