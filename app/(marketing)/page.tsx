@@ -3,11 +3,11 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import { Shield, Map, Users, ArrowRight, Search, CheckCircle, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { CityCard } from '@/components/ui/CityCard';
 import { GuideCard } from '@/components/ui/GuideCard';
 import { HeroSearch } from '@/components/home/hero-search';
 import { getCities, getTopGuides } from '@/lib/data-service';
+import type { Guide } from '@/lib/mock-data';
 
 export const metadata: Metadata = {
   title: 'Rainbow Tour Guides - Premium LGBTQ+ Travel Experiences',
@@ -21,32 +21,41 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function MarketingPage() {
-  const supabase = await createSupabaseServerClient();
+// Adapter function to convert mock Guide to GuideCard format
+function adaptGuideForCard(guide: Guide) {
+  return {
+    id: guide.id,
+    slug: guide.slug,
+    status: 'approved' as const,
+    headline: guide.tagline,
+    hourly_rate: guide.price_4h.toString(),
+    currency: '$',
+    rating_avg: guide.rating,
+    profile: {
+      display_name: guide.name,
+      avatar_url: guide.photo_url,
+    },
+    themes: guide.experience_tags.slice(0, 3),
+  };
+}
 
+export default async function MarketingPage() {
   // Fetch all cities for search
   const allCities = await getCities();
 
-  // Fetch featured cities
-  const { data: cities } = await supabase
-    .from('cities')
-    .select('*, guides:guides(count)')
-    .eq('is_active', true)
-    .eq('is_featured', true)
-    .limit(4);
-
-  const citiesWithCounts = (cities ?? []).map((city: any) => ({
-    ...city,
-    guide_count: city.guides?.[0]?.count ?? 0,
-  }));
+  // Fetch featured cities (top 4 by guide count) - mock first
+  const featuredCities = allCities
+    .sort((a, b) => b.guide_count - a.guide_count)
+    .slice(0, 4);
 
   // Fetch top guides from data service
-  const topGuides = await getTopGuides(4);
+  const topGuidesRaw = await getTopGuides(4);
+  const topGuides = topGuidesRaw.map(adaptGuideForCard);
 
   return (
     <>
-      {/* Avant-Garde Hero Section */}
-      <section className="relative min-h-screen flex flex-col justify-end items-center px-4 pb-12 overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex flex-col justify-end items-center px-4 pb-16 pt-32 md:pt-40 overflow-hidden">
         {/* Cinematic Background */}
         <div className="absolute inset-0 z-0">
           <Image
@@ -62,8 +71,8 @@ export default async function MarketingPage() {
 
         {/* Content */}
         <div className="relative z-10 w-full max-w-7xl mx-auto space-y-12 animate-fade-in-up">
-          <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 mb-8">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 mb-6">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
@@ -73,7 +82,7 @@ export default async function MarketingPage() {
               </span>
             </div>
 
-            <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-serif font-bold text-white leading-[0.88] tracking-tighter mb-8 animate-fade-in-up">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-6 animate-fade-in-up">
               TRAVEL SOLO.
               <br />
               <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/50">
@@ -81,7 +90,7 @@ export default async function MarketingPage() {
               </span>
             </h1>
 
-            <p className="text-lg md:text-2xl text-white/90 max-w-lg font-light leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-base md:text-lg text-white/90 max-w-[55ch] font-light leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               Curated local companions for gay men who value authentic
               connection, safety, and culture over crowds.
             </p>
@@ -109,15 +118,15 @@ export default async function MarketingPage() {
       </section>
 
       {/* Manifesto / Introduction */}
-      <section className="py-32 bg-white relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+      <section className="py-16 md:py-20 bg-white relative">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
-            <h2 className="text-5xl md:text-6xl font-serif font-bold text-slate-900 mb-8 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6 leading-tight">
               Not just a guide.
               <br />
               <span className="text-slate-300">A friend in the city.</span>
             </h2>
-            <div className="space-y-6 text-lg font-light text-slate-600 leading-relaxed">
+            <div className="space-y-4 text-base md:text-lg font-light text-slate-600 leading-relaxed max-w-2xl">
               <p>
                 We believe travel is about who you meet, not just what you see.
                 Traditional tours feel transactional. Dating apps feel risky. We
@@ -132,27 +141,27 @@ export default async function MarketingPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Image
-              src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1000&auto=format&fit=crop"
-              alt="Men talking in city"
+              src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=80"
+              alt="Queer travelers connecting in the city"
               width={400}
               height={320}
-              className="rounded-2xl w-full h-80 object-cover mt-12 shadow-lg border border-black/5 hover:shadow-xl transition-shadow"
+              className="rounded-2xl w-full h-80 object-cover mt-12 shadow-sm border border-black/5 hover:shadow-xl transition-shadow"
             />
             <Image
-              src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1000&auto=format&fit=crop"
-              alt="Authentic moment"
+              src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80"
+              alt="Authentic travel moment"
               width={400}
               height={320}
-              className="rounded-2xl w-full h-80 object-cover shadow-lg border border-black/5 hover:shadow-xl transition-shadow"
+              className="rounded-2xl w-full h-80 object-cover shadow-sm border border-black/5 hover:shadow-xl transition-shadow"
             />
           </div>
         </div>
       </section>
 
       {/* Modern How It Works */}
-      <section className="py-32 bg-slate-50 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      <section className="py-16 md:py-20 bg-slate-50 border-t border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 num: '01',
@@ -198,43 +207,41 @@ export default async function MarketingPage() {
       </section>
 
       {/* Curated Destinations */}
-      {citiesWithCounts.length > 0 && (
-        <section className="py-32 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-              <div>
-                <span className="text-brand font-bold uppercase tracking-widest text-xs mb-4 block">
-                  Destinations
-                </span>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">
-                  Where next?
-                </h2>
-              </div>
-              <Button asChild variant="ghost">
-                <Link href="/cities" className="flex items-center gap-2">
-                  View all cities <ArrowRight size={20} />
-                </Link>
-              </Button>
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div>
+              <span className="text-brand font-bold uppercase tracking-widest text-xs mb-3 block">
+                Destinations
+              </span>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900">
+                Where next?
+              </h2>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {citiesWithCounts.map((city) => (
-                <CityCard key={city.id} city={city} />
-              ))}
-            </div>
+            <Button asChild variant="ghost">
+              <Link href="/cities" className="flex items-center gap-2">
+                View all cities <ArrowRight size={20} />
+              </Link>
+            </Button>
           </div>
-        </section>
-      )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredCities.slice(0, 3).map((city) => (
+              <CityCard key={city.id} city={city} />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Meet Our Top Guides */}
-      <section className="py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-16">
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
             <div>
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
                 Meet Our Top Guides
               </h2>
-              <p className="text-lg text-slate-500 font-light max-w-2xl">
+              <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
                 Verified locals who share authentic experiences and safe
                 spaces in their cities.
               </p>
@@ -246,11 +253,11 @@ export default async function MarketingPage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {topGuides.map((guide) => (
               <div
                 key={guide.id}
-                className="group hover:-translate-y-1 transition-all duration-300 hover:shadow-xl"
+                className="group hover:-translate-y-1 transition-all duration-300"
               >
                 <GuideCard guide={guide as any} />
               </div>
@@ -260,14 +267,14 @@ export default async function MarketingPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-32 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <section className="py-16 md:py-20 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Image */}
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-200 shadow-lg border border-black/5">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-200 shadow-sm border border-black/5">
               <Image
-                src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
-                alt="How it works"
+                src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80"
+                alt="Two men connecting through travel"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -275,12 +282,12 @@ export default async function MarketingPage() {
             </div>
 
             {/* Content */}
-            <div className="space-y-12">
+            <div className="space-y-10">
               <div>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
+                <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
                   How It Works
                 </h2>
-                <p className="text-lg text-slate-500 font-light">
+                <p className="text-base md:text-lg text-slate-500 font-light">
                   Three simple steps to authentic local experiences
                 </p>
               </div>
@@ -342,16 +349,16 @@ export default async function MarketingPage() {
       </section>
 
       {/* Why a Local LGBTQ+ Guide? */}
-      <section className="py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Content */}
-            <div className="space-y-8">
+            <div className="space-y-6">
               <div>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
+                <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
                   Why a Local LGBTQ+ Guide?
                 </h2>
-                <p className="text-lg text-slate-500 font-light">
+                <p className="text-base md:text-lg text-slate-500 font-light">
                   More than just sightseeing—it's about connection, safety, and
                   authentic experiences.
                 </p>
@@ -429,19 +436,19 @@ export default async function MarketingPage() {
         </div>
       </section>
 
-      {/* Avant-Garde CTA */}
-      <section className="relative py-40 bg-white overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-5xl md:text-8xl font-serif font-bold text-slate-900 mb-10 leading-[0.85] tracking-tight">
+      {/* Final CTA */}
+      <section className="relative py-20 md:py-24 bg-white overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 text-center relative z-10">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 mb-6 leading-tight tracking-tight">
             YOUR CITY.
             <br />
             YOUR RULES.
           </h2>
-          <p className="text-xl md:text-2xl text-slate-500 mb-16 max-w-2xl mx-auto font-light">
+          <p className="text-base md:text-xl text-slate-500 mb-10 max-w-2xl mx-auto font-light">
             Whether you want to explore history, architecture, or the
             underground scene, do it with someone who gets it.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button asChild size="lg" className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
               <Link href="/cities">Start Exploring</Link>
             </Button>

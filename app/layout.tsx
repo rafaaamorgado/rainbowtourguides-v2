@@ -65,6 +65,18 @@ function SiteHeader() {
             Cities
           </Link>
           <Link
+            href="/how-it-works"
+            className="text-sm font-medium transition-colors text-slate-700 hover:text-brand"
+          >
+            How It Works
+          </Link>
+          <Link
+            href="/faq"
+            className="text-sm font-medium transition-colors text-slate-700 hover:text-brand"
+          >
+            FAQ
+          </Link>
+          <Link
             href="/auth/sign-up?role=guide"
             className="text-sm font-medium transition-colors text-slate-700 hover:text-brand"
           >
@@ -137,6 +149,11 @@ function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/how-it-works" className="hover:text-white transition-colors">
+                How It Works
+              </Link>
+            </li>
+            <li>
               <Link href="/blog" className="hover:text-white transition-colors">
                 Blog
               </Link>
@@ -153,6 +170,11 @@ function SiteFooter() {
         <div>
           <h4 className="text-white font-semibold mb-4">Support</h4>
           <ul className="space-y-3 text-sm">
+            <li>
+              <Link href="/faq" className="hover:text-white transition-colors">
+                FAQ
+              </Link>
+            </li>
             <li>
               <Link href="/legal/terms" className="hover:text-white transition-colors">
                 Terms of Service
