@@ -1,135 +1,170 @@
 import type { Metadata } from "next";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { CityCard } from "@/components/ui/CityCard";
-import type { Database } from "@/types/database";
-
-export const dynamic = "force-dynamic";
+import Link from "next/link";
+import Image from "next/image";
+import { Search } from "lucide-react";
+import { getCities } from "@/lib/data-service";
+import { EmptyState } from "@/components/ui/empty-state";
+import { CardSkeleton } from "@/components/ui/loading-skeleton";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "LGBTQ+ Friendly Cities - Rainbow Tour Guides",
-  description: "Discover LGBTQ+ friendly cities around the world with vetted local guides. Safe, authentic travel experiences in curated destinations.",
+  title: "Explore Cities - Rainbow Tour Guides",
+  description:
+    "Discover trusted LGBTQ+ local guides in cities worldwide. Safe, authentic travel experiences in curated destinations.",
   openGraph: {
-    title: "LGBTQ+ Friendly Cities - Rainbow Tour Guides",
-    description: "Discover LGBTQ+ friendly cities around the world with vetted local guides.",
+    title: "Explore Cities - Rainbow Tour Guides",
+    description:
+      "Discover trusted LGBTQ+ local guides in cities worldwide.",
     type: "website",
   },
 };
 
-type City = Database["public"]["Tables"]["cities"]["Row"];
+/**
+ * CityCard - Premium city card with cinematic photo and overlay
+ */
+function CityCard({
+  city,
+}: {
+  city: {
+    slug: string;
+    name: string;
+    country_name: string;
+    image_url: string;
+    guide_count: number;
+  };
+}) {
+  return (
+    <Link
+      href={`/cities/${city.slug}`}
+      className="group block relative aspect-video rounded-2xl overflow-hidden cursor-pointer"
+    >
+      {/* City Photo Background */}
+      <div className="absolute inset-0">
+        <Image
+          src={city.image_url}
+          alt={`${city.name}, ${city.country_name}`}
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+      </div>
 
-type CityWithGuideCount = City & {
-  guide_count: number;
-};
+      {/* Dark Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-export default async function CitiesPage() {
-  const supabase = await createSupabaseServerClient();
-
-  // Fetch active cities with country_name
-  const { data, error } = await supabase
-    .from("cities")
-    .select("*")
-    .eq("is_active", true)
-    .order("is_featured", { ascending: false })
-    .order("name", { ascending: true });
-
-  if (error) {
-    console.error("[CitiesPage] Failed to load cities", error);
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-16">
-        <h1 className="text-2xl font-semibold tracking-tight mb-2">
-          Cities unavailable
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Something went wrong while loading destinations. Please try again in a
-          moment.
+      {/* Content Overlay */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+        <h3 className="text-2xl font-bold mb-1 group-hover:text-brand transition-colors">
+          {city.name}
+        </h3>
+        <p className="text-sm text-white/80 mb-2">{city.country_name}</p>
+        <p className="text-sm text-white/90">
+          {city.guide_count} {city.guide_count === 1 ? "guide" : "guides"}{" "}
+          available
         </p>
       </div>
-    );
-  }
 
-  const cities = (data ?? []) as City[];
-
-  // Fetch country names for cities that don't have country_name set
-  const citiesNeedingCountryName = cities.filter((city) => !city.country_name);
-  if (citiesNeedingCountryName.length > 0) {
-    const countryIds = [...new Set(citiesNeedingCountryName.map((c) => c.country_id))];
-    const { data: countriesData } = await supabase
-      .from("countries")
-      .select("id, name")
-      .in("id", countryIds);
-
-    // Type assertion needed because select("id, name") returns a narrowed type
-    const countries = (countriesData ?? []) as Array<{ id: string; name: string }>;
-    const countriesMap = new Map(
-      countries.map((c) => [c.id, c.name])
-    );
-
-    // Update cities with country names from countries table
-    cities.forEach((city) => {
-      if (!city.country_name) {
-        city.country_name = countriesMap.get(city.country_id) ?? null;
-      }
-    });
-  }
-
-  // Fetch guide counts for all cities in parallel
-  const cityGuideCountsPromises = cities.map(async (city) => {
-    const { count } = await supabase
-      .from("guides")
-      .select("*", { count: "exact", head: true })
-      .eq("city_id", city.id)
-      .eq("status", "approved");
-    return { cityId: city.id, count: count ?? 0 };
-  });
-
-  const guideCountsResults = await Promise.all(cityGuideCountsPromises);
-  const guideCountsMap = new Map(
-    guideCountsResults.map((r) => [r.cityId, r.count])
+      {/* Hover Border Effect */}
+      <div className="absolute inset-0 border-2 border-transparent group-hover:border-brand/50 rounded-2xl transition-colors duration-300" />
+    </Link>
   );
+}
 
-  // Merge guide counts with cities
-  const citiesWithCounts: CityWithGuideCount[] = cities.map((city) => ({
-    ...city,
-    guide_count: guideCountsMap.get(city.id) ?? 0,
-  }));
+/**
+ * SearchBar - UI-only search component (no logic yet)
+ */
+function SearchBar() {
+  return (
+    <div className="relative max-w-2xl mx-auto">
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-ink-soft pointer-events-none" />
+        <input
+          type="text"
+          placeholder="Search cities..."
+          className="w-full pl-12 pr-4 py-3 rounded-full border border-slate-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all text-ink placeholder:text-ink-soft"
+          disabled
+        />
+      </div>
+      <p className="text-xs text-ink-soft text-center mt-2">
+        Search coming soon
+      </p>
+    </div>
+  );
+}
 
-  if (citiesWithCounts.length === 0) {
+/**
+ * CitiesPage - Server Component for cities listing
+ */
+export default async function CitiesPage() {
+  // Fetch cities from data service
+  const cities = await getCities();
+
+  // Empty state
+  if (cities.length === 0) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-16 space-y-3">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          LGBTQ+ friendly cities, curated for you
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          We&apos;re still setting up our first wave of destinations. Check back soon
-          as we roll out vetted cities and local guides.
-        </p>
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <EmptyState
+          title="No cities yet"
+          description="We're building our network of destinations. Check back soon!"
+          icon="map"
+          variant="default"
+        />
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 space-y-12">
-      <header className="space-y-4 text-center max-w-3xl mx-auto">
-        <span className="text-brand font-bold uppercase tracking-widest text-xs block">
-          Destinations
-        </span>
-        <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 tracking-tight">
-          LGBTQ+ friendly cities,
-          <br />
-          curated for you
+      {/* Hero Section */}
+      <header className="space-y-6 text-center max-w-3xl mx-auto">
+        <h1 className="text-4xl md:text-5xl font-bold text-ink tracking-tight">
+          Explore Cities
         </h1>
-        <p className="text-lg text-slate-600 font-light leading-relaxed">
-          Choose a city where we have vetted local guides and up-to-date LGBTQ+ context — then dive
-          into their profiles and experiences.
+        <p className="text-lg text-ink-soft leading-relaxed">
+          Discover trusted LGBTQ+ local guides in {cities.length} cities
+          worldwide
         </p>
       </header>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {citiesWithCounts.map((city) => (
-          <CityCard key={city.id} city={city as any} />
+      {/* Search Bar */}
+      <SearchBar />
+
+      {/* Cities Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {cities.map((city) => (
+          <CityCard key={city.id} city={city} />
         ))}
       </div>
     </div>
   );
 }
 
+/**
+ * Loading Component - Shown during data fetching
+ */
+export function Loading() {
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 space-y-12">
+      {/* Hero Skeleton */}
+      <header className="space-y-6 text-center max-w-3xl mx-auto">
+        <div className="h-12 w-2/3 bg-slate-200 rounded-lg animate-pulse mx-auto" />
+        <div className="h-6 w-4/5 bg-slate-200 rounded animate-pulse mx-auto" />
+      </header>
+
+      {/* Search Bar Skeleton */}
+      <div className="max-w-2xl mx-auto">
+        <div className="h-12 w-full bg-slate-200 rounded-full animate-pulse" />
+      </div>
+
+      {/* Cities Grid Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="aspect-video rounded-2xl bg-slate-200 animate-pulse"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
