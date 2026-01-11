@@ -132,6 +132,16 @@ function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/guides" className="hover:text-white transition-colors">
+                Guides
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog" className="hover:text-white transition-colors">
+                Blog
+              </Link>
+            </li>
+            <li>
               <Link href="/legal/safety" className="hover:text-white transition-colors">
                 Safety
               </Link>

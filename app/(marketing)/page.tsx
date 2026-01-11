@@ -50,13 +50,14 @@ export default async function MarketingPage() {
         {/* Cinematic Background */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=2574&auto=format&fit=crop"
-            alt="Authentic Connection"
+            src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2574&auto=format&fit=crop"
+            alt="LGBTQ+ Travel Connection"
             fill
             className="object-cover object-center animate-scale-slow"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         </div>
 
         {/* Content */}
@@ -72,7 +73,7 @@ export default async function MarketingPage() {
               </span>
             </div>
 
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-white leading-[0.9] tracking-tight mb-8">
+            <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-serif font-bold text-white leading-[0.88] tracking-tighter mb-8 animate-fade-in-up">
               TRAVEL SOLO.
               <br />
               <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/50">
@@ -80,26 +81,26 @@ export default async function MarketingPage() {
               </span>
             </h1>
 
-            <p className="text-lg md:text-2xl text-white/80 max-w-xl font-light leading-relaxed">
+            <p className="text-lg md:text-2xl text-white/90 max-w-lg font-light leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               Curated local companions for gay men who value authentic
               connection, safety, and culture over crowds.
             </p>
           </div>
 
           {/* Hero Search Bar */}
-          <div className="pt-8">
+          <div className="pt-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
             <HeroSearch cities={allCities} />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-8">
-            <Button asChild size="lg">
+          <div className="flex flex-col sm:flex-row gap-4 pt-8 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            <Button asChild size="lg" className="shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
               <Link href="/cities">Start Exploring</Link>
             </Button>
             <Button
               asChild
               size="lg"
               variant="outline"
-              className="text-white border-white/30 hover:bg-white/10"
+              className="text-white border-white/40 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
             >
               <Link href="/auth/sign-up?role=guide">Become a Guide</Link>
             </Button>
@@ -110,7 +111,7 @@ export default async function MarketingPage() {
       {/* Manifesto / Introduction */}
       <section className="py-32 bg-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-          <div>
+          <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
             <h2 className="text-5xl md:text-6xl font-serif font-bold text-slate-900 mb-8 leading-tight">
               Not just a guide.
               <br />
@@ -135,14 +136,14 @@ export default async function MarketingPage() {
               alt="Men talking in city"
               width={400}
               height={320}
-              className="rounded-3xl w-full h-80 object-cover mt-12"
+              className="rounded-2xl w-full h-80 object-cover mt-12 shadow-lg border border-black/5 hover:shadow-xl transition-shadow"
             />
             <Image
               src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1000&auto=format&fit=crop"
               alt="Authentic moment"
               width={400}
               height={320}
-              className="rounded-3xl w-full h-80 object-cover"
+              className="rounded-2xl w-full h-80 object-cover shadow-lg border border-black/5 hover:shadow-xl transition-shadow"
             />
           </div>
         </div>
@@ -174,7 +175,7 @@ export default async function MarketingPage() {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="group relative p-8 bg-white rounded-3xl hover:bg-slate-900 transition-colors duration-500 shadow-sm hover:shadow-2xl"
+                className="group relative p-8 bg-white rounded-2xl border border-slate-100 hover:bg-slate-900 transition-all duration-500 shadow-md hover:shadow-2xl hover:-translate-y-1"
               >
                 <span className="text-6xl font-serif font-bold text-slate-100 group-hover:text-slate-800 transition-colors absolute top-4 right-6 select-none">
                   {item.num}
@@ -249,7 +250,7 @@ export default async function MarketingPage() {
             {topGuides.map((guide) => (
               <div
                 key={guide.id}
-                className="group hover:-translate-y-1 transition-transform duration-300"
+                className="group hover:-translate-y-1 transition-all duration-300 hover:shadow-xl"
               >
                 <GuideCard guide={guide as any} />
               </div>
@@ -263,7 +264,7 @@ export default async function MarketingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Image */}
-            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-slate-200 shadow-2xl">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-200 shadow-lg border border-black/5">
               <Image
                 src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
                 alt="How it works"
@@ -332,7 +333,7 @@ export default async function MarketingPage() {
                 ))}
               </div>
 
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
                 <Link href="/cities">Browse Cities</Link>
               </Button>
             </div>
@@ -405,17 +406,17 @@ export default async function MarketingPage() {
               </div>
 
               <div className="flex gap-4">
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" className="hover:-translate-y-0.5 transition-all">
                   <Link href="/legal/safety">Learn About Safety</Link>
                 </Button>
-                <Button asChild variant="ghost">
+                <Button asChild variant="ghost" className="hover:-translate-y-0.5 transition-all">
                   <Link href="/legal/terms">Community Guidelines</Link>
                 </Button>
               </div>
             </div>
 
             {/* Image */}
-            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-slate-200 shadow-2xl lg:order-last">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-200 shadow-lg border border-black/5 lg:order-last">
               <Image
                 src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800"
                 alt="Why a local LGBTQ+ guide"
@@ -441,10 +442,10 @@ export default async function MarketingPage() {
             underground scene, do it with someone who gets it.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
               <Link href="/cities">Start Exploring</Link>
             </Button>
-            <Button asChild variant="ghost" size="lg">
+            <Button asChild variant="ghost" size="lg" className="hover:-translate-y-0.5 transition-all">
               <Link
                 href="/auth/sign-up?role=guide"
                 className="flex items-center gap-2"

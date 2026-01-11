@@ -50,7 +50,7 @@ export function HeroSearch({ cities }: HeroSearchProps) {
 
   return (
     <div className="w-full max-w-5xl mx-auto">
-      <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-glass p-4 border border-white/20">
+      <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl border border-white/40 p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* City Autocomplete */}
           <div className="space-y-1">

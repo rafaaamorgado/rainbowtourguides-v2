@@ -89,6 +89,21 @@ export interface Message {
   timestamp: string;
 }
 
+export interface Article {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  featured_image: string;
+  author_name: string;
+  author_photo: string;
+  published_date: string;
+  read_time: number;
+  category: string;
+  tags: string[];
+}
+
 // ============================================================================
 // Mock Data - Countries
 // ============================================================================
@@ -1328,5 +1343,224 @@ export function getTopRatedGuides(limit: number = 10): Guide[] {
       return b.review_count - a.review_count;
     })
     .slice(0, limit);
+}
+
+// ============================================================================
+// Mock Data - Blog Articles
+// ============================================================================
+
+const MOCK_ARTICLES: Article[] = [
+  {
+    id: "art1",
+    slug: "lgbtq-safety-barcelona",
+    title: "The Complete Guide to LGBTQ+ Safety in Barcelona",
+    excerpt: "Everything you need to know about navigating Barcelona as a queer traveler, from safe neighborhoods to local etiquette and emergency contacts.",
+    content: `Barcelona has long been one of Europe's most welcoming cities for LGBTQ+ travelers. With its vibrant Eixample neighborhood (affectionately known as "Gaixample"), progressive laws, and thriving queer scene, it's a destination where you can be authentically yourself.
+
+## Safe Neighborhoods
+
+The Eixample district is the heart of Barcelona's LGBTQ+ community. Here you'll find queer-friendly hotels, bars, restaurants, and shops. The area around Carrer de Muntaner is particularly welcoming, with rainbow flags visible year-round.
+
+## Local Etiquette
+
+Spain legalized same-sex marriage in 2005, making it one of the most progressive countries in Europe. Public displays of affection are generally well-received in tourist areas and the city center. However, as with any major city, awareness of your surroundings is always wise.
+
+## Emergency Contacts
+
+- Local LGBTQ+ Center: +34 93 298 0029
+- Emergency Services: 112
+- Tourist Police: +34 93 256 2430
+
+## Best Times to Visit
+
+Barcelona Pride takes place in late June, drawing hundreds of thousands of visitors. Circuit Festival (August) is one of the world's largest gay events. For a quieter experience, visit in spring or fall when the weather is perfect and crowds are smaller.`,
+    featured_image: "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1200",
+    author_name: "Marco Silva",
+    author_photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+    published_date: "2026-01-05",
+    read_time: 8,
+    category: "Safety",
+    tags: ["Barcelona", "Safety", "Spain"],
+  },
+  {
+    id: "art2",
+    slug: "best-nightlife-lisbon",
+    title: "Lisbon After Dark: The Best LGBTQ+ Nightlife Guide",
+    excerpt: "From intimate fado bars to pulsing dance clubs, discover Lisbon's diverse queer nightlife scene with insider recommendations.",
+    content: `Lisbon's LGBTQ+ nightlife has evolved dramatically in recent years. While smaller than Barcelona or Berlin, it offers an intimate, welcoming scene that feels authentically Portuguese.
+
+## Príncipe Real: The Queer Heart
+
+This elegant neighborhood is ground zero for Lisbon's gay scene. By day, it's cafés and boutiques. By night, the bars and clubs come alive. Start at Trumps (the city's oldest gay club) or check out Construction for a more alternative vibe.
+
+## Best Bars & Clubs
+
+- **Trumps**: Four floors, multiple vibes, everyone welcome
+- **Construction**: Industrial-chic, younger crowd, great DJs
+- **Finalmente**: Drag shows and cabaret, local institution
+- **Bar 106**: Intimate piano bar, perfect for conversations
+
+## Safety Tips
+
+Lisbon is generally very safe for LGBTQ+ nightlife. The Príncipe Real and Bairro Alto areas are well-patrolled and welcoming. As always, watch your drink, stay aware of your surroundings, and use official taxis or Uber late at night.
+
+## When to Go
+
+Thursday through Saturday are the busiest nights. Many venues have themed nights, so check schedules in advance. Lisbon Pride is in June, transforming the city into one giant celebration.`,
+    featured_image: "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=1200",
+    author_name: "João Ferreira",
+    author_photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
+    published_date: "2026-01-03",
+    read_time: 6,
+    category: "Nightlife",
+    tags: ["Lisbon", "Nightlife", "Portugal"],
+  },
+  {
+    id: "art3",
+    slug: "berlin-queer-history",
+    title: "Walking Through Berlin's LGBTQ+ History",
+    excerpt: "Trace the footsteps of queer pioneers in Berlin, from the Weimar era's golden age to today's vibrant community.",
+    content: `Berlin's LGBTQ+ history is unparalleled. This city was home to the world's first gay rights organization, thriving queer culture in the 1920s, and remains Europe's queer capital today.
+
+## The Weimar Era
+
+In the 1920s, Berlin had over 100 gay and lesbian bars, clubs, and cafés. The Institut für Sexualwissenschaft, founded by Magnus Hirschfeld, pioneered LGBTQ+ research and advocacy. Much was destroyed by the Nazis, but the legacy lives on.
+
+## Memorial Sites
+
+- **Memorial to Homosexuals Persecuted Under Nazism**: Tiergarten park
+- **Nollendorfplatz**: Historic center of gay Berlin, now with commemorative plaques
+- **Schwules Museum**: World's first gay museum, essential visit
+
+## Modern Queer Berlin
+
+Today's Berlin offers everything from leather bars to queer art galleries. Schöneberg remains historic, while Kreuzberg and Neukölln attract younger crowds. The city's openness and diversity make it unique in Europe.
+
+## Guided Tours
+
+Several guides offer specialized queer history tours. These provide context you won't find in guidebooks and connect you with today's community while honoring the past.`,
+    featured_image: "https://images.unsplash.com/photo-1560969184-10fe8719e047?w=1200",
+    author_name: "Lars Andersen",
+    author_photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200",
+    published_date: "2026-01-01",
+    read_time: 10,
+    category: "History",
+    tags: ["Berlin", "History", "Germany"],
+  },
+  {
+    id: "art4",
+    slug: "solo-travel-tips-lgbtq",
+    title: "Solo Travel as an LGBTQ+ Person: Essential Tips",
+    excerpt: "Practical advice for safe, fulfilling solo travel as a queer person, from research and preparation to staying connected.",
+    content: `Solo travel as an LGBTQ+ person can be incredibly rewarding, but it requires extra preparation and awareness. Here's what you need to know.
+
+## Research Your Destination
+
+Not all destinations are equally welcoming. Research local laws, cultural attitudes, and LGBTQ+ rights before booking. Look for cities with established queer communities and legal protections.
+
+## Stay Connected
+
+Share your itinerary with trusted friends or family. Check in regularly. Join LGBTQ+ travel groups on social media where you can ask questions and get real-time advice from other travelers.
+
+## Local Guides Make a Difference
+
+Connecting with a local LGBTQ+ guide isn't just about sightseeing—it's about safety and authentic experience. They know which neighborhoods are welcoming, which venues are safe, and how to navigate local culture.
+
+## Trust Your Instincts
+
+If a situation feels uncomfortable, leave. Your safety and comfort matter more than any tourist attraction or social obligation.
+
+## Build Community
+
+Look for local LGBTQ+ centers, cafés, or events. These spaces offer community, safety, and often invaluable local advice.`,
+    featured_image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200",
+    author_name: "Rainbow Tour Guides Team",
+    author_photo: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200",
+    published_date: "2025-12-28",
+    read_time: 7,
+    category: "Travel Tips",
+    tags: ["Solo Travel", "Safety", "Tips"],
+  },
+  {
+    id: "art5",
+    slug: "food-scene-mexico-city",
+    title: "Mexico City's Queer-Friendly Food Scene",
+    excerpt: "From street tacos to upscale dining, explore Mexico City's incredible culinary landscape through an LGBTQ+ lens.",
+    content: `Mexico City has emerged as one of Latin America's most progressive cities, and its food scene reflects this openness and creativity. Here's your guide to eating well in CDMX.
+
+## Neighborhoods to Explore
+
+Roma and Condesa are ground zero for Mexico City's queer-friendly dining scene. These neighborhoods blend historic architecture with contemporary culture, and you'll find rainbow flags alongside incredible restaurants.
+
+## Must-Try Experiences
+
+- **Pujol**: World-renowned Mexican fine dining
+- **Contramar**: Iconic seafood, welcoming atmosphere
+- **Mercado Roma**: Food market with diverse options
+- **Street Tacos**: Anywhere and everywhere
+
+## Queer-Owned & Friendly
+
+Many restaurants in Roma and Condesa are queer-owned or explicitly welcoming. Look for rainbow stickers in windows, or ask your local guide for recommendations—they'll know the spots where you can be yourself.
+
+## Food Tours
+
+Consider a food tour with an LGBTQ+ guide who can provide cultural context, navigate language barriers, and introduce you to hidden gems that aren't in guidebooks.`,
+    featured_image: "https://images.unsplash.com/photo-1565299543923-37dd37887442?w=1200",
+    author_name: "Carlos Mendoza",
+    author_photo: "https://images.unsplash.com/photo-1528892952291-009c663ce843?w=200",
+    published_date: "2025-12-25",
+    read_time: 5,
+    category: "Food & Culture",
+    tags: ["Mexico City", "Food", "Culture"],
+  },
+  {
+    id: "art6",
+    slug: "pride-festivals-2026",
+    title: "The Ultimate Guide to Pride Festivals 2026",
+    excerpt: "Plan your 2026 Pride travels with our comprehensive guide to the world's best LGBTQ+ celebrations and festivals.",
+    content: `Pride season 2026 promises to be bigger and more inclusive than ever. Here's your guide to the must-attend celebrations around the world.
+
+## Europe's Biggest
+
+- **Amsterdam Pride** (July-August): Canal parade, street parties
+- **Madrid Pride** (June-July): One of Europe's largest, million+ attendees
+- **London Pride** (June): Historic parade through the city center
+- **Berlin CSD** (July): Political roots, massive celebration
+
+## Americas
+
+- **NYC Pride** (June): The birthplace of Pride, multiple events
+- **São Paulo Pride** (June): World's largest, 5+ million attendees
+- **Mexico City Pride** (June): Growing, vibrant, welcoming
+- **Toronto Pride** (June): Canada's biggest celebration
+
+## Planning Tips
+
+Book accommodations early—Pride months see hotels fill up quickly. Consider staying with local LGBTQ+ hosts or in queer-friendly neighborhoods. Many cities offer Pride passes for discounted or free entry to events.
+
+## Beyond the Parade
+
+While the parades are iconic, Pride is about community. Attend panel discussions, art exhibitions, and community gatherings. These quieter events often provide deeper connections and cultural understanding.
+
+## Travel with Guides
+
+Experiencing Pride with a local LGBTQ+ guide adds context and safety. They know the best events, how to navigate crowds, and where to find the authentic celebrations beyond the tourist-focused parties.`,
+    featured_image: "https://images.unsplash.com/photo-1530103043960-ef38714abb15?w=1200",
+    author_name: "Rainbow Tour Guides Team",
+    author_photo: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200",
+    published_date: "2025-12-20",
+    read_time: 9,
+    category: "Events",
+    tags: ["Pride", "Festivals", "Events"],
+  },
+];
+
+export function getMockArticles(): Article[] {
+  return MOCK_ARTICLES;
+}
+
+export function getMockArticle(slug: string): Article | undefined {
+  return MOCK_ARTICLES.find((a) => a.slug === slug);
 }
 
