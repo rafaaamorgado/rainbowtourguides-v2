@@ -45,7 +45,7 @@ export default async function MarketingPage() {
     .from('guides')
     .select('*, profile:profiles(display_name, avatar_url)')
     .eq('status', 'approved')
-    .limit(3);
+    .limit(4);
 
   const guides = (guidesData ?? []) as any[];
 
@@ -231,39 +231,32 @@ export default async function MarketingPage() {
         </section>
       )}
 
-      {/* Featured Guides */}
+      {/* Top Guides */}
       {guides && guides.length > 0 && (
-        <section className="py-32 bg-slate-950 text-white relative overflow-hidden">
-          {/* Abstract Background */}
-          <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-          <div className="absolute top-1/2 left-1/2 w-[800px] h-[800px] bg-brand rounded-full blur-[120px] opacity-10 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
-
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="flex flex-col md:flex-row justify-between items-start mb-20">
-              <div className="max-w-2xl">
-                <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6">
-                  Meet the Insiders
+        <section className="py-32 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-16">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
+                  Meet Our Top Guides
                 </h2>
-                <p className="text-xl text-slate-400 font-light">
-                  Skip the tourist traps. Our guides unlock the city&apos;s
-                  authentic pulse.
+                <p className="text-lg text-slate-500 font-light max-w-2xl">
+                  Verified locals who share authentic experiences and safe
+                  spaces in their cities.
                 </p>
               </div>
-              <Button
-                asChild
-                variant="secondary"
-                size="lg"
-                className="mt-8 md:mt-0"
-              >
-                <Link href="/cities">Browse All Guides</Link>
+              <Button asChild variant="ghost" className="mt-2 md:mt-0">
+                <Link href="/guides" className="flex items-center gap-2">
+                  View all guides <ArrowRight size={18} />
+                </Link>
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {guides.map((guide) => (
                 <div
                   key={guide.id}
-                  className="bg-white rounded-3xl p-2 transform hover:-translate-y-2 transition-transform duration-500"
+                  className="bg-white rounded-3xl border border-slate-100 p-3 shadow-sm hover:shadow-lg transition-shadow duration-300"
                 >
                   <GuideCard guide={guide} />
                 </div>
