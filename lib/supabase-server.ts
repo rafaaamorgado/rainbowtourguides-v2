@@ -1,3 +1,5 @@
+'use server';
+
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/database';
@@ -38,7 +40,7 @@ export async function createSupabaseServerClient() {
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set(name, value, options);
           });
-        } catch (error) {
+        } catch {
           // Игнорируем ошибки в middleware/layouts где cookies read-only
         }
       },

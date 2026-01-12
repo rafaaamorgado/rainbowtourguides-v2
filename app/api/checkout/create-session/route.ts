@@ -46,10 +46,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Load guide to get hourly_rate
+    // Load guide to get pricing
+    // Note: New schema uses price_4h, price_6h, price_8h instead of hourly_rate
     const { data: guideData, error: guideError } = await supabase
       .from("guides")
-      .select("hourly_rate, currency")
+      .select("price_4h, price_6h, price_8h, currency")
       .eq("id", booking.guide_id)
       .single();
 
@@ -60,22 +61,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const guide = guideData as Pick<Guide, "hourly_rate" | "currency">;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const guide = guideData as any;
 
-    // Calculate amount
-    const hourlyRate = guide.hourly_rate ? parseFloat(guide.hourly_rate) : 50;
+    // Calculate amount based on duration
+    // TODO: Use price from booking.price_total if available, otherwise calculate from guide prices
     const durationHours = booking.duration_hours || 4;
-    const amount = hourlyRate * durationHours;
+    let amount = 0;
+    if (durationHours <= 4) {
+      amount = guide.price_4h ? parseFloat(guide.price_4h.toString()) : 0;
+    } else if (durationHours <= 6) {
+      amount = guide.price_6h ? parseFloat(guide.price_6h.toString()) : 0;
+    } else {
+      amount = guide.price_8h ? parseFloat(guide.price_8h.toString()) : 0;
+    }
+    
+    // Fallback to booking price_total if guide prices not set
+    if (amount === 0) {
+      amount = parseFloat(booking.price_total.toString());
+    }
+    
     const currency = guide.currency || booking.currency || "USD";
 
     // Get guide name for line item
     const { data: guideProfile } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("full_name") // ⚠️ full_name, not display_name
       .eq("id", booking.guide_id)
       .single();
 
-    const guideName = (guideProfile as { display_name: string } | null)?.display_name || "Guide";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const guideName = (guideProfile as any)?.full_name || "Guide";
 
     // Initialize Stripe
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;

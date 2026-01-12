@@ -40,8 +40,9 @@ function CityCard({
     >
       {/* City Photo Background */}
       <div className="absolute inset-0">
+        {/* TODO: add image_url field to cities table */}
         <Image
-          src={city.image_url}
+          src="/placeholder-city.svg"
           alt={`${city.name}, ${city.country_name}`}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"

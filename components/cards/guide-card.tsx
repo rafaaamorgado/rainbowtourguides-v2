@@ -55,8 +55,9 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
 
     return (
       <div ref={ref}>
+        {/* TODO: add slug field to guides table, using id for now */}
         <Link
-          href={`/guides/${guide.slug}`}
+          href={`/guides/${guide.slug || guide.id}`}
           className="block group cursor-pointer"
         >
           <div

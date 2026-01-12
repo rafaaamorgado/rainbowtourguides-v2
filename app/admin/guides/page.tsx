@@ -30,7 +30,7 @@ type Guide = Database['public']['Tables']['guides']['Row'];
 type PendingGuideWithDetails = Guide & {
   profile: {
     id: string;
-    display_name: string;
+    full_name: string; // ⚠️ full_name, not display_name
     avatar_url: string | null;
   } | null;
   city: {
@@ -54,7 +54,7 @@ export default async function AdminGuidesPage() {
     .select(
       `
       *,
-      profile:id(id, display_name, avatar_url),
+      profile:id(id, full_name, avatar_url), // ⚠️ full_name, not display_name
       city:city_id(name, country_name),
       verification:guide_verifications!guide_verifications_guide_id_fkey(
         id_document_url,
@@ -232,7 +232,7 @@ export default async function AdminGuidesPage() {
                             {guide.profile?.avatar_url ? (
                               <img
                                 src={guide.profile.avatar_url}
-                                alt={guide.profile.display_name}
+                                alt={guide.profile.full_name}
                                 className="w-10 h-10 rounded-full object-cover border-2 border-slate-200"
                               />
                             ) : (
@@ -245,7 +245,8 @@ export default async function AdminGuidesPage() {
                             )}
                             <div>
                               <p className="font-semibold text-slate-900">
-                                {guide.profile?.display_name || 'Unknown'}
+                                {guide.profile?.full_name || 'Unknown'}{' '}
+                                {/* ⚠️ full_name, not display_name */}
                               </p>
                               <Badge
                                 variant="secondary"
@@ -304,7 +305,8 @@ export default async function AdminGuidesPage() {
 
                         {/* View Profile Link */}
                         <TableCell>
-                          {guide.slug ? (
+                          {/* TODO: add slug field to guides table, using id for now */}
+                          {guide.slug || guide.id ? (
                             <Button
                               asChild
                               variant="outline"
@@ -312,7 +314,7 @@ export default async function AdminGuidesPage() {
                               className="gap-2"
                             >
                               <Link
-                                href={`/guides/${guide.slug}`}
+                                href={`/guides/${guide.slug || guide.id}`}
                                 target="_blank"
                               >
                                 <ExternalLink size={14} />

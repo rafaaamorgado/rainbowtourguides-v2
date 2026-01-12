@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Home,
   Calendar,
@@ -15,15 +15,15 @@ import {
   MapPin,
   LogOut,
   ChevronRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface SidebarProps {
   profile: {
     id: string;
-    display_name: string;
+    full_name: string; // ⚠️ full_name, not display_name
     avatar_url: string | null;
     role: string;
   };
@@ -42,44 +42,44 @@ export function GuideSidebar({
   const pathname = usePathname();
   const router = useRouter();
 
-  const isApproved = guide?.status === "approved";
+  const isApproved = guide?.status === 'approved';
 
   const navigationLinks = [
     {
-      name: "Dashboard",
-      href: "/guide/dashboard",
+      name: 'Dashboard',
+      href: '/guide/dashboard',
       icon: Home,
       show: true,
     },
     {
-      name: "Bookings",
-      href: "/guide/bookings",
+      name: 'Bookings',
+      href: '/guide/bookings',
       icon: Calendar,
       badge: pendingBookingsCount > 0 ? pendingBookingsCount : undefined,
       show: true,
     },
     {
-      name: "Onboarding",
-      href: "/guide/onboarding",
+      name: 'Onboarding',
+      href: '/guide/onboarding',
       icon: ClipboardCheck,
       show: !isApproved, // Only show if not approved
     },
     {
-      name: "Profile",
-      href: "/guide/profile",
+      name: 'Profile',
+      href: '/guide/profile',
       icon: User,
       show: true,
     },
     {
-      name: "Payouts",
-      href: "/guide/payouts",
+      name: 'Payouts',
+      href: '/guide/payouts',
       icon: DollarSign,
       show: true,
     },
   ];
 
   const handleSignOut = async () => {
-    router.push("/auth/sign-out");
+    router.push('/auth/sign-out');
   };
 
   return (
@@ -112,10 +112,10 @@ export function GuideSidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200",
-          "transform transition-transform duration-300 ease-in-out",
-          "lg:translate-x-0",
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200',
+          'transform transition-transform duration-300 ease-in-out',
+          'lg:translate-x-0',
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="flex flex-col h-full">
@@ -126,7 +126,9 @@ export function GuideSidebar({
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center">
                   <span className="text-white font-bold text-sm">RT</span>
                 </div>
-                <span className="font-bold text-ink text-sm">Rainbow Tours</span>
+                <span className="font-bold text-ink text-sm">
+                  Rainbow Tours
+                </span>
               </Link>
 
               {/* Close button (mobile only) */}
@@ -146,13 +148,13 @@ export function GuideSidebar({
                   {profile.avatar_url ? (
                     <Image
                       src={profile.avatar_url}
-                      alt={profile.display_name}
+                      alt={profile.full_name}
                       fill
                       className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white font-semibold text-lg">
-                      {profile.display_name.charAt(0).toUpperCase()}
+                      {profile.full_name.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
@@ -160,7 +162,7 @@ export function GuideSidebar({
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-ink truncate">
-                    {profile.display_name}
+                    {profile.full_name} {/* ⚠️ full_name, not display_name */}
                   </p>
                   <Badge
                     variant="secondary"
@@ -179,7 +181,8 @@ export function GuideSidebar({
               .filter((link) => link.show)
               .map((link) => {
                 const isActive =
-                  pathname === link.href || pathname.startsWith(link.href + "/");
+                  pathname === link.href ||
+                  pathname.startsWith(link.href + '/');
                 const Icon = link.icon;
 
                 return (
@@ -188,10 +191,10 @@ export function GuideSidebar({
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative",
+                      'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative',
                       isActive
-                        ? "bg-brand/10 text-brand font-semibold"
-                        : "text-ink-soft hover:bg-slate-100 hover:text-ink"
+                        ? 'bg-brand/10 text-brand font-semibold'
+                        : 'text-ink-soft hover:bg-slate-100 hover:text-ink',
                     )}
                   >
                     <Icon className="h-5 w-5 flex-shrink-0" />
@@ -239,4 +242,3 @@ export function GuideSidebar({
     </>
   );
 }
-

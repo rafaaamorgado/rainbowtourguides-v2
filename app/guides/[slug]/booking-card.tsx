@@ -55,8 +55,9 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
     }
 
     // Check authentication
+    // TODO: add slug field to guides table, using id for now
     if (!isAuthenticated) {
-      router.push(`/auth/sign-in?redirect=/guides/${guide.slug}`);
+      router.push(`/auth/sign-in?redirect=/guides/${guide.slug || guide.id}`);
       return;
     }
 

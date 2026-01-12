@@ -74,8 +74,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Guide pages
+  // TODO: add slug field to guides table, using id for now
   const guidePages: MetadataRoute.Sitemap = guides.map((guide) => ({
-    url: `${baseUrl}/guides/${guide.slug}`,
+    url: `${baseUrl}/guides/${guide.slug || guide.id}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.7,

@@ -75,7 +75,7 @@ export default async function TravelerDashboardPage() {
       {/* Welcome Header */}
       <div>
         <h1 className="text-3xl md:text-4xl font-bold text-ink mb-2">
-          Welcome back, {profile.display_name}!
+          Welcome back, {profile.full_name}! {/* ⚠️ full_name, not display_name */}
         </h1>
         <p className="text-ink-soft text-lg">
           Here's what's happening with your bookings

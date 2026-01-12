@@ -54,20 +54,22 @@ type ProfilesTable = {
   Row: {
     id: string;
     role: ProfileRole;
-    display_name: string;
+    full_name: string;
     avatar_url: string | null;
     home_city_id: string | null;
     bio: string | null;
+    languages: string[] | null;
     created_at: string;
     updated_at: string;
   };
   Insert: {
     id: string;
     role?: ProfileRole;
-    display_name: string;
+    full_name: string;
     avatar_url?: string | null;
     home_city_id?: string | null;
     bio?: string | null;
+    languages?: string[] | null;
     created_at?: string;
     updated_at?: string;
   };
