@@ -1,33 +1,29 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight } from "lucide-react";
-import { getCities, getGuides } from "@/lib/data-service";
-import { GuidesSearchBar } from "@/components/guides/search-bar";
-import { GuideCard } from "@/components/cards/guide-card";
-import { FilteredView } from "./filtered-view";
-import { Button } from "@/components/ui/button";
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight } from 'lucide-react';
+import { getCities, getGuides } from '@/lib/data-service';
+import { GuidesSearchBar } from '@/components/guides/search-bar';
+import { GuideCard } from '@/components/cards/guide-card';
+import { FilteredView } from './filtered-view';
+import { Button } from '@/components/ui/button';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "Find LGBTQ+ Tour Guides - Rainbow Tour Guides",
+  title: 'Find LGBTQ+ Tour Guides - Rainbow Tour Guides',
   description:
-    "Browse verified LGBTQ+ friendly local guides worldwide. Safe, inclusive, authentic travel experiences with expert locals.",
+    'Browse verified LGBTQ+ friendly local guides worldwide. Safe, inclusive, authentic travel experiences with expert locals.',
   openGraph: {
-    title: "Find LGBTQ+ Tour Guides - Rainbow Tour Guides",
-    description:
-      "Browse verified LGBTQ+ friendly local guides worldwide.",
-    type: "website",
+    title: 'Find LGBTQ+ Tour Guides - Rainbow Tour Guides',
+    description: 'Browse verified LGBTQ+ friendly local guides worldwide.',
+    type: 'website',
   },
 };
 
 export default async function GuidesPage() {
   // Fetch all guides and cities
-  const [allGuides, cities] = await Promise.all([
-    getGuides(),
-    getCities(),
-  ]);
+  const [allGuides, cities] = await Promise.all([getGuides(), getCities()]);
 
   // Sort guides by rating for top-rated section
   const topRatedGuides = [...allGuides]
@@ -42,7 +38,7 @@ export default async function GuidesPage() {
 
   // Get all unique experience tags
   const allTags = Array.from(
-    new Set(allGuides.flatMap((g) => g.experience_tags))
+    new Set(allGuides.flatMap((g) => g.experience_tags)),
   ).sort();
 
   // Cities with low guide count (new destinations)
@@ -129,7 +125,7 @@ export default async function GuidesPage() {
             <div className="space-y-8">
               {newDestinations.map((city) => {
                 const cityGuides = allGuides.filter(
-                  (g) => g.city_id === city.id
+                  (g) => g.city_id === city.id,
                 );
 
                 return (
@@ -138,8 +134,9 @@ export default async function GuidesPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="relative w-16 h-16 rounded-xl overflow-hidden">
+                          {/* TODO: add image_url field to cities table */}
                           <Image
-                            src={city.image_url}
+                            src="/placeholder-city.svg"
                             alt={city.name}
                             fill
                             className="object-cover"
@@ -150,8 +147,8 @@ export default async function GuidesPage() {
                             {city.name}
                           </h3>
                           <p className="text-sm text-ink-soft">
-                            {city.guide_count}{" "}
-                            {city.guide_count === 1 ? "guide" : "guides"}{" "}
+                            {city.guide_count}{' '}
+                            {city.guide_count === 1 ? 'guide' : 'guides'}{' '}
                             available
                           </p>
                         </div>
@@ -200,8 +197,9 @@ export default async function GuidesPage() {
               >
                 {/* City Photo */}
                 <div className="absolute inset-0">
+                  {/* TODO: add image_url field to cities table */}
                   <Image
-                    src={city.image_url}
+                    src="/placeholder-city.svg"
                     alt={city.name}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -233,4 +231,3 @@ export default async function GuidesPage() {
     </div>
   );
 }
-

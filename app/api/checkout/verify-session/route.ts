@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createSupabaseServerClient();
     const { data: bookingData, error: bookingError } = await supabase
       .from("bookings")
-      .select("id, status, traveler_id, guide_id, city_id, starts_at")
+      .select("id, status, traveler_id, guide_id, city_id, start_at") // ⚠️ start_at, not starts_at
       .eq("stripe_checkout_session_id", sessionId)
       .single();
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       traveler_id: string;
       guide_id: string;
       city_id: string;
-      starts_at: string;
+      start_at: string; // ⚠️ start_at, not starts_at
     } | null;
 
     if (!booking) {
@@ -69,9 +69,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Update booking status to 'paid'
+    // Update booking status to 'awaiting_payment' or 'confirmed' (depending on payment flow)
+    // Note: New schema doesn't have 'paid' status, use 'awaiting_payment' or 'confirmed'
     const bookingUpdate: Database["public"]["Tables"]["bookings"]["Update"] = {
-      status: "paid",
+      status: "awaiting_payment", // ⚠️ awaiting_payment, not paid
     };
 
     // Type assertion needed for Supabase update operation
@@ -87,12 +88,12 @@ export async function GET(request: NextRequest) {
       const [travelerProfileResult, guideProfileResult, cityResult] = await Promise.all([
         supabase
           .from("profiles")
-          .select("display_name")
+          .select("full_name") // ⚠️ full_name, not display_name
           .eq("id", booking.traveler_id)
           .single(),
         supabase
           .from("profiles")
-          .select("display_name")
+          .select("full_name") // ⚠️ full_name, not display_name
           .eq("id", booking.guide_id)
           .single(),
         supabase
@@ -102,11 +103,13 @@ export async function GET(request: NextRequest) {
           .single(),
       ]);
 
-      const travelerName = (travelerProfileResult.data as { display_name: string } | null)?.display_name || "Traveler";
-      const guideName = (guideProfileResult.data as { display_name: string } | null)?.display_name || "Guide";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const travelerName = (travelerProfileResult.data as any)?.full_name || "Traveler"; // ⚠️ full_name, not display_name
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const guideName = (guideProfileResult.data as any)?.full_name || "Guide"; // ⚠️ full_name, not display_name
       const cityName = (cityResult.data as { name: string } | null)?.name || "the city";
 
-      const formattedDate = new Date(booking.starts_at).toLocaleDateString("en-US", {
+      const formattedDate = new Date(booking.start_at).toLocaleDateString("en-US", { // ⚠️ start_at, not starts_at
         weekday: "long",
         year: "numeric",
         month: "long",

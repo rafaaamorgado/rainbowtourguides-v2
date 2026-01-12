@@ -40,7 +40,8 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
       email,
       password,
       options: {
-        data: { display_name: name, role: initialRole },
+        // Note: display_name in auth metadata is just metadata, we use full_name in profiles table
+        data: { full_name: name, role: initialRole },
       },
     });
 
@@ -61,7 +62,7 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
     const profileInsert: Database["public"]["Tables"]["profiles"]["Insert"] = {
       id: userId,
       role: initialRole,
-      display_name: name,
+      full_name: name, // ⚠️ full_name, not display_name
     };
 
     // Type assertion needed for browser client - Supabase browser client typing can be strict

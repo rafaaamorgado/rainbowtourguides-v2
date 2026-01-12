@@ -12,13 +12,13 @@ type Booking = Database["public"]["Tables"]["bookings"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 type GuideWithDetails = Guide & {
-  profile: { display_name: string } | null;
+  profile: { full_name: string } | null; // ⚠️ full_name, not display_name
   city: { name: string } | null;
 };
 
 type BookingWithDetails = Booking & {
-  traveler: { display_name: string } | null;
-  guide: { display_name: string } | null;
+  traveler: { full_name: string } | null; // ⚠️ full_name, not display_name
+  guide: { full_name: string } | null; // ⚠️ full_name, not display_name
   city: { name: string } | null;
 };
 
@@ -52,7 +52,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     .from("guides")
     .select(`
       *,
-      profile:id(display_name),
+      profile:id(full_name), // ⚠️ full_name, not display_name
       city:city_id(name)
     `)
     .order("created_at", { ascending: false });
@@ -62,8 +62,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     .from("bookings")
     .select(`
       *,
-      traveler:traveler_id(display_name),
-      guide:guide_id(display_name),
+      traveler:traveler_id(full_name), // ⚠️ full_name, not display_name
+      guide:guide_id(full_name), // ⚠️ full_name, not display_name
       city:city_id(name)
     `)
     .order("created_at", { ascending: false })
@@ -161,7 +161,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           Admin Console
         </h1>
         <p className="text-slate-600 font-light mt-2">
-          Logged in as {profile.display_name}
+          Logged in as {profile.full_name} {/* ⚠️ full_name, not display_name */}
         </p>
       </div>
 
@@ -287,7 +287,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                             </div>
                             <div>
                               <p className="font-semibold text-lg text-slate-900">
-                                {guide.profile?.display_name || "Unknown"}
+                                {guide.profile?.full_name || "Unknown"} {/* ⚠️ full_name, not display_name */}
                               </p>
                               <Badge variant={statusInfo.variant} className="mt-1">
                                 {statusInfo.label}
@@ -297,7 +297,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           <div className="pl-13 space-y-1">
                             <p className="text-sm text-slate-600">
                               {guide.city?.name || "No city"} •{" "}
-                              {guide.hourly_rate ? `$${guide.hourly_rate}/hr` : "No rate set"} •{" "}
+                              {/* TODO: Use price_4h, price_6h, price_8h instead of hourly_rate */}
+                              {guide.price_4h ? `$${guide.price_4h}/4h` : "No rate set"} •{" "}
                               Joined {createdDate.toLocaleDateString()}
                             </p>
                             {guide.headline && (
@@ -370,7 +371,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <div className="space-y-4">
               {typedBookings.map((booking) => {
                 const statusInfo = bookingStatusConfig[booking.status];
-                const startDate = new Date(booking.starts_at);
+                // ⚠️ start_at, not starts_at
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const startDate = new Date((booking as any).start_at || booking.starts_at);
 
                 return (
                   <Card key={booking.id} className="shadow-md">
@@ -382,7 +385,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           </div>
                           <div className="flex-1">
                             <p className="font-semibold text-slate-900">
-                              {booking.traveler?.display_name || "Unknown"} → {booking.guide?.display_name || "Unknown"}
+                              {booking.traveler?.full_name || "Unknown"} → {booking.guide?.full_name || "Unknown"} {/* ⚠️ full_name, not display_name */}
                             </p>
                             <Badge variant={statusInfo.variant} className="mt-1">
                               {statusInfo.label}
@@ -471,7 +474,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                             <Shield size={20} className="text-slate-600" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-semibold text-slate-900">{user.display_name}</p>
+                            <p className="font-semibold text-slate-900">{user.full_name}</p> {/* ⚠️ full_name, not display_name */}
                             <Badge
                               variant={
                                 user.role === "admin"

@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 interface SidebarProps {
   profile: {
     id: string;
-    display_name: string;
+    full_name: string; // ⚠️ full_name, not display_name
     avatar_url: string | null;
     role: string;
   };
@@ -131,13 +131,13 @@ export function TravelerSidebar({ profile }: SidebarProps) {
                   {profile.avatar_url ? (
                     <Image
                       src={profile.avatar_url}
-                      alt={profile.display_name}
+                      alt={profile.full_name} {/* ⚠️ full_name, not display_name */}
                       fill
                       className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white font-semibold text-lg">
-                      {profile.display_name.charAt(0).toUpperCase()}
+                      {profile.full_name.charAt(0).toUpperCase()} {/* ⚠️ full_name, not display_name */}
                     </div>
                   )}
                 </div>
@@ -145,7 +145,7 @@ export function TravelerSidebar({ profile }: SidebarProps) {
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-ink truncate">
-                    {profile.display_name}
+                    {profile.full_name} {/* ⚠️ full_name, not display_name */}
                   </p>
                   <Badge
                     variant="secondary"

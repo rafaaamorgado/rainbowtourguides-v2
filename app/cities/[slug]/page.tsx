@@ -25,10 +25,11 @@ export async function generateMetadata({
 
   return {
     title: `${city.name} LGBTQ+ Tour Guides | Rainbow Tour Guides`,
-    description: city.description.slice(0, 155),
+    // TODO: add description field to cities table
+    description: `Find verified LGBTQ+ tour guides in ${city.name}`,
     openGraph: {
       title: `${city.name} LGBTQ+ Tour Guides`,
-      description: city.description.slice(0, 155),
+      description: `Find verified LGBTQ+ tour guides in ${city.name}`,
       type: "website",
     },
   };
@@ -50,8 +51,9 @@ export default async function CityPage({ params }: CityPageProps) {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative aspect-[21/9] w-full overflow-hidden bg-slate-900">
+        {/* TODO: add image_url field to cities table */}
         <Image
-          src={city.image_url}
+          src="https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1600"
           alt={`${city.name}, ${city.country_name}`}
           fill
           priority
@@ -107,8 +109,9 @@ export default async function CityPage({ params }: CityPageProps) {
             <h2 className="text-3xl font-bold text-ink">
               About {city.name}
             </h2>
+            {/* TODO: add description field to cities table */}
             <p className="text-lg text-ink-soft leading-relaxed">
-              {city.description}
+              Discover {city.name} with our verified LGBTQ+ tour guides. Experience authentic local culture, safe spaces, and hidden gems in this vibrant destination.
             </p>
           </div>
 

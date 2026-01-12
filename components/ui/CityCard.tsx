@@ -19,8 +19,9 @@ export function CityCard({ city }: CityCardProps) {
       href={`/cities/${city.slug}`}
       className="group block relative overflow-hidden rounded-3xl aspect-[3/4] shadow-lg cursor-pointer"
     >
+      {/* TODO: add image_url field to cities table */}
       <Image
-        src={city.image_url || "/placeholder-city.svg"}
+        src="/placeholder-city.svg"
         alt={city.name}
         fill
         className="object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -36,11 +37,12 @@ export function CityCard({ city }: CityCardProps) {
           {city.country_name}
         </span>
         <h3 className="text-4xl font-serif font-bold mb-2 leading-none">{city.name}</h3>
-        {city.description && (
+        {/* TODO: add description field to cities table */}
+        {/* {city.description && (
           <p className="text-sm text-white/80 line-clamp-2 mb-0 h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 group-hover:mb-4 transition-all duration-500 delay-100 font-light leading-relaxed">
             {city.description}
           </p>
-        )}
+        )} */}
         {city.guide_count !== undefined && (
           <div className="flex items-center gap-3 opacity-80">
             <div className="h-px flex-grow bg-white/30"></div>

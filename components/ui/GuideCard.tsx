@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { Star, ShieldCheck } from "lucide-react";
-import Image from "next/image";
-import type { GuideStatus } from "@/types/database";
-import { getStoragePublicUrl } from "@/lib/storage-helpers";
+import Link from 'next/link';
+import { Star, ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
+import type { GuideStatus } from '@/types/database';
+import { getStoragePublicUrl } from '@/lib/storage-helpers';
 
 type GuideCardProps = {
   guide: {
@@ -14,7 +14,7 @@ type GuideCardProps = {
     currency: string | null;
     rating_avg: number | null;
     profile: {
-      display_name: string;
+      full_name: string; // ⚠️ full_name, not display_name
       avatar_url: string | null;
     } | null;
     themes?: string[] | null;
@@ -22,15 +22,21 @@ type GuideCardProps = {
 };
 
 export function GuideCard({ guide }: GuideCardProps) {
-  const isVerified = guide.status === "approved";
-  const displayName = guide.profile?.display_name || "Guide";
-  const avatarUrl = getStoragePublicUrl(guide.profile?.avatar_url, "guide-photos") || "/placeholder-avatar.svg";
+  const isVerified = guide.status === 'approved';
+  const displayName = guide.profile?.full_name || 'Guide'; // ⚠️ full_name, not display_name
+  const avatarUrl =
+    getStoragePublicUrl(guide.profile?.avatar_url, 'guide-photos') ||
+    '/placeholder-avatar.svg';
   const rating = guide.rating_avg || 5.0;
   const price = parseFloat(guide.hourly_rate);
   const themes = guide.themes || [];
 
   return (
-    <Link href={`/guides/${guide.slug}`} className="block group cursor-pointer">
+    // {/* TODO: add slug field to guides table, using id for now */}
+    <Link
+      href={`/guides/${guide.slug || guide.id}`}
+      className="block group cursor-pointer"
+    >
       <div className="relative aspect-[3/4] overflow-hidden rounded-3xl mb-4 shadow-md group-hover:shadow-2xl transition-all duration-500">
         <Image
           src={avatarUrl}
@@ -59,12 +65,12 @@ export function GuideCard({ guide }: GuideCardProps) {
             {displayName}
           </h3>
           <span className="text-sm font-medium text-slate-500">
-            from {guide.currency || "$"}
+            from {guide.currency || '$'}
             {price}/hr
           </span>
         </div>
         <p className="text-slate-500 text-sm font-light leading-relaxed line-clamp-1">
-          {guide.headline || "Local guide"}
+          {guide.headline || 'Local guide'}
         </p>
 
         {themes.length > 0 && (

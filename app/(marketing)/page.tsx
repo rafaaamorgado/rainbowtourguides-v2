@@ -32,7 +32,7 @@ function adaptGuideForCard(guide: Guide) {
     currency: '$',
     rating_avg: guide.rating,
     profile: {
-      display_name: guide.name,
+      full_name: guide.name, // ⚠️ full_name, not display_name
       avatar_url: guide.photo_url,
     },
     themes: guide.experience_tags.slice(0, 3),

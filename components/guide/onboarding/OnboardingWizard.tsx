@@ -129,7 +129,7 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
     const formData = new FormData();
 
     // Step 1
-    formData.set("display_name", step1Data.displayName);
+    formData.set("full_name", step1Data.displayName); // ⚠️ full_name, not display_name
     formData.set("city_id", step1Data.cityId);
     formData.set("languages", step1Data.languages);
     formData.set("short_bio", step1Data.shortBio);
