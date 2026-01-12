@@ -232,7 +232,7 @@ export default async function AdminGuidesPage() {
                             {guide.profile?.avatar_url ? (
                               <img
                                 src={guide.profile.avatar_url}
-                                alt={guide.profile.full_name} {/* ⚠️ full_name, not display_name */}
+                                alt={guide.profile.full_name}
                                 className="w-10 h-10 rounded-full object-cover border-2 border-slate-200"
                               />
                             ) : (
@@ -245,7 +245,8 @@ export default async function AdminGuidesPage() {
                             )}
                             <div>
                               <p className="font-semibold text-slate-900">
-                                {guide.profile?.full_name || 'Unknown'} {/* ⚠️ full_name, not display_name */}
+                                {guide.profile?.full_name || 'Unknown'}{' '}
+                                {/* ⚠️ full_name, not display_name */}
                               </p>
                               <Badge
                                 variant="secondary"

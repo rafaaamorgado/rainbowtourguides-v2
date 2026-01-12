@@ -1,19 +1,37 @@
-import { revalidatePath } from "next/cache";
-import Link from "next/link";
-import { Users, UserCheck, Calendar, Clock, CheckCircle2, XCircle, RotateCcw, Shield } from "lucide-react";
-import { requireRole } from "@/lib/auth-helpers";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import type { Database, GuideStatus, BookingStatus, ProfileRole } from "@/types/database";
+import { revalidatePath } from 'next/cache';
+import Link from 'next/link';
+import {
+  Users,
+  UserCheck,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  Shield,
+} from 'lucide-react';
+import { requireRole } from '@/lib/auth-helpers';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import type {
+  Database,
+  GuideStatus,
+  BookingStatus,
+  ProfileRole,
+} from '@/types/database';
 
-type Guide = Database["public"]["Tables"]["guides"]["Row"];
-type Booking = Database["public"]["Tables"]["bookings"]["Row"];
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type Guide = Database['public']['Tables']['guides']['Row'];
+type Booking = Database['public']['Tables']['bookings']['Row'];
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 type GuideWithDetails = Guide & {
-  profile: { full_name: string } | null; // ⚠️ full_name, not display_name
+  profile: { full_name: string } | null;
   city: { name: string } | null;
+  // Add price fields that may come from the database
+  price_4h?: string | number | null;
+  price_6h?: string | number | null;
+  price_8h?: string | number | null;
 };
 
 type BookingWithDetails = Booking & {
@@ -26,131 +44,150 @@ type AdminPageProps = {
   searchParams: Promise<{ tab?: string }>;
 };
 
-const guideStatusConfig: Record<GuideStatus, { label: string; variant: "default" | "secondary" | "destructive" }> = {
-  pending: { label: "Pending", variant: "secondary" },
-  approved: { label: "Approved", variant: "default" },
-  rejected: { label: "Rejected", variant: "destructive" },
+const guideStatusConfig: Record<
+  GuideStatus,
+  { label: string; variant: 'default' | 'secondary' | 'destructive' }
+> = {
+  pending: { label: 'Pending', variant: 'secondary' },
+  approved: { label: 'Approved', variant: 'default' },
+  rejected: { label: 'Rejected', variant: 'destructive' },
 };
 
-const bookingStatusConfig: Record<BookingStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Pending", variant: "secondary" },
-  accepted: { label: "Accepted", variant: "default" },
-  confirmed: { label: "Confirmed", variant: "default" },
-  declined: { label: "Declined", variant: "destructive" },
-  cancelled: { label: "Cancelled", variant: "outline" },
-  completed: { label: "Completed", variant: "default" },
-  paid: { label: "Paid", variant: "default" },
+const bookingStatusConfig: Record<
+  BookingStatus,
+  {
+    label: string;
+    variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  }
+> = {
+  pending: { label: 'Pending', variant: 'secondary' },
+  accepted: { label: 'Accepted', variant: 'default' },
+  confirmed: { label: 'Confirmed', variant: 'default' },
+  declined: { label: 'Declined', variant: 'destructive' },
+  cancelled: { label: 'Cancelled', variant: 'outline' },
+  completed: { label: 'Completed', variant: 'default' },
+  paid: { label: 'Paid', variant: 'default' },
 };
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const { supabase, profile } = await requireRole("admin");
+  const { supabase, profile } = await requireRole('admin');
   const params = await searchParams;
-  const activeTab = params.tab || "guides";
+  const activeTab = params.tab || 'guides';
 
   // Load guides with profiles and cities
   const { data: guides } = await supabase
-    .from("guides")
-    .select(`
+    .from('guides')
+    .select(
+      `
       *,
-      profile:id(full_name), // ⚠️ full_name, not display_name
-      city:city_id(name)
-    `)
-    .order("created_at", { ascending: false });
+      profile:profiles!guides_id_fkey(full_name),
+      city:cities!guides_city_id_fkey(name)
+    `,
+    )
+    .order('created_at', { ascending: false });
 
   // Load recent bookings (last 50)
   const { data: bookings } = await supabase
-    .from("bookings")
-    .select(`
+    .from('bookings')
+    .select(
+      `
       *,
-      traveler:traveler_id(full_name), // ⚠️ full_name, not display_name
-      guide:guide_id(full_name), // ⚠️ full_name, not display_name
-      city:city_id(name)
-    `)
-    .order("created_at", { ascending: false })
+      traveler:profiles!bookings_traveler_id_fkey(full_name),
+      guide:profiles!bookings_guide_id_fkey(full_name),
+      city:cities!bookings_city_id_fkey(name)
+    `,
+    )
+    .order('created_at', { ascending: false })
     .limit(50);
 
   // Load all users
   const { data: users } = await supabase
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
 
   const typedGuides = (guides ?? []) as GuideWithDetails[];
   const typedBookings = (bookings ?? []) as BookingWithDetails[];
   const typedUsers = (users ?? []) as Profile[];
 
   // Calculate stats
-  const pendingGuides = typedGuides.filter((g) => g.status === "pending").length;
-  const approvedGuides = typedGuides.filter((g) => g.status === "approved").length;
-  const pendingBookings = typedBookings.filter((b) => b.status === "pending").length;
+  const pendingGuides = typedGuides.filter(
+    (g) => g.status === 'pending',
+  ).length;
+  const approvedGuides = typedGuides.filter(
+    (g) => g.status === 'approved',
+  ).length;
+  const pendingBookings = typedBookings.filter(
+    (b) => b.status === 'pending',
+  ).length;
 
   // Server action: Update guide status
   async function updateGuideStatus(formData: FormData): Promise<void> {
-    "use server";
+    'use server';
 
-    const { supabase } = await requireRole("admin");
-    const guideId = formData.get("guide_id") as string;
-    const newStatus = formData.get("status") as GuideStatus;
+    const { supabase } = await requireRole('admin');
+    const guideId = formData.get('guide_id') as string;
+    const newStatus = formData.get('status') as GuideStatus;
 
     if (!guideId || !newStatus) return;
 
-    const guideUpdate: Database["public"]["Tables"]["guides"]["Update"] = {
+    const guideUpdate: Database['public']['Tables']['guides']['Update'] = {
       status: newStatus,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
-      .from("guides")
+      .from('guides')
       .update(guideUpdate)
-      .eq("id", guideId);
+      .eq('id', guideId);
 
-    revalidatePath("/admin");
+    revalidatePath('/admin');
   }
 
   // Server action: Update booking status
   async function updateBookingStatus(formData: FormData): Promise<void> {
-    "use server";
+    'use server';
 
-    const { supabase } = await requireRole("admin");
-    const bookingId = formData.get("booking_id") as string;
-    const newStatus = formData.get("status") as BookingStatus;
+    const { supabase } = await requireRole('admin');
+    const bookingId = formData.get('booking_id') as string;
+    const newStatus = formData.get('status') as BookingStatus;
 
     if (!bookingId || !newStatus) return;
 
-    const bookingUpdate: Database["public"]["Tables"]["bookings"]["Update"] = {
+    const bookingUpdate: Database['public']['Tables']['bookings']['Update'] = {
       status: newStatus,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
-      .from("bookings")
+      .from('bookings')
       .update(bookingUpdate)
-      .eq("id", bookingId);
+      .eq('id', bookingId);
 
-    revalidatePath("/admin");
+    revalidatePath('/admin');
   }
 
   // Server action: Update user role
   async function updateUserRole(formData: FormData): Promise<void> {
-    "use server";
+    'use server';
 
-    const { supabase } = await requireRole("admin");
-    const userId = formData.get("user_id") as string;
-    const newRole = formData.get("role") as ProfileRole;
+    const { supabase } = await requireRole('admin');
+    const userId = formData.get('user_id') as string;
+    const newRole = formData.get('role') as ProfileRole;
 
     if (!userId || !newRole) return;
 
-    const profileUpdate: Database["public"]["Tables"]["profiles"]["Update"] = {
+    const profileUpdate: Database['public']['Tables']['profiles']['Update'] = {
       role: newRole,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
-      .from("profiles")
+      .from('profiles')
       .update(profileUpdate)
-      .eq("id", userId);
+      .eq('id', userId);
 
-    revalidatePath("/admin");
+    revalidatePath('/admin');
   }
 
   return (
@@ -161,7 +198,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           Admin Console
         </h1>
         <p className="text-slate-600 font-light mt-2">
-          Logged in as {profile.full_name} {/* ⚠️ full_name, not display_name */}
+          Logged in as {profile.full_name}
         </p>
       </div>
 
@@ -170,51 +207,71 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-600">Total Guides</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600">
+                Total Guides
+              </CardTitle>
               <UserCheck size={20} className="text-slate-400" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-slate-900">{typedGuides.length}</p>
-            <p className="text-xs text-slate-500 mt-1">{approvedGuides} approved</p>
+            <p className="text-3xl font-bold text-slate-900">
+              {typedGuides.length}
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              {approvedGuides} approved
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-600">Pending Reviews</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600">
+                Pending Reviews
+              </CardTitle>
               <Clock size={20} className="text-amber-500" />
             </div>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-slate-900">{pendingGuides}</p>
-            <p className="text-xs text-slate-500 mt-1">Guides awaiting approval</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Guides awaiting approval
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-600">Bookings</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600">
+                Bookings
+              </CardTitle>
               <Calendar size={20} className="text-slate-400" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-slate-900">{typedBookings.length}</p>
-            <p className="text-xs text-slate-500 mt-1">{pendingBookings} pending</p>
+            <p className="text-3xl font-bold text-slate-900">
+              {typedBookings.length}
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              {pendingBookings} pending
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-600">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600">
+                Total Users
+              </CardTitle>
               <Users size={20} className="text-slate-400" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-slate-900">{typedUsers.length}</p>
+            <p className="text-3xl font-bold text-slate-900">
+              {typedUsers.length}
+            </p>
             <p className="text-xs text-slate-500 mt-1">All registered users</p>
           </CardContent>
         </Card>
@@ -224,7 +281,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       <div className="flex gap-2 border-b-2 border-slate-100 pb-1">
         <Button
           asChild
-          variant={activeTab === "guides" ? "default" : "ghost"}
+          variant={activeTab === 'guides' ? 'default' : 'ghost'}
           size="lg"
         >
           <Link href="/admin?tab=guides" className="gap-2">
@@ -234,7 +291,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </Button>
         <Button
           asChild
-          variant={activeTab === "bookings" ? "default" : "ghost"}
+          variant={activeTab === 'bookings' ? 'default' : 'ghost'}
           size="lg"
         >
           <Link href="/admin?tab=bookings" className="gap-2">
@@ -244,7 +301,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </Button>
         <Button
           asChild
-          variant={activeTab === "users" ? "default" : "ghost"}
+          variant={activeTab === 'users' ? 'default' : 'ghost'}
           size="lg"
         >
           <Link href="/admin?tab=users" className="gap-2">
@@ -255,10 +312,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       </div>
 
       {/* Guides Tab */}
-      {activeTab === "guides" && (
+      {activeTab === 'guides' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-serif font-bold text-slate-900">Guides Management</h2>
+            <h2 className="text-3xl font-serif font-bold text-slate-900">
+              Guides Management
+            </h2>
             <Badge variant="secondary" className="text-sm px-3 py-1">
               {typedGuides.length} total
             </Badge>
@@ -277,7 +336,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 const createdDate = new Date(guide.created_at);
 
                 return (
-                  <Card key={guide.id} className="shadow-md hover:shadow-lg transition-shadow">
+                  <Card
+                    key={guide.id}
+                    className="shadow-md hover:shadow-lg transition-shadow"
+                  >
                     <CardContent className="p-6">
                       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div className="flex-1 space-y-2">
@@ -287,54 +349,107 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                             </div>
                             <div>
                               <p className="font-semibold text-lg text-slate-900">
-                                {guide.profile?.full_name || "Unknown"} {/* ⚠️ full_name, not display_name */}
+                                {guide.profile?.full_name || 'Unknown'}{' '}
+                                {/* ⚠️ full_name, not display_name */}
                               </p>
-                              <Badge variant={statusInfo.variant} className="mt-1">
+                              <Badge
+                                variant={statusInfo.variant}
+                                className="mt-1"
+                              >
                                 {statusInfo.label}
                               </Badge>
                             </div>
                           </div>
                           <div className="pl-13 space-y-1">
                             <p className="text-sm text-slate-600">
-                              {guide.city?.name || "No city"} •{" "}
-                              {/* TODO: Use price_4h, price_6h, price_8h instead of hourly_rate */}
-                              {guide.price_4h ? `$${guide.price_4h}/4h` : "No rate set"} •{" "}
-                              Joined {createdDate.toLocaleDateString()}
+                              {guide.city?.name || 'No city'} •{' '}
+                              {guide.base_price_4h
+                                ? `$${guide.base_price_4h}/4h`
+                                : 'No rate set'}{' '}
+                              • Joined {createdDate.toLocaleDateString()}
                             </p>
                             {guide.headline && (
                               <p className="text-sm text-slate-500 italic">
-                                "{guide.headline}"
+                                &ldquo;{guide.headline}&rdquo;
                               </p>
                             )}
                           </div>
                         </div>
 
                         <div className="flex gap-2 lg:flex-col">
-                          {guide.status !== "approved" && (
-                            <form action={updateGuideStatus} className="flex-1 lg:flex-none">
-                              <input type="hidden" name="guide_id" value={guide.id} />
-                              <input type="hidden" name="status" value="approved" />
-                              <Button type="submit" size="sm" variant="default" className="w-full lg:w-28 gap-2">
+                          {guide.status !== 'approved' && (
+                            <form
+                              action={updateGuideStatus}
+                              className="flex-1 lg:flex-none"
+                            >
+                              <input
+                                type="hidden"
+                                name="guide_id"
+                                value={guide.id}
+                              />
+                              <input
+                                type="hidden"
+                                name="status"
+                                value="approved"
+                              />
+                              <Button
+                                type="submit"
+                                size="sm"
+                                variant="default"
+                                className="w-full lg:w-28 gap-2"
+                              >
                                 <CheckCircle2 size={16} />
                                 Approve
                               </Button>
                             </form>
                           )}
-                          {guide.status !== "rejected" && (
-                            <form action={updateGuideStatus} className="flex-1 lg:flex-none">
-                              <input type="hidden" name="guide_id" value={guide.id} />
-                              <input type="hidden" name="status" value="rejected" />
-                              <Button type="submit" size="sm" variant="destructive" className="w-full lg:w-28 gap-2">
+                          {guide.status !== 'rejected' && (
+                            <form
+                              action={updateGuideStatus}
+                              className="flex-1 lg:flex-none"
+                            >
+                              <input
+                                type="hidden"
+                                name="guide_id"
+                                value={guide.id}
+                              />
+                              <input
+                                type="hidden"
+                                name="status"
+                                value="rejected"
+                              />
+                              <Button
+                                type="submit"
+                                size="sm"
+                                variant="destructive"
+                                className="w-full lg:w-28 gap-2"
+                              >
                                 <XCircle size={16} />
                                 Reject
                               </Button>
                             </form>
                           )}
-                          {guide.status !== "pending" && (
-                            <form action={updateGuideStatus} className="flex-1 lg:flex-none">
-                              <input type="hidden" name="guide_id" value={guide.id} />
-                              <input type="hidden" name="status" value="pending" />
-                              <Button type="submit" size="sm" variant="outline" className="w-full lg:w-28 gap-2">
+                          {guide.status !== 'pending' && (
+                            <form
+                              action={updateGuideStatus}
+                              className="flex-1 lg:flex-none"
+                            >
+                              <input
+                                type="hidden"
+                                name="guide_id"
+                                value={guide.id}
+                              />
+                              <input
+                                type="hidden"
+                                name="status"
+                                value="pending"
+                              />
+                              <Button
+                                type="submit"
+                                size="sm"
+                                variant="outline"
+                                className="w-full lg:w-28 gap-2"
+                              >
                                 <RotateCcw size={16} />
                                 Reset
                               </Button>
@@ -352,10 +467,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       )}
 
       {/* Bookings Tab */}
-      {activeTab === "bookings" && (
+      {activeTab === 'bookings' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-serif font-bold text-slate-900">Bookings Management</h2>
+            <h2 className="text-3xl font-serif font-bold text-slate-900">
+              Bookings Management
+            </h2>
             <Badge variant="secondary" className="text-sm px-3 py-1">
               {typedBookings.length} recent
             </Badge>
@@ -373,7 +490,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 const statusInfo = bookingStatusConfig[booking.status];
                 // ⚠️ start_at, not starts_at
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const startDate = new Date((booking as any).start_at || booking.starts_at);
+                const bookingData = booking as any;
+                const startDate = new Date(
+                  bookingData.start_at || bookingData.starts_at,
+                );
 
                 return (
                   <Card key={booking.id} className="shadow-md">
@@ -385,9 +505,14 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           </div>
                           <div className="flex-1">
                             <p className="font-semibold text-slate-900">
-                              {booking.traveler?.full_name || "Unknown"} → {booking.guide?.full_name || "Unknown"} {/* ⚠️ full_name, not display_name */}
+                              {booking.traveler?.full_name || 'Unknown'} →{' '}
+                              {booking.guide?.full_name || 'Unknown'}{' '}
+                              {/* ⚠️ full_name, not display_name */}
                             </p>
-                            <Badge variant={statusInfo.variant} className="mt-1">
+                            <Badge
+                              variant={statusInfo.variant}
+                              className="mt-1"
+                            >
                               {statusInfo.label}
                             </Badge>
                           </div>
@@ -395,20 +520,21 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
                         <div className="pl-13 text-sm text-slate-600 space-y-1">
                           <p>
-                            {booking.city?.name || "Unknown city"} •{" "}
-                            {startDate.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}{" "}
-                            at{" "}
-                            {startDate.toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
+                            {booking.city?.name || 'Unknown city'} •{' '}
+                            {startDate.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}{' '}
+                            at{' '}
+                            {startDate.toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
                             })}
                           </p>
                           <p>
-                            {booking.duration_hours}h • {booking.currency || "USD"} {booking.price_total}
+                            {booking.duration_hours}h •{' '}
+                            {booking.currency || 'USD'} {booking.price_total}
                           </p>
                         </div>
 
@@ -416,23 +542,42 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           <span className="text-xs text-slate-500 self-center font-medium">
                             Override status:
                           </span>
-                          {(["pending", "accepted", "confirmed", "declined", "cancelled", "paid"] as BookingStatus[]).map(
-                            (status) => (
-                              <form key={status} action={updateBookingStatus}>
-                                <input type="hidden" name="booking_id" value={booking.id} />
-                                <input type="hidden" name="status" value={status} />
-                                <Button
-                                  type="submit"
-                                  size="sm"
-                                  variant={booking.status === status ? "default" : "outline"}
-                                  disabled={booking.status === status}
-                                  className="text-xs"
-                                >
-                                  {status}
-                                </Button>
-                              </form>
-                            )
-                          )}
+                          {(
+                            [
+                              'pending',
+                              'accepted',
+                              'confirmed',
+                              'declined',
+                              'cancelled',
+                              'paid',
+                            ] as BookingStatus[]
+                          ).map((status) => (
+                            <form key={status} action={updateBookingStatus}>
+                              <input
+                                type="hidden"
+                                name="booking_id"
+                                value={booking.id}
+                              />
+                              <input
+                                type="hidden"
+                                name="status"
+                                value={status}
+                              />
+                              <Button
+                                type="submit"
+                                size="sm"
+                                variant={
+                                  booking.status === status
+                                    ? 'default'
+                                    : 'outline'
+                                }
+                                disabled={booking.status === status}
+                                className="text-xs"
+                              >
+                                {status}
+                              </Button>
+                            </form>
+                          ))}
                         </div>
                       </div>
                     </CardContent>
@@ -445,10 +590,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       )}
 
       {/* Users Tab */}
-      {activeTab === "users" && (
+      {activeTab === 'users' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-serif font-bold text-slate-900">Users Management</h2>
+            <h2 className="text-3xl font-serif font-bold text-slate-900">
+              Users Management
+            </h2>
             <Badge variant="secondary" className="text-sm px-3 py-1">
               {typedUsers.length} total
             </Badge>
@@ -474,14 +621,17 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                             <Shield size={20} className="text-slate-600" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-semibold text-slate-900">{user.full_name}</p> {/* ⚠️ full_name, not display_name */}
+                            <p className="font-semibold text-slate-900">
+                              {user.full_name}
+                            </p>{' '}
+                            {/* ⚠️ full_name, not display_name */}
                             <Badge
                               variant={
-                                user.role === "admin"
-                                  ? "default"
-                                  : user.role === "guide"
-                                  ? "secondary"
-                                  : "outline"
+                                user.role === 'admin'
+                                  ? 'default'
+                                  : user.role === 'guide'
+                                    ? 'secondary'
+                                    : 'outline'
                               }
                               className="mt-1"
                             >
@@ -492,7 +642,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
                         <div className="pl-13 text-sm text-slate-600">
                           <p>
-                            ID: {user.id.substring(0, 8)}... • Joined {createdDate.toLocaleDateString()}
+                            ID: {user.id.substring(0, 8)}... • Joined{' '}
+                            {createdDate.toLocaleDateString()}
                           </p>
                         </div>
 
@@ -500,14 +651,22 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           <span className="text-xs text-slate-500 self-center font-medium">
                             Change role:
                           </span>
-                          {(["traveler", "guide", "admin"] as ProfileRole[]).map((role) => (
+                          {(
+                            ['traveler', 'guide', 'admin'] as ProfileRole[]
+                          ).map((role) => (
                             <form key={role} action={updateUserRole}>
-                              <input type="hidden" name="user_id" value={user.id} />
+                              <input
+                                type="hidden"
+                                name="user_id"
+                                value={user.id}
+                              />
                               <input type="hidden" name="role" value={role} />
                               <Button
                                 type="submit"
                                 size="sm"
-                                variant={user.role === role ? "default" : "outline"}
+                                variant={
+                                  user.role === role ? 'default' : 'outline'
+                                }
                                 disabled={user.role === role}
                                 className="text-xs capitalize"
                               >
