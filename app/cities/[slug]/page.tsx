@@ -1,21 +1,93 @@
+import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import { ChevronRight, Shield, MapPin, Heart } from "lucide-react";
-import { getCity, getGuides } from "@/lib/data-service";
-import { GuidesSection } from "./guides-section";
-import { cn } from "@/lib/utils";
+import { cache } from "react";
+import { ChevronRight, MapPin, Shield } from "lucide-react";
+import { GuideCard } from "@/components/cards/GuideCard";
+import { Button } from "@/components/ui/button";
+import { getGuides } from "@/lib/data-service";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import type { Database } from "@/types/database";
 
 type CityPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+type CityRow = Database["public"]["Tables"]["cities"]["Row"] & {
+  description?: string | null;
+  country?: Pick<
+    Database["public"]["Tables"]["countries"]["Row"],
+    "name" | "iso_code"
+  > | null;
+};
+
+type CityDetails = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  countryName: string;
+  heroImageUrl: string | null;
+};
+
+const HERO_FALLBACKS: Record<string, string> = {
+  berlin:
+    "https://images.unsplash.com/photo-1505764706515-aa95265c5abc?auto=format&fit=crop&w=2000&q=80",
+  london:
+    "https://images.unsplash.com/photo-1439416915279-68957d5720e5?auto=format&fit=crop&w=2000&q=80",
+  paris:
+    "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=2000&q=80",
+};
+
+const getCityBySlug = cache(async (slug: string): Promise<CityDetails | null> => {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cities")
+    .select(
+      `
+        *,
+        country:countries!cities_country_id_fkey(name, iso_code)
+      `,
+    )
+    .eq("slug", slug)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  const city = data as CityRow;
+
+  if (!city.is_active) {
+    return null;
+  }
+
+  return {
+    id: city.id,
+    name: city.name,
+    slug: city.slug,
+    description:
+      (city.description ?? "").trim() ||
+      `Inclusive, LGBTQ+ friendly travel experiences in ${city.name}.`,
+    countryName: city.country?.name ?? city.country_name ?? "Unknown country",
+    heroImageUrl: city.hero_image_url,
+  };
+});
+
+function getHeroImage(city: CityDetails) {
+  return (
+    city.heroImageUrl ||
+    HERO_FALLBACKS[city.slug] ||
+    "https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=2000&q=80"
+  );
+}
+
 export async function generateMetadata({
   params,
 }: CityPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const city = await getCity(slug);
+  const city = await getCityBySlug(slug);
 
   if (!city) {
     return {
@@ -23,144 +95,161 @@ export async function generateMetadata({
     };
   }
 
+  const title = `${city.name} LGBTQ+ Tour Guides | Rainbow Tour Guides`;
+  const description = city.description;
+  const heroImage = getHeroImage(city);
+
   return {
-    title: `${city.name} LGBTQ+ Tour Guides | Rainbow Tour Guides`,
-    // TODO: add description field to cities table
-    description: `Find verified LGBTQ+ tour guides in ${city.name}`,
+    title,
+    description,
     openGraph: {
-      title: `${city.name} LGBTQ+ Tour Guides`,
-      description: `Find verified LGBTQ+ tour guides in ${city.name}`,
+      title,
+      description,
       type: "website",
+      images: [
+        {
+          url: heroImage,
+          width: 1200,
+          height: 630,
+          alt: `${city.name} skyline`,
+        },
+      ],
     },
   };
 }
 
 export default async function CityPage({ params }: CityPageProps) {
   const { slug } = await params;
+  const city = await getCityBySlug(slug);
 
-  // Fetch city and guides data
-  const city = await getCity(slug);
-  const allGuides = await getGuides(slug);
-
-  // 404 if city not found
   if (!city) {
     notFound();
   }
 
+  const guides = await getGuides(slug);
+  const heroImage = getHeroImage(city);
+
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative aspect-[21/9] w-full overflow-hidden bg-slate-900">
-        {/* TODO: add image_url field to cities table */}
-        <Image
-          src="https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1600"
-          alt={`${city.name}, ${city.country_name}`}
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
+    <div className="min-h-screen bg-white">
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src={heroImage}
+            alt={`${city.name} skyline`}
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/60 to-black/70" />
+        </div>
 
-        {/* Dark Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
+        <div className="relative max-w-6xl mx-auto px-6 py-16 sm:py-20 space-y-8">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm text-white/80">
+            <Link href="/" className="hover:text-white transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="h-4 w-4" />
+            <Link href="/cities" className="hover:text-white transition-colors">
+              Cities
+            </Link>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-white font-medium">{city.name}</span>
+          </nav>
 
-        {/* Content */}
-        <div className="absolute inset-0 flex flex-col justify-end">
-          <div className="max-w-7xl mx-auto w-full px-6 pb-12 space-y-4">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-sm text-white/70">
-              <Link
-                href="/"
-                className="hover:text-white transition-colors"
-              >
-                Home
-              </Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link
-                href="/cities"
-                className="hover:text-white transition-colors"
-              >
-                Cities
-              </Link>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-white font-medium">{city.name}</span>
-            </nav>
+          <div className="max-w-3xl space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 backdrop-blur">
+              <MapPin className="h-4 w-4 text-white" />
+              <span className="text-sm text-white/90">{city.countryName}</span>
+            </div>
 
-            {/* City Info */}
-            <div className="space-y-3">
-              <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight">
-                {city.name}
-              </h1>
-              <p className="text-xl text-white/90">
-                {city.country_name} • {city.guide_count}{" "}
-                {city.guide_count === 1 ? "guide" : "guides"} available
-              </p>
+            <h1 className="text-4xl md:text-5xl font-serif text-white leading-tight">
+              {city.name}
+            </h1>
+
+            <p className="text-lg text-white/80 leading-relaxed">
+              {city.description}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4 pt-1">
+              <div className="flex items-center gap-2 text-white/85 text-sm">
+                <Shield className="h-4 w-4" />
+                <span>Vetted LGBTQ+ locals. Thoughtful, safe experiences.</span>
+              </div>
+              <Button asChild>
+                <Link href="#guides">Browse guides</Link>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12 space-y-16">
-        {/* City Info Section */}
-        <section className="max-w-4xl mx-auto space-y-12">
-          {/* About City */}
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-ink">
-              About {city.name}
+      {/* Guides */}
+      <main
+        id="guides"
+        className="max-w-6xl mx-auto px-6 py-14 sm:py-16 space-y-10"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">
+              Guides
+            </p>
+            <h2 className="text-3xl font-serif text-ink">
+              Guides in {city.name}
             </h2>
-            {/* TODO: add description field to cities table */}
-            <p className="text-lg text-ink-soft leading-relaxed">
-              Discover {city.name} with our verified LGBTQ+ tour guides. Experience authentic local culture, safe spaces, and hidden gems in this vibrant destination.
+            <p className="text-ink-soft">
+              LGBTQ+ locals ready to share safe spaces, hidden gems, and the
+              city&apos;s queer history.
             </p>
           </div>
-
-          {/* Safety Notes Box */}
-          <div className="bg-emerald-50/50 border-l-4 border-emerald-500 rounded-r-2xl p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                <Shield className="h-5 w-5 text-emerald-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-ink">
-                Safety & LGBTQ+ Context
-              </h3>
-            </div>
-
-            <ul className="space-y-3 text-ink-soft">
-              <li className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Shield className="h-3 w-3 text-emerald-600" />
-                </div>
-                <span className="leading-relaxed">
-                  All guides are ID-verified and interviewed by our team to
-                  ensure authentic, safe experiences for LGBTQ+ travelers.
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <MapPin className="h-3 w-3 text-emerald-600" />
-                </div>
-                <span className="leading-relaxed">
-                  {city.name} has established LGBTQ+ neighborhoods and venues
-                  where you can connect with the local community safely.
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Heart className="h-3 w-3 text-emerald-600" />
-                </div>
-                <span className="leading-relaxed">
-                  Our guides provide up-to-date local knowledge about LGBTQ+
-                  rights, cultural norms, and safe spaces in {city.name}.
-                </span>
-              </li>
-            </ul>
+          <div className="flex items-center gap-2 text-sm text-ink-soft">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span>
+              {guides.length} {guides.length === 1 ? "guide" : "guides"} available
+            </span>
           </div>
-        </section>
+        </div>
 
-        {/* Guides Section with Filtering */}
-        <GuidesSection guides={allGuides} cityName={city.name} />
-      </div>
+        {guides.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center space-y-4">
+            <h3 className="text-2xl font-serif text-ink">
+              We&apos;re launching in {city.name} soon! Become a guide.
+            </h3>
+            <p className="text-ink-soft max-w-2xl mx-auto">
+              Join as a founding guide to welcome travelers, spotlight queer
+              culture, and shape the first experiences in this city.
+            </p>
+            <div className="flex justify-center">
+              <Button asChild>
+                <Link href="/auth/sign-up?role=guide">Become a guide</Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {guides.map((guide) => (
+              <GuideCard
+                key={guide.id}
+                id={guide.id}
+                slug={guide.slug}
+                name={guide.name}
+                photo_url={guide.photo_url}
+                city_name={guide.city_name}
+                bio={guide.bio || guide.tagline}
+                rating={guide.rating}
+                review_count={guide.review_count}
+                price_4h={guide.price_4h}
+                price_6h={guide.price_6h}
+                price_8h={guide.price_8h}
+                experience_tags={guide.experience_tags || []}
+                languages={guide.languages || []}
+              />
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
