@@ -100,11 +100,15 @@ export async function getCities(): Promise<City[]> {
     .from('cities')
     .select(
       `
-      *,
-      country:countries!cities_country_id_fkey(*)
+    *,
+    country:countries!cities_country_id_fkey(*),
+    guides!inner (
+      id 
+    )
     `,
     )
     .eq('is_active', true)
+    .eq('guides.approved', true)
     .order('name');
 
   if (citiesError || !cities) {
@@ -311,11 +315,11 @@ export async function getGuides(
   }
 
   if (filters?.minPrice) {
-    query = query.gte('price_4h', filters.minPrice.toString());
+    query = query.gte('base_price_4h', filters.minPrice.toString());
   }
 
   if (filters?.maxPrice) {
-    query = query.lte('price_4h', filters.maxPrice.toString());
+    query = query.lte('base_price_4h', filters.maxPrice.toString());
   }
 
   logQuery('SELECT', 'guides', {

@@ -19,7 +19,8 @@ type MessageRow = Database['public']['Tables']['messages']['Row'];
  * cityData can be a nested structure: { id, name, slug, country: { id, name, iso_code } }
  */
 export function adaptGuideFromDB(
-  guideRow: GuideRow,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  guideRow: GuideRow | any, // Allow any to handle data from views/aliases
   profileRow: ProfileRow | null,
   cityData: {
     id?: string;
@@ -34,6 +35,11 @@ export function adaptGuideFromDB(
   rating: number,
   reviewCount: number,
 ): Guide {
+  // Handle both base_price_* (from DB schema) and price_* (from views/aliases)
+  const price4h = guideRow.price_4h || guideRow.base_price_4h || null;
+  const price6h = guideRow.price_6h || guideRow.base_price_6h || null;
+  const price8h = guideRow.price_8h || guideRow.base_price_8h || null;
+
   return {
     id: guideRow.id,
     name: profileRow?.full_name || 'Unknown',
@@ -44,20 +50,20 @@ export function adaptGuideFromDB(
     tagline: guideRow.headline || '',
     photo_url: profileRow?.avatar_url || '',
     languages: profileRow?.languages || [],
-    experience_tags: guideRow.themes || [], // ⚠️ themes, not experience_tags
-    price_4h: guideRow.base_price_4h
-      ? parseFloat(guideRow.base_price_4h.toString())
-      : 0, // ⚠️ base_price_4h, not price_4h
-    price_6h: guideRow.base_price_6h
-      ? parseFloat(guideRow.base_price_6h.toString())
-      : 0,
-    price_8h: guideRow.base_price_8h
-      ? parseFloat(guideRow.base_price_8h.toString())
-      : 0,
+    experience_tags: guideRow.themes || guideRow.experience_tags || [], // Support both field names
+    price_4h: price4h ? parseFloat(price4h.toString()) : 0,
+    price_6h: price6h ? parseFloat(price6h.toString()) : 0,
+    price_8h: price8h ? parseFloat(price8h.toString()) : 0,
     rating,
     review_count: reviewCount,
-    verified: guideRow.status === 'approved' || guideRow.is_verified, // ⚠️ status enum or is_verified boolean
-    instant_book: false, // TODO: add instant_book_enabled field to guides table
+    verified:
+      guideRow.status === 'approved' ||
+      guideRow.is_verified ||
+      guideRow.approved === true ||
+      guideRow.verification_status === 'approved', // Support multiple verification fields
+    instant_book:
+      guideRow.instant_book_enabled === true ||
+      guideRow.instant_book_enabled === 'true', // Support boolean and string
   };
 }
 
