@@ -20,38 +20,26 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  _role public.profile_role;
   _full_name text;
   _avatar_url text;
 BEGIN
-  -- Determine role from metadata when valid, default to traveler
-  _role := COALESCE(
-    (
-      CASE
-        WHEN NEW.raw_user_meta_data ? 'role'
-          AND NEW.raw_user_meta_data->>'role' IN ('traveler', 'guide', 'admin')
-        THEN (NEW.raw_user_meta_data->>'role')::public.profile_role
-      END
-    ),
-    'traveler'
-  );
-
-  -- Extract full name from metadata or email prefix
   _full_name := COALESCE(
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'name',
-    split_part(NEW.email, '@', 1)
+    NEW.email,
+    ''
   );
 
-  -- Extract avatar URL from OAuth metadata if available
-  _avatar_url := COALESCE(
-    NEW.raw_user_meta_data->>'avatar_url',
-    NEW.raw_user_meta_data->>'picture'
-  );
+  _avatar_url := NEW.raw_user_meta_data->>'avatar_url';
 
   -- Insert profile row (skip if already exists)
   INSERT INTO public.profiles (id, role, full_name, avatar_url)
-  VALUES (NEW.id, _role, _full_name, _avatar_url)
+  VALUES (
+    NEW.id,
+    'traveler'::public.profile_role,
+    _full_name,
+    _avatar_url
+  )
   ON CONFLICT (id) DO NOTHING;
 
   RETURN NEW;
@@ -74,25 +62,14 @@ CREATE TRIGGER on_auth_user_created
 INSERT INTO public.profiles (id, role, full_name, avatar_url)
 SELECT
   u.id,
-  COALESCE(
-    (
-      CASE
-        WHEN u.raw_user_meta_data ? 'role'
-          AND u.raw_user_meta_data->>'role' IN ('traveler', 'guide', 'admin')
-        THEN (u.raw_user_meta_data->>'role')::public.profile_role
-      END
-    ),
-    'traveler'::public.profile_role
-  ),
+  'traveler'::public.profile_role,
   COALESCE(
     u.raw_user_meta_data->>'full_name',
     u.raw_user_meta_data->>'name',
-    split_part(u.email, '@', 1)
+    u.email,
+    ''
   ),
-  COALESCE(
-    u.raw_user_meta_data->>'avatar_url',
-    u.raw_user_meta_data->>'picture'
-  )
+  u.raw_user_meta_data->>'avatar_url'
 FROM auth.users u
 LEFT JOIN public.profiles p ON p.id = u.id
 WHERE p.id IS NULL
@@ -163,7 +140,7 @@ END $$;
 -- - The trigger runs AFTER INSERT on auth.users
 -- - Uses SECURITY DEFINER to bypass RLS for profile creation
 -- - ON CONFLICT DO NOTHING prevents duplicate errors
--- - Role defaults to 'traveler' if not specified or invalid; traveler/guide/admin allowed
--- - full_name falls back through: full_name -> name -> email prefix
--- - avatar_url falls back through: avatar_url -> picture
+-- - Role defaults to 'traveler'
+-- - full_name falls back through: full_name -> name -> email -> ''
+-- - avatar_url from raw_user_meta_data.avatar_url
 -- ============================================================================
