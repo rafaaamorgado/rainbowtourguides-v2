@@ -40,6 +40,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
   // Fetch guide and reviews
   const guide = await getGuide(slug);
   const reviews = guide ? await getReviews(guide.id) : [];
+  const guidePhoto = guide?.avatar_url ?? guide?.photo_url ?? "/placeholder-avatar.svg";
 
   // 404 if guide not found
   if (!guide) {
@@ -79,7 +80,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
             <div className="relative">
               <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
                 <Image
-                  src={guide.photo_url}
+                  src={guidePhoto}
                   alt={guide.name}
                   fill
                   className="object-cover"
@@ -283,4 +284,3 @@ export default async function GuidePage({ params }: GuidePageProps) {
     </div>
   );
 }
-

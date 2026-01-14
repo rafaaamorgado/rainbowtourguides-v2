@@ -28,7 +28,7 @@ export default function GuideOnboardingPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({
     // Step 1
-    photo_url: "",
+    avatar_url: "",
     name: "",
     city_id: "",
     languages: [],

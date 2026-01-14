@@ -42,8 +42,8 @@ export function Step1BasicInfo({
           </label>
           {onPhotoUpload ? (
             <AvatarUpload
-              value={data.photo_url}
-              onChange={(url) => onChange("photo_url", url || "")}
+              value={data.avatar_url ?? data.photo_url}
+              onChange={(url) => onChange("avatar_url", url || "")}
               onUpload={onPhotoUpload}
               size="lg"
             />
@@ -51,12 +51,12 @@ export function Step1BasicInfo({
             <Input
               type="url"
               placeholder="https://images.unsplash.com/..."
-              value={data.photo_url || ""}
-              onChange={(e) => onChange("photo_url", e.target.value)}
+              value={data.avatar_url ?? data.photo_url ?? ""}
+              onChange={(e) => onChange("avatar_url", e.target.value)}
             />
           )}
-          {errors.photo_url && (
-            <p className="text-sm text-red-600">{errors.photo_url}</p>
+          {errors.avatar_url && (
+            <p className="text-sm text-red-600">{errors.avatar_url}</p>
           )}
         </div>
 
@@ -877,4 +877,3 @@ export function Step7Review({
     </div>
   );
 }
-

@@ -41,7 +41,7 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
   // Form state
   const [step1Data, setStep1Data] = useState<Step1Data>({
     displayName: profileName,
-    photoUrl: null,
+    avatarUrl: null,
     cityId: "",
     languages: "",
     shortBio: "",
@@ -82,7 +82,7 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
       case 1:
         return !!(
           step1Data.displayName &&
-          step1Data.photoUrl &&
+          step1Data.avatarUrl &&
           step1Data.cityId &&
           step1Data.languages &&
           step1Data.shortBio
@@ -133,8 +133,8 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
     formData.set("city_id", step1Data.cityId);
     formData.set("languages", step1Data.languages);
     formData.set("short_bio", step1Data.shortBio);
-    if (step1Data.photoUrl) {
-      formData.set("photo_url", step1Data.photoUrl);
+    if (step1Data.avatarUrl) {
+      formData.set("avatar_url", step1Data.avatarUrl);
     }
 
     // Step 2

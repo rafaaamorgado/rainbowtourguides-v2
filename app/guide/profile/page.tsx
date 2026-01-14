@@ -27,7 +27,10 @@ export default function GuideProfilePage() {
     Promise.all([getCities(), getGuide(guideId)]).then(([citiesData, guideData]) => {
       setCities(citiesData);
       if (guideData) {
-        setFormData(guideData);
+        setFormData({
+          ...guideData,
+          avatar_url: guideData.avatar_url ?? guideData.photo_url ?? "",
+        });
       }
       setIsLoading(false);
     });
@@ -106,8 +109,8 @@ export default function GuideProfilePage() {
             <Input
               type="url"
               placeholder="https://images.unsplash.com/..."
-              value={formData.photo_url || ""}
-              onChange={(e) => handleChange("photo_url", e.target.value)}
+              value={formData.avatar_url ?? formData.photo_url ?? ""}
+              onChange={(e) => handleChange("avatar_url", e.target.value)}
             />
           </div>
 
@@ -515,4 +518,3 @@ export default function GuideProfilePage() {
     </div>
   );
 }
-

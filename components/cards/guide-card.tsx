@@ -12,7 +12,8 @@ export interface GuideCardProps {
     slug: string;
     city_name: string;
     country_name?: string;
-    photo_url: string;
+    avatar_url?: string | null;
+    photo_url?: string | null;
     tagline: string;
     rating: number;
     review_count: number;
@@ -53,6 +54,11 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
       return colors[index % colors.length];
     };
 
+    const photo =
+      guide.avatar_url ??
+      guide.photo_url ??
+      '/placeholder-avatar.svg';
+
     return (
       <div ref={ref}>
         {/* TODO: add slug field to guides table, using id for now */}
@@ -70,7 +76,7 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
             {/* Photo Section */}
             <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-slate-100">
               <Image
-                src={guide.photo_url}
+                src={photo}
                 alt={guide.name}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -244,4 +250,3 @@ export const GuideCardGrid = React.forwardRef<
 ));
 
 GuideCardGrid.displayName = "GuideCardGrid";
-

@@ -39,6 +39,7 @@ export function adaptGuideFromDB(
   const price4h = guideRow.price_4h || guideRow.base_price_4h || null;
   const price6h = guideRow.price_6h || guideRow.base_price_6h || null;
   const price8h = guideRow.price_8h || guideRow.base_price_8h || null;
+  const avatarUrl = profileRow?.avatar_url ?? '';
 
   return {
     id: guideRow.id,
@@ -48,7 +49,8 @@ export function adaptGuideFromDB(
     city_name: cityData?.name || 'Unknown',
     bio: guideRow.bio || '',
     tagline: guideRow.headline || '',
-    photo_url: profileRow?.avatar_url || '',
+    avatar_url: avatarUrl,
+    photo_url: avatarUrl,
     languages: profileRow?.languages || [],
     experience_tags: guideRow.themes || guideRow.experience_tags || [], // Support both field names
     price_4h: price4h ? parseFloat(price4h.toString()) : 0,

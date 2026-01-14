@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getPostLoginRedirect } from '@/lib/auth/post-login-redirect';
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -41,7 +42,8 @@ export async function GET(request: NextRequest) {
           .eq('id', data.user.id);
       }
 
-      return NextResponse.redirect(new URL(next, request.url));
+      const redirectPath = next || (await getPostLoginRedirect()).path || '/account';
+      return NextResponse.redirect(new URL(redirectPath, request.url));
     }
   }
 

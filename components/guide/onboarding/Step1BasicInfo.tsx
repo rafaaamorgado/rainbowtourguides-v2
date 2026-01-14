@@ -12,7 +12,7 @@ type City = Database["public"]["Tables"]["cities"]["Row"];
 
 export type Step1Data = {
   displayName: string;
-  photoUrl: string | null;
+  avatarUrl: string | null;
   cityId: string;
   languages: string;
   shortBio: string;
@@ -48,7 +48,7 @@ export function Step1BasicInfo({ data, cities, onChange }: Step1BasicInfoProps) 
       const result = await uploadFile(file, "guide-photos", userId, "profile-photo");
 
       if (result.success && result.url) {
-        onChange({ photoUrl: result.url });
+        onChange({ avatarUrl: result.url });
       } else {
         setUploadError(result.error || "Failed to upload photo");
       }
@@ -97,16 +97,16 @@ export function Step1BasicInfo({ data, cities, onChange }: Step1BasicInfoProps) 
               <Loader2 size={32} className="text-brand animate-spin mb-2" />
               <p className="text-sm font-medium text-slate-700">Uploading photo...</p>
             </div>
-          ) : data.photoUrl ? (
+          ) : data.avatarUrl ? (
             <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-slate-200">
               <img
-                src={data.photoUrl}
+                src={data.avatarUrl}
                 alt="Profile preview"
                 className="w-full h-full object-cover"
               />
               <button
                 type="button"
-                onClick={() => onChange({ photoUrl: null })}
+                onClick={() => onChange({ avatarUrl: null })}
                 className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg hover:bg-slate-100 transition-colors"
                 disabled={isUploading}
               >

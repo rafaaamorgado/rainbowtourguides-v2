@@ -100,10 +100,11 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
 
     // Pass role in the callback URL so we can set it after OAuth completes
     const nextPath = initialRole === "guide" ? "/guide/onboarding" : "/traveler/onboarding";
+    const roleData = initialRole === "guide" ? "guide" : "traveler";
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}&role=${initialRole}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}&role=${roleData}`,
       },
     });
 

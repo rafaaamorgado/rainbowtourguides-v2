@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignInForm } from "@/components/auth/sign-in-form";
-import { getAuthenticatedUserRedirect, getRedirectPathForRole } from "@/lib/auth-helpers";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getPostLoginRedirect } from "@/lib/auth/post-login-redirect";
+import { getRedirectPathForRole } from "@/lib/auth/redirect";
 import type { ProfileRole } from "@/types/database";
 
 /**
@@ -43,10 +44,8 @@ async function redirectUserByRole() {
 }
 
 export default async function SignInPage() {
-  const redirectPath = await getAuthenticatedUserRedirect();
-  if (redirectPath) {
-    redirect(redirectPath);
-  }
+  const { path } = await getPostLoginRedirect();
+  if (path) redirect(path);
 
   return (
     <section className="flex min-h-[70vh] items-center justify-center">
@@ -68,4 +67,3 @@ export default async function SignInPage() {
     </section>
   );
 }
-

@@ -235,6 +235,7 @@ export default async function CityPage({ params }: CityPageProps) {
                 id={guide.id}
                 slug={guide.slug}
                 name={guide.name}
+                avatar_url={guide.avatar_url ?? guide.photo_url}
                 photo_url={guide.photo_url}
                 city_name={guide.city_name}
                 bio={guide.bio || guide.tagline}

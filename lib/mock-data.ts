@@ -38,7 +38,8 @@ export interface Guide {
   city_name: string;
   bio: string;
   tagline: string;
-  photo_url: string;
+  avatar_url?: string | null;
+  photo_url?: string;
   languages: string[];
   experience_tags: string[];
   price_4h: number;
@@ -1563,4 +1564,3 @@ export function getMockArticles(): Article[] {
 export function getMockArticle(slug: string): Article | undefined {
   return MOCK_ARTICLES.find((a) => a.slug === slug);
 }
-

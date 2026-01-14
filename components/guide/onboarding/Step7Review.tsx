@@ -44,6 +44,7 @@ const DAY_LABELS: Record<string, string> = {
 
 export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, onEdit }: Step7ReviewProps) {
   const selectedCity = cities.find((c) => c.id === step1.cityId);
+  const avatarUrl = step1.avatarUrl ?? null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -79,9 +80,9 @@ export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start gap-4">
-            {step1.photoUrl && (
+            {avatarUrl && (
               <img
-                src={step1.photoUrl}
+                src={avatarUrl}
                 alt={step1.displayName}
                 className="w-20 h-20 rounded-2xl object-cover border-2 border-slate-200"
               />

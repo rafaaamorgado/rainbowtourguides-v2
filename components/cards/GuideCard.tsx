@@ -8,7 +8,8 @@ export interface GuideCardProps {
   id: string;
   slug?: string; // Optional slug for routing, falls back to id
   name: string;
-  photo_url: string;
+  avatar_url?: string | null;
+  photo_url?: string | null;
   city_name: string;
   bio: string;
   rating: number | null;
@@ -34,6 +35,7 @@ export function GuideCard({
   id,
   slug,
   name,
+  avatar_url,
   photo_url,
   city_name,
   bio,
@@ -69,7 +71,8 @@ export function GuideCard({
   const href = `/guides/${slug || id}`;
   
   // Get public URL for photo
-  const photoUrl = getStoragePublicUrl(photo_url, "guide-photos") || "/placeholder-avatar.svg";
+  const primaryPhoto = avatar_url ?? photo_url;
+  const photoUrl = getStoragePublicUrl(primaryPhoto, "guide-photos") || "/placeholder-avatar.svg";
 
   return (
     <Link href={href} className="block group">
