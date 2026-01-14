@@ -16,6 +16,7 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+DROP POLICY IF EXISTS "Users can upload their own avatar" ON storage.objects;
 -- Allow authenticated users to upload their own avatar
 CREATE POLICY "Users can upload their own avatar"
 ON storage.objects
@@ -26,6 +27,7 @@ WITH CHECK (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
+DROP POLICY IF EXISTS "Users can update their own avatar" ON storage.objects;
 -- Allow users to update their own avatar
 CREATE POLICY "Users can update their own avatar"
 ON storage.objects
@@ -40,6 +42,7 @@ WITH CHECK (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
+DROP POLICY IF EXISTS "Users can delete their own avatar" ON storage.objects;
 -- Allow users to delete their own avatar
 CREATE POLICY "Users can delete their own avatar"
 ON storage.objects
@@ -50,6 +53,7 @@ USING (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
+DROP POLICY IF EXISTS "Avatars are publicly accessible" ON storage.objects;
 -- Allow public read access to all avatars
 CREATE POLICY "Avatars are publicly accessible"
 ON storage.objects
@@ -72,6 +76,7 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+DROP POLICY IF EXISTS "Admins can upload blog images" ON storage.objects;
 -- Only admins can upload blog images
 CREATE POLICY "Admins can upload blog images"
 ON storage.objects
@@ -86,6 +91,7 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS "Admins can update blog images" ON storage.objects;
 -- Only admins can update blog images
 CREATE POLICY "Admins can update blog images"
 ON storage.objects
@@ -108,6 +114,7 @@ WITH CHECK (
   )
 );
 
+DROP POLICY IF EXISTS "Admins can delete blog images" ON storage.objects;
 -- Only admins can delete blog images
 CREATE POLICY "Admins can delete blog images"
 ON storage.objects
@@ -122,6 +129,7 @@ USING (
   )
 );
 
+DROP POLICY IF EXISTS "Blog images are publicly accessible" ON storage.objects;
 -- Public read access for blog images
 CREATE POLICY "Blog images are publicly accessible"
 ON storage.objects
