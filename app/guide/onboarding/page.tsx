@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Save, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { getCities } from "@/lib/data-service";
@@ -16,6 +16,8 @@ import {
   Step6IDUpload,
   Step7Review,
 } from "./steps";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { uploadGuidePhoto } from "@/lib/storage-helpers";
 
 const STORAGE_KEY = "guide_onboarding_draft";
 
@@ -23,6 +25,7 @@ export default function GuideOnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [cities, setCities] = useState<City[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({
     // Step 1
     photo_url: "",
@@ -59,6 +62,16 @@ export default function GuideOnboardingPage() {
     // Load cities
     getCities().then(setCities);
 
+    // Get user ID for file uploads
+    const supabase = createSupabaseBrowserClient();
+    if (supabase) {
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          setUserId(user.id);
+        }
+      });
+    }
+
     // Load draft from localStorage
     const draft = localStorage.getItem(STORAGE_KEY);
     if (draft) {
@@ -69,6 +82,16 @@ export default function GuideOnboardingPage() {
       }
     }
   }, []);
+
+  const handlePhotoUpload = useCallback(
+    async (file: File) => {
+      if (!userId) {
+        return { success: false, error: "Not authenticated" };
+      }
+      return uploadGuidePhoto(userId, file);
+    },
+    [userId]
+  );
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
@@ -209,6 +232,7 @@ export default function GuideOnboardingPage() {
             data={formData}
             cities={cities}
             onChange={handleChange}
+            onPhotoUpload={userId ? handlePhotoUpload : undefined}
             errors={errors}
           />
         )}

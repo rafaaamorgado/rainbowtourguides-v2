@@ -161,3 +161,70 @@ export function getStoragePublicUrl(
   const { data } = supabase.storage.from(bucket).getPublicUrl(urlOrPath);
   return data.publicUrl;
 }
+
+// ============================================================================
+// Specialized Upload Functions
+// ============================================================================
+
+/**
+ * Upload a user avatar to the 'avatars' bucket
+ * @param userId - The user's ID (used as folder name)
+ * @param file - The image file to upload
+ * @returns Promise with upload result containing public URL
+ */
+export async function uploadAvatar(
+  userId: string,
+  file: File,
+): Promise<UploadResult> {
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  // Use a consistent filename so it gets overwritten on updates
+  return uploadFile(file, 'avatars', userId, `avatar.${fileExt}`);
+}
+
+/**
+ * Upload a guide profile photo to the 'guide-photos' bucket
+ * @param guideId - The guide's user ID (used as folder name)
+ * @param file - The image file to upload
+ * @returns Promise with upload result containing public URL
+ */
+export async function uploadGuidePhoto(
+  guideId: string,
+  file: File,
+): Promise<UploadResult> {
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  return uploadFile(file, 'guide-photos', guideId, `photo.${fileExt}`);
+}
+
+/**
+ * Upload an image to the 'blog-images' bucket (admin only)
+ * @param file - The image file to upload
+ * @param slug - Optional slug/identifier for organizing images
+ * @returns Promise with upload result containing public URL
+ */
+export async function uploadBlogImage(
+  file: File,
+  slug?: string,
+): Promise<UploadResult> {
+  const timestamp = Date.now();
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const folder = slug || 'general';
+  return uploadFile(file, 'blog-images', folder, `${timestamp}.${fileExt}`);
+}
+
+/**
+ * Get avatar URL for display, with fallback handling
+ * @param avatarUrl - The stored avatar URL or path
+ * @returns Public URL or null
+ */
+export function getAvatarUrl(avatarUrl: string | null | undefined): string | null {
+  return getStoragePublicUrl(avatarUrl, 'avatars');
+}
+
+/**
+ * Get guide photo URL for display, with fallback handling
+ * @param photoUrl - The stored photo URL or path
+ * @returns Public URL or null
+ */
+export function getGuidePhotoUrl(photoUrl: string | null | undefined): string | null {
+  return getStoragePublicUrl(photoUrl, 'guide-photos');
+}

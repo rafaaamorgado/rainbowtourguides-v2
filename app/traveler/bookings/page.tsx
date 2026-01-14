@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Calendar,
   Clock,
@@ -11,8 +10,9 @@ import {
   MessageSquare,
   Star,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
-import { getBookings } from "@/lib/data-service";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import type { Booking } from "@/lib/mock-data";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -35,22 +35,156 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
+const isDev = process.env.NODE_ENV === "development";
+
 export default function TravelerBookingsPage() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
+  const [isCreatingDemo, setIsCreatingDemo] = useState(false);
+
+  const fetchBookings = useCallback(async (uid: string) => {
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) return;
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        *,
+        guide:profiles!bookings_guide_id_fkey(display_name, full_name),
+        city:cities!bookings_city_id_fkey(name)
+      `)
+      .eq("traveler_id", uid)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching bookings:", error);
+      return;
+    }
+
+    // Adapt to Booking type
+    const adapted = (data || []).map((b: any) => ({
+      id: b.id,
+      traveler_id: b.traveler_id,
+      guide_id: b.guide_id,
+      city_id: b.city_id,
+      guide_name: b.guide?.display_name || b.guide?.full_name || "Guide",
+      city_name: b.city?.name || "City",
+      date: b.starts_at,
+      duration: b.duration_hours || 4,
+      status: b.status,
+      price_total: parseFloat(b.price_total || "0"),
+      notes: b.special_requests || b.notes || "",
+    }));
+
+    setBookings(adapted);
+  }, []);
 
   useEffect(() => {
-    // Mock user ID - in production, get from auth
-    const mockUserId = "u3";
-    
-    getBookings(mockUserId, "traveler").then((data) => {
-      setBookings(data);
+    async function init() {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) {
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/auth/sign-in?redirect=/traveler/bookings");
+        return;
+      }
+
+      setUserId(user.id);
+      await fetchBookings(user.id);
       setIsLoading(false);
-    });
-  }, []);
+    }
+
+    init();
+  }, [router, fetchBookings]);
+
+  // DEV ONLY: Create a demo booking
+  const handleCreateDemoBooking = async () => {
+    if (!isDev || !userId) return;
+
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) return;
+
+    setIsCreatingDemo(true);
+
+    try {
+      // Get a random approved guide
+      let availableGuides: { id: string; city_id: string; base_price_4h: string | null }[] = [];
+
+      const { data: approvedGuides } = await supabase
+        .from("guides")
+        .select("id, city_id, base_price_4h")
+        .eq("status", "approved")
+        .limit(5);
+
+      if (approvedGuides && approvedGuides.length > 0) {
+        availableGuides = approvedGuides;
+      } else {
+        // Try without status filter
+        const { data: allGuides } = await supabase
+          .from("guides")
+          .select("id, city_id, base_price_4h")
+          .limit(5);
+
+        if (!allGuides || allGuides.length === 0) {
+          alert("No guides found. Seed some guide data first.");
+          setIsCreatingDemo(false);
+          return;
+        }
+
+        availableGuides = allGuides;
+      }
+
+      const randomGuide = availableGuides[Math.floor(Math.random() * availableGuides.length)];
+
+      // Create a demo booking
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() + Math.floor(Math.random() * 14) + 1); // 1-14 days from now
+      startDate.setHours(10, 0, 0, 0);
+
+      const endDate = new Date(startDate);
+      endDate.setHours(endDate.getHours() + 4);
+
+      const statuses = ["pending", "confirmed", "accepted"];
+      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+      const { error: insertError } = await (supabase as any)
+        .from("bookings")
+        .insert({
+          traveler_id: userId,
+          guide_id: randomGuide.id,
+          city_id: randomGuide.city_id,
+          starts_at: startDate.toISOString(),
+          ends_at: endDate.toISOString(),
+          duration_hours: 4,
+          price_total: randomGuide.base_price_4h || "120",
+          currency: "USD",
+          status: randomStatus,
+          special_requests: "Demo booking created for testing",
+        });
+
+      if (insertError) {
+        console.error("Error creating demo booking:", insertError);
+        alert(`Error: ${insertError.message}`);
+        setIsCreatingDemo(false);
+        return;
+      }
+
+      // Refresh bookings
+      await fetchBookings(userId);
+    } catch (err) {
+      console.error("Error creating demo booking:", err);
+    } finally {
+      setIsCreatingDemo(false);
+    }
+  };
 
   // Filter bookings by status
   const upcomingBookings = bookings.filter(
@@ -73,17 +207,28 @@ export default function TravelerBookingsPage() {
   };
 
   const handleCancelConfirm = async () => {
-    if (!bookingToCancel) return;
+    if (!bookingToCancel || !userId) return;
 
-    // TODO: Update booking status via data-service
-    // await updateBookingStatus(bookingToCancel, "cancelled");
-    
-    // For now, update local state
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === bookingToCancel ? { ...b, status: "cancelled" } : b
-      )
-    );
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) return;
+
+    // Update booking status
+    const { error } = await (supabase as any)
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingToCancel)
+      .eq("traveler_id", userId); // Ensure user owns the booking
+
+    if (error) {
+      console.error("Error cancelling booking:", error);
+    } else {
+      // Update local state
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === bookingToCancel ? { ...b, status: "cancelled" } : b
+        )
+      );
+    }
 
     setCancelDialogOpen(false);
     setBookingToCancel(null);
@@ -103,9 +248,25 @@ export default function TravelerBookingsPage() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-ink mb-2">My Bookings</h1>
-        <p className="text-ink-soft">Manage your tour bookings and requests</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-ink mb-2">My Bookings</h1>
+          <p className="text-ink-soft">Manage your tour bookings and requests</p>
+        </div>
+
+        {/* DEV ONLY: Demo booking button */}
+        {isDev && (
+          <Button
+            onClick={handleCreateDemoBooking}
+            disabled={isCreatingDemo}
+            variant="outline"
+            size="sm"
+            className="border-dashed border-amber-500 text-amber-700 hover:bg-amber-50"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {isCreatingDemo ? "Creating..." : "DEV: Add Demo Booking"}
+          </Button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -128,13 +289,17 @@ export default function TravelerBookingsPage() {
         {/* All Tab */}
         <TabsContent value="all">
           {bookings.length === 0 ? (
-            <EmptyState
-              title="No bookings yet"
-              description="Start your adventure by booking a tour with one of our amazing guides."
-              icon="calendar"
-              actionLabel="Find a Guide"
-              actionHref="/cities"
-            />
+            <div className="py-12">
+              <EmptyState
+                title="No bookings yet"
+                description="Ready for an adventure? Browse our verified local guides and book your first experience."
+                icon="calendar"
+                actionLabel="Browse Guides"
+                actionHref="/cities"
+                secondaryActionLabel="Explore Cities"
+                secondaryActionHref="/cities"
+              />
+            </div>
           ) : (
             <div className="space-y-4">
               {bookings.map((booking) => (
@@ -151,13 +316,15 @@ export default function TravelerBookingsPage() {
         {/* Upcoming Tab */}
         <TabsContent value="upcoming">
           {upcomingBookings.length === 0 ? (
-            <EmptyState
-              title="No upcoming tours"
-              description="Start exploring! Browse our verified guides and book your next adventure."
-              icon="calendar"
-              actionLabel="Find a Guide"
-              actionHref="/cities"
-            />
+            <div className="py-12">
+              <EmptyState
+                title="No upcoming tours"
+                description="Start exploring! Browse our verified guides and book your next adventure."
+                icon="calendar"
+                actionLabel="Find a Guide"
+                actionHref="/cities"
+              />
+            </div>
           ) : (
             <div className="space-y-4">
               {upcomingBookings.map((booking) => (
@@ -174,12 +341,14 @@ export default function TravelerBookingsPage() {
         {/* Pending Tab */}
         <TabsContent value="pending">
           {pendingBookings.length === 0 ? (
-            <EmptyState
-              title="No pending requests"
-              description="All your booking requests have been processed."
-              icon="clock"
-              variant="minimal"
-            />
+            <div className="py-12">
+              <EmptyState
+                title="No pending requests"
+                description="All your booking requests have been processed."
+                icon="clock"
+                variant="minimal"
+              />
+            </div>
           ) : (
             <div className="space-y-4">
               {pendingBookings.map((booking) => (
@@ -196,13 +365,15 @@ export default function TravelerBookingsPage() {
         {/* Past Tab */}
         <TabsContent value="past">
           {pastBookings.length === 0 ? (
-            <EmptyState
-              title="No past tours yet"
-              description="You haven't completed any tours yet. Book your first adventure!"
-              icon="map"
-              actionLabel="Browse Cities"
-              actionHref="/cities"
-            />
+            <div className="py-12">
+              <EmptyState
+                title="No past tours yet"
+                description="You haven't completed any tours yet. Book your first adventure!"
+                icon="map"
+                actionLabel="Browse Cities"
+                actionHref="/cities"
+              />
+            </div>
           ) : (
             <div className="space-y-4">
               {pastBookings.map((booking) => (

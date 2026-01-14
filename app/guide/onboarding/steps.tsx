@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { AvatarUpload } from "@/components/ui/avatar-upload";
 import { cn } from "@/lib/utils";
 import type { City } from "@/lib/mock-data";
 
@@ -15,11 +16,13 @@ export function Step1BasicInfo({
   data,
   cities,
   onChange,
+  onPhotoUpload,
   errors,
 }: {
   data: any;
   cities: City[];
   onChange: (field: string, value: any) => void;
+  onPhotoUpload?: (file: File) => Promise<{ success: boolean; url?: string; error?: string }>;
   errors: any;
 }) {
   return (
@@ -32,17 +35,26 @@ export function Step1BasicInfo({
       </div>
 
       <div className="space-y-4">
-        {/* Photo URL */}
+        {/* Profile Photo */}
         <div className="space-y-2">
           <label className="text-sm font-semibold text-ink">
-            Profile Photo URL
+            Profile Photo
           </label>
-          <Input
-            type="url"
-            placeholder="https://images.unsplash.com/..."
-            value={data.photo_url || ""}
-            onChange={(e) => onChange("photo_url", e.target.value)}
-          />
+          {onPhotoUpload ? (
+            <AvatarUpload
+              value={data.photo_url}
+              onChange={(url) => onChange("photo_url", url || "")}
+              onUpload={onPhotoUpload}
+              size="lg"
+            />
+          ) : (
+            <Input
+              type="url"
+              placeholder="https://images.unsplash.com/..."
+              value={data.photo_url || ""}
+              onChange={(e) => onChange("photo_url", e.target.value)}
+            />
+          )}
           {errors.photo_url && (
             <p className="text-sm text-red-600">{errors.photo_url}</p>
           )}

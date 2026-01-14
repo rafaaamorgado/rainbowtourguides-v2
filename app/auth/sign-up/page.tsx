@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignUpForm } from "@/components/auth/sign-up-form";
-import { isValidRole } from "@/lib/auth-helpers";
+import { getAuthenticatedUserRedirect, isValidRole } from "@/lib/auth-helpers";
 import type { ProfileRole } from "@/types/database";
 
 type SignUpPageProps = {
@@ -10,6 +11,11 @@ type SignUpPageProps = {
 };
 
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
+  const redirectPath = await getAuthenticatedUserRedirect();
+  if (redirectPath) {
+    redirect(redirectPath);
+  }
+
   const params = await searchParams;
   const roleParam = params.role;
   

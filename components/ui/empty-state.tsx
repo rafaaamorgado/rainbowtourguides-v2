@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { Sparkles, Search, MapPin, Heart, Users } from "lucide-react";
+import { Sparkles, Search, MapPin, Heart, Users, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -9,16 +9,16 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
    * Title for the empty state
    */
   title: string;
-  
+
   /**
    * Description text
    */
   description: string;
-  
+
   /**
    * Optional icon (uses default sparkles if not provided)
    */
-  icon?: "sparkles" | "search" | "map" | "heart" | "users" | React.ReactNode;
+  icon?: "sparkles" | "search" | "map" | "heart" | "users" | "calendar" | "clock" | React.ReactNode;
   
   /**
    * Optional CTA button label
@@ -48,6 +48,8 @@ const iconMap = {
   map: MapPin,
   heart: Heart,
   users: Users,
+  calendar: Calendar,
+  clock: Clock,
 };
 
 /**

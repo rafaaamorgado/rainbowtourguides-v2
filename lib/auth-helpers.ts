@@ -96,11 +96,66 @@ export async function requireAnyRole(allowedRoles: ProfileRole[]): Promise<{
   profile: Profile;
 }> {
   const result = await requireUser();
-  
+
   if (!allowedRoles.includes(result.profile.role)) {
     redirect("/");
   }
 
   return result;
+}
+
+/**
+ * Server-side helper: Returns redirect path for authenticated users on auth pages.
+ * Returns null if user is not authenticated.
+ * Used to redirect authenticated users away from /auth/sign-in and /auth/sign-up.
+ */
+export async function getAuthenticatedUserRedirect(): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single() as { data: { role: ProfileRole } | null };
+
+  if (!profile) {
+    return "/account";
+  }
+
+  const role = profile.role;
+
+  if (role === "admin") {
+    return "/admin";
+  }
+
+  if (role === "guide") {
+    const { data: guide } = await supabase
+      .from("guides")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    return guide ? "/guide/dashboard" : "/guide/onboarding";
+  }
+
+  if (role === "traveler") {
+    const { data: traveler } = await supabase
+      .from("travelers")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    return traveler ? "/traveler/bookings" : "/traveler/onboarding";
+  }
+
+  return "/account";
 }
 
