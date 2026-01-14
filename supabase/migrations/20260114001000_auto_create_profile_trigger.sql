@@ -3,7 +3,14 @@
 -- Safe: Does not drop tables or delete data
 
 -- ============================================================================
--- 1. CREATE OR REPLACE THE TRIGGER FUNCTION
+-- 1. DROP EXISTING TRIGGER/FUNCTION (idempotent)
+-- ============================================================================
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS public.handle_new_user();
+
+-- ============================================================================
+-- 2. CREATE OR REPLACE THE TRIGGER FUNCTION
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -14,29 +21,26 @@ SET search_path = public
 AS $$
 DECLARE
   _role public.profile_role;
-  _display_name text;
+  _full_name text;
   _avatar_url text;
 BEGIN
-  -- Determine role: check raw_user_meta_data first, default to 'traveler'
-  -- This allows sign-up forms to pass role via metadata
+  -- Determine role from metadata when valid, default to traveler
   _role := COALESCE(
-    (NEW.raw_user_meta_data->>'role')::public.profile_role,
+    (
+      CASE
+        WHEN NEW.raw_user_meta_data ? 'role'
+          AND NEW.raw_user_meta_data->>'role' IN ('traveler', 'guide', 'admin')
+        THEN (NEW.raw_user_meta_data->>'role')::public.profile_role
+      END
+    ),
     'traveler'
   );
 
-  -- Prevent admin role from being set via signup metadata
-  IF _role = 'admin' THEN
-    _role := 'traveler';
-  END IF;
-
-  -- Extract display name from metadata or email
-  -- OAuth providers typically set 'full_name' or 'name' in user_metadata
-  _display_name := COALESCE(
+  -- Extract full name from metadata or email prefix
+  _full_name := COALESCE(
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'name',
-    NEW.raw_user_meta_data->>'display_name',
-    split_part(NEW.email, '@', 1),
-    'User'
+    split_part(NEW.email, '@', 1)
   );
 
   -- Extract avatar URL from OAuth metadata if available
@@ -46,19 +50,13 @@ BEGIN
   );
 
   -- Insert profile row (skip if already exists)
-  INSERT INTO public.profiles (id, role, display_name, avatar_url)
-  VALUES (NEW.id, _role, _display_name, _avatar_url)
+  INSERT INTO public.profiles (id, role, full_name, avatar_url)
+  VALUES (NEW.id, _role, _full_name, _avatar_url)
   ON CONFLICT (id) DO NOTHING;
 
   RETURN NEW;
 END;
 $$;
-
--- ============================================================================
--- 2. DROP EXISTING TRIGGER IF EXISTS (safe update)
--- ============================================================================
-
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 
 -- ============================================================================
 -- 3. CREATE THE TRIGGER
@@ -73,23 +71,23 @@ CREATE TRIGGER on_auth_user_created
 -- 4. BACKFILL: Create profiles for existing auth.users without profiles
 -- ============================================================================
 
-INSERT INTO public.profiles (id, role, display_name, avatar_url)
+INSERT INTO public.profiles (id, role, full_name, avatar_url)
 SELECT
   u.id,
   COALESCE(
-    CASE
-      WHEN (u.raw_user_meta_data->>'role')::text IN ('traveler', 'guide')
-      THEN (u.raw_user_meta_data->>'role')::public.profile_role
-      ELSE 'traveler'::public.profile_role
-    END,
+    (
+      CASE
+        WHEN u.raw_user_meta_data ? 'role'
+          AND u.raw_user_meta_data->>'role' IN ('traveler', 'guide', 'admin')
+        THEN (u.raw_user_meta_data->>'role')::public.profile_role
+      END
+    ),
     'traveler'::public.profile_role
   ),
   COALESCE(
     u.raw_user_meta_data->>'full_name',
     u.raw_user_meta_data->>'name',
-    u.raw_user_meta_data->>'display_name',
-    split_part(u.email, '@', 1),
-    'User'
+    split_part(u.email, '@', 1)
   ),
   COALESCE(
     u.raw_user_meta_data->>'avatar_url',
@@ -165,7 +163,7 @@ END $$;
 -- - The trigger runs AFTER INSERT on auth.users
 -- - Uses SECURITY DEFINER to bypass RLS for profile creation
 -- - ON CONFLICT DO NOTHING prevents duplicate errors
--- - Role defaults to 'traveler' if not specified or invalid
--- - Admin role cannot be set via signup metadata (security)
--- - display_name falls back through: full_name -> name -> email prefix -> 'User'
+-- - Role defaults to 'traveler' if not specified or invalid; traveler/guide/admin allowed
+-- - full_name falls back through: full_name -> name -> email prefix
+-- - avatar_url falls back through: avatar_url -> picture
 -- ============================================================================
