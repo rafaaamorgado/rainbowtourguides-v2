@@ -57,23 +57,32 @@ export function UserNav() {
 
         const getUser = async () => {
             console.log('UserNav: Fetching user...');
-            const { data: { user } } = await supabase.auth.getUser();
-            console.log('UserNav: User:', user);
-            console.log('UserNav: User metadata:', user?.user_metadata);
-            setUser(user);
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                console.log('UserNav: User:', user);
+                console.log('UserNav: User metadata:', user?.user_metadata);
+                setUser(user);
 
-            if (user) {
-                const { data: profileData, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('id, role, full_name, avatar_url')
-                    .eq('id', user.id)
-                    .single();
+                if (user) {
+                    const { data: profileData, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('id, role, full_name, avatar_url')
+                        .eq('id', user.id)
+                        .single();
 
-                console.log('UserNav: Profile data:', profileData);
-                console.log('UserNav: Profile error:', profileError);
-                setProfile(profileData as UserProfile | null);
+                    console.log('UserNav: Profile data:', profileData);
+                    if (profileError && process.env.NODE_ENV === 'development') {
+                        console.error('UserNav: Profile error:', profileError);
+                    }
+                    setProfile(profileData as UserProfile | null);
+                }
+            } catch (error) {
+                if (process.env.NODE_ENV === 'development') {
+                    console.error('UserNav: Failed to fetch user or profile:', error);
+                }
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         getUser();
