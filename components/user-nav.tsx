@@ -43,27 +43,34 @@ export function UserNav() {
 
     useEffect(() => {
         if (!isConfigured) {
+            console.log('UserNav: Supabase not configured');
             setLoading(false);
             return;
         }
 
         const supabase = createSupabaseBrowserClient();
         if (!supabase) {
+            console.log('UserNav: Could not create Supabase client');
             setLoading(false);
             return;
         }
 
         const getUser = async () => {
+            console.log('UserNav: Fetching user...');
             const { data: { user } } = await supabase.auth.getUser();
+            console.log('UserNav: User:', user);
+            console.log('UserNav: User metadata:', user?.user_metadata);
             setUser(user);
 
             if (user) {
-                const { data: profileData } = await supabase
+                const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
                     .select('id, role, full_name, avatar_url')
                     .eq('id', user.id)
                     .single();
 
+                console.log('UserNav: Profile data:', profileData);
+                console.log('UserNav: Profile error:', profileError);
                 setProfile(profileData as UserProfile | null);
             }
             setLoading(false);
@@ -73,6 +80,7 @@ export function UserNav() {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
+                console.log('UserNav: Auth state changed:', event, session?.user?.email);
                 setUser(session?.user ?? null);
                 if (session?.user) {
                     const { data: profileData } = await supabase
@@ -80,6 +88,7 @@ export function UserNav() {
                         .select('id, role, full_name, avatar_url')
                         .eq('id', session.user.id)
                         .single();
+                    console.log('UserNav: Profile data on auth change:', profileData);
                     setProfile(profileData as UserProfile | null);
                 } else {
                     setProfile(null);
@@ -161,20 +170,33 @@ export function UserNav() {
         ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
         : user.email?.charAt(0).toUpperCase() || 'U';
 
+    // Get avatar URL from multiple possible sources
+    const avatarUrl =
+        profile?.avatar_url ||
+        user.user_metadata?.avatar_url ||
+        user.user_metadata?.picture ||  // Google uses 'picture'
+        undefined;
+
+    console.log('UserNav: Rendering avatar with URL:', avatarUrl);
+    console.log('UserNav: Initials:', initials);
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
+                <button
+                    type="button"
+                    className="relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:opacity-80"
+                >
                     <Avatar className="h-9 w-9">
                         <AvatarImage
-                            src={profile?.avatar_url || user.user_metadata?.avatar_url}
+                            src={avatarUrl}
                             alt={profile?.full_name || 'User'}
                         />
                         <AvatarFallback className="bg-brand text-white text-sm font-medium">
                             {initials}
                         </AvatarFallback>
                     </Avatar>
-                </Button>
+                </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
