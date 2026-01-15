@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { requireUser } from "@/lib/auth-helpers";
+import { getBaseUrl } from "@/lib/url-helpers";
 import type { Database } from "@/types/database";
 
 type Guide = Database["public"]["Tables"]["guides"]["Row"];
@@ -75,12 +76,12 @@ export async function POST(request: NextRequest) {
     } else {
       amount = guide.price_8h ? parseFloat(guide.price_8h.toString()) : 0;
     }
-    
+
     // Fallback to booking price_total if guide prices not set
     if (amount === 0) {
       amount = parseFloat(booking.price_total.toString());
     }
-    
+
     const currency = guide.currency || booking.currency || "USD";
 
     // Get guide name for line item
@@ -108,9 +109,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Get base URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                   "http://localhost:3000");
+    const baseUrl = getBaseUrl();
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({

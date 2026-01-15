@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { sendBookingPaidEmail } from '@/lib/email';
+import { getBaseUrl } from '@/lib/url-helpers';
 import type { Database } from '@/types/database';
 
 export async function GET(request: NextRequest) {
@@ -124,11 +125,7 @@ export async function GET(request: NextRequest) {
         },
       );
 
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BASE_URL ||
-        (process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : 'http://localhost:3000');
+      const baseUrl = getBaseUrl();
 
       sendBookingPaidEmail({
         travelerUserId: booking.traveler_id,
