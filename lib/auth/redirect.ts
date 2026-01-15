@@ -5,7 +5,7 @@ export function getRedirectPathForRole(role: string | null | undefined): string 
     case "guide":
       return "/guide/dashboard";
     case "traveler":
-      return "/traveler/bookings";
+      return "/traveler/dashboard";
     case "admin":
       return "/admin";
     default:

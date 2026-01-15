@@ -34,7 +34,7 @@ async function redirectUserByRole() {
   if (error || !profile) {
     // Profile doesn't exist - rare edge case, default to traveler
     console.error("[redirectUserByRole] Profile not found, defaulting to traveler redirect");
-    redirect("/traveler/bookings");
+    redirect("/traveler/dashboard");
   }
 
   // Type assertion needed because select("role") returns a narrowed type
