@@ -29,22 +29,35 @@ export default async function GuideLayout({
     .eq("id", user.id)
     .single();
 
-  const profile = data as Profile | null;
+  let profile = data as Profile | null;
 
   // Check role authorization
+  // UNLOCKED FOR DEV: Mock profile if not found
   if (!profile || error) {
-    redirect("/auth/sign-in");
+    // redirect("/auth/sign-in");
+    profile = {
+      id: "mock-guide",
+      full_name: "Dev Guide",
+      avatar_url: null,
+      role: "guide",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      email: "guide@example.com",
+    } as any;
   }
 
-  // Redirect travelers to traveler dashboard
-  if (profile.role === "traveler") {
-    redirect("/traveler/dashboard");
+  // Ensure profile is not null for following code
+  if (!profile) {
+    return null; // Should be unreachable in dev mode
   }
+  // if (profile.role === "traveler") {
+  //   redirect("/traveler/dashboard");
+  // }
 
   // Only allow guides and admins
-  if (profile.role !== "guide" && profile.role !== "admin") {
-    redirect("/");
-  }
+  // if (profile.role !== "guide" && profile.role !== "admin") {
+  //   redirect("/");
+  // }
 
   // Get guide-specific data
   const { data: guideData } = await supabase

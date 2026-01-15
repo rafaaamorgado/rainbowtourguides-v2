@@ -15,22 +15,37 @@ export default async function GuideDashboardPage() {
   const { supabase, user, profile } = await requireRole("guide");
 
   // Check if guide has completed onboarding
-  const { data: guide } = await supabase
+  let { data: guide } = await supabase
     .from("guides")
     .select("*")
     .eq("id", user.id)
     .single() as { data: Guide | null };
+
+  // UNLOCKED FOR DEV: Mock guide if missing
+  if (!guide && user.id === "mock-dev-id") {
+    guide = {
+      id: "mock-dev-id",
+      status: "approved",
+      city_id: "mock-city-id", // will need to mock city query too
+      // Add other required fields if necessary
+    } as any;
+  }
 
   if (!guide) {
     redirect("/guide/onboarding");
   }
 
   // Get guide's city info
-  const { data: city } = await supabase
+  let { data: city } = await supabase
     .from("cities")
     .select("name, country_name")
     .eq("id", guide.city_id)
     .single();
+
+  // UNLOCKED FOR DEV: Mock city
+  if (!city && guide.id === "mock-dev-id") {
+    city = { name: "Mock City", country_name: "Mock Country" } as any;
+  }
 
   // Get bookings for this guide
   const { data: bookings } = await supabase

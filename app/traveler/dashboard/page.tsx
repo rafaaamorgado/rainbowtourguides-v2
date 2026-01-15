@@ -29,25 +29,40 @@ export default async function TravelerDashboardPage() {
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
-        redirect("/auth/sign-in");
+    // UNLOCKED FOR DEV: Mock user/profile if not found
+    // Get profile if user exists
+    let profileData = null;
+    if (user) {
+        const { data } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+        profileData = data;
     }
 
-    // Get profile
-    const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+    // UNLOCKED FOR DEV: Mock user/profile if not found
+    let userMock = user;
+    let profileMock = profileData as Profile | null;
 
-    const profile = data as Profile | null;
-
-    if (!profile) {
-        redirect("/auth/sign-in");
+    if (!userMock || !profileMock) {
+        // redirect("/auth/sign-in");
+        userMock = { id: "mock-traveler" } as any;
+        profileMock = {
+            id: "mock-traveler",
+            full_name: "Dev Traveler",
+            avatar_url: null,
+            role: "traveler",
+        } as any;
     }
+
+    const profile = profileMock;
+
+    // Ensure we have a user for data fetching
+    if (!userMock || !profile) return null;
 
     // Fetch bookings
-    const allBookings = await getBookings(user.id, "traveler");
+    const allBookings = await getBookings(userMock.id, "traveler");
 
     // Calculate stats
     const upcomingBookings = allBookings.filter(

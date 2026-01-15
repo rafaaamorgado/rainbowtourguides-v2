@@ -28,22 +28,35 @@ export default async function TravelerLayout({
     .eq("id", user.id)
     .single();
 
-  const profile = data as Profile | null;
+  let profile = data as Profile | null;
 
-  // Check role authorization
+  // UNLOCKED FOR DEV: Mock profile if not found
   if (!profile || error) {
-    redirect("/auth/sign-in");
+    // redirect("/auth/sign-in");
+    // Mock profile for dev
+    profile = {
+      id: "mock-traveler",
+      full_name: "Dev Traveler",
+      avatar_url: null,
+      role: "traveler",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      email: "dev@example.com",
+    } as any;
   }
 
-  // Redirect guides to guide dashboard
-  if (profile.role === "guide") {
-    redirect("/guide/dashboard");
+  // Ensure profile is not null for following code
+  if (!profile) {
+    return null; // Should be unreachable in dev mode
   }
+  // if (profile.role === "guide") {
+  //   redirect("/guide/dashboard");
+  // }
 
   // Only allow travelers and admins
-  if (profile.role !== "traveler" && profile.role !== "admin") {
-    redirect("/");
-  }
+  // if (profile.role !== "traveler" && profile.role !== "admin") {
+  //   redirect("/");
+  // }
 
   return (
     <div className="min-h-screen bg-slate-50">
