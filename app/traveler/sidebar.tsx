@@ -15,6 +15,7 @@ import {
   MapPin,
   LogOut,
   ChevronRight,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +50,16 @@ const navigationLinks = [
     name: 'Saved Guides',
     href: '/traveler/saved',
     icon: User,
+  },
+  {
+    name: 'Profile',
+    href: '/traveler/profile',
+    icon: User,
+  },
+  {
+    name: 'Reviews',
+    href: '/traveler/reviews',
+    icon: Star,
   },
   {
     name: 'Settings',

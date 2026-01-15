@@ -15,6 +15,11 @@ import {
   MapPin,
   LogOut,
   ChevronRight,
+  Clock,
+  MessageSquare,
+  Star,
+  Settings,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +64,36 @@ export function GuideSidebar({
       show: true,
     },
     {
+      name: 'Availability',
+      href: '/guide/availability',
+      icon: Clock,
+      show: true,
+    },
+    {
+      name: 'Pricing',
+      href: '/guide/pricing',
+      icon: DollarSign,
+      show: true,
+    },
+    {
+      name: 'Photos',
+      href: '/guide/photos',
+      icon: ImageIcon,
+      show: true,
+    },
+    {
+      name: 'Messages',
+      href: '/guide/messages',
+      icon: MessageSquare,
+      show: true,
+    },
+    {
+      name: 'Reviews',
+      href: '/guide/reviews',
+      icon: Star,
+      show: true,
+    },
+    {
       name: 'Onboarding',
       href: '/guide/onboarding',
       icon: ClipboardCheck,
@@ -73,7 +108,13 @@ export function GuideSidebar({
     {
       name: 'Payouts',
       href: '/guide/payouts',
-      icon: DollarSign,
+      icon: DollarSign, // Using DollarSign again or a different one? Payouts usually use DollarSign. Pricing could use Tag? Or CreditCard. Let's stick to DollarSign for Payouts. Maybe Tag for Pricing? Or just DollarSign is fine. But duplicate icons might be confusing. Let's use Tag for Pricing or similar. Actually, DollarSign is fine for both generally, but let's see. Payouts is definitely DollarSign. Pricing... maybe 'Coins'? Let's keep existing DollarSign for Payouts, and maybe change Pricing to something else if I can import it. But for now I will use DollarSign for Payouts (as it was) and... wait, existing code has Payouts at the end. I will reuse that.
+      show: true,
+    },
+    {
+      name: 'Settings',
+      href: '/guide/settings',
+      icon: Settings,
       show: true,
     },
   ];

@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { Sparkles, Search, MapPin, Heart, Users, Calendar, Clock } from "lucide-react";
+import { Sparkles, Search, MapPin, Heart, Users, Calendar, Clock, DollarSign, Image, MessageSquare, Star, Settings, FileText, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -18,24 +18,24 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Optional icon (uses default sparkles if not provided)
    */
-  icon?: "sparkles" | "search" | "map" | "heart" | "users" | "calendar" | "clock" | React.ReactNode;
-  
+  icon?: "sparkles" | "search" | "map" | "heart" | "users" | "calendar" | "clock" | "dollar" | "image" | "message" | "star" | "settings" | "file-text" | "user" | React.ReactNode;
+
   /**
    * Optional CTA button label
    */
   actionLabel?: string;
-  
+
   /**
    * Optional CTA button link
    */
   actionHref?: string;
-  
+
   /**
    * Optional secondary action
    */
   secondaryActionLabel?: string;
   secondaryActionHref?: string;
-  
+
   /**
    * Variant styling
    */
@@ -50,6 +50,13 @@ const iconMap = {
   users: Users,
   calendar: Calendar,
   clock: Clock,
+  dollar: DollarSign,
+  image: Image,
+  message: MessageSquare,
+  star: Star,
+  settings: Settings,
+  "file-text": FileText,
+  user: User,
 };
 
 /**
@@ -154,7 +161,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                 <Link href={actionHref}>{actionLabel}</Link>
               </Button>
             )}
-            
+
             {secondaryActionLabel && secondaryActionHref && (
               <Button
                 asChild
