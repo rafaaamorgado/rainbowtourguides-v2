@@ -40,10 +40,14 @@ export async function GET(request: NextRequest) {
     }
 
     if (data.user) {
+      const metadata = data.user.user_metadata ?? {};
+      const fullNameFromMetadata = metadata.full_name ?? metadata.name ?? null;
+      const avatarUrlFromMetadata = metadata.avatar_url ?? metadata.picture ?? null;
+
       // Check if profile exists
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, full_name, avatar_url')
         .eq('id', data.user.id)
         .single();
 
@@ -57,6 +61,18 @@ export async function GET(request: NextRequest) {
         || data.user.user_metadata?.role
         || 'traveler';
 
+      const profileUpdates: { full_name?: string | null; avatar_url?: string | null } = {};
+      if (profile) {
+        if (!profile.full_name && fullNameFromMetadata) {
+          profileUpdates.full_name = fullNameFromMetadata;
+        }
+        if (!profile.avatar_url && avatarUrlFromMetadata) {
+          profileUpdates.avatar_url = avatarUrlFromMetadata;
+        }
+      }
+
+      let profileUpdated = false;
+
       // If this is a new user (no profile) and role was passed, create/update the profile
       if (role && (role === 'guide' || role === 'traveler') && !profile) {
         // Insert new profile for OAuth user
@@ -65,8 +81,8 @@ export async function GET(request: NextRequest) {
           .upsert({
             id: data.user.id,
             role: role,
-            full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || null,
-            avatar_url: data.user.user_metadata?.avatar_url || null,
+            full_name: fullNameFromMetadata,
+            avatar_url: avatarUrlFromMetadata,
           });
 
         if (upsertError) {
@@ -77,9 +93,17 @@ export async function GET(request: NextRequest) {
         // Update profile if it exists but role is not set
         await supabase
           .from('profiles')
-          .update({ role: role })
+          .update({ role: role, ...profileUpdates })
           .eq('id', data.user.id);
         userRole = role;
+        profileUpdated = true;
+      }
+
+      if (profile && !profileUpdated && Object.keys(profileUpdates).length > 0) {
+        await supabase
+          .from('profiles')
+          .update(profileUpdates)
+          .eq('id', data.user.id);
       }
 
       console.log('User authenticated, role:', userRole); // Debug log
