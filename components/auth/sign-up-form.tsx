@@ -28,13 +28,13 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    
+
     const supabase = createSupabaseBrowserClient();
     if (!supabase) {
       setError("Supabase client is not configured.");
       return;
     }
-    
+
     setIsSubmitting(true);
 
     const { data, error: signUpError } = await supabase.auth.signUp({

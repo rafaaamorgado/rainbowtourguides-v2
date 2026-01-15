@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { GuideCard } from "@/components/cards/guide-card";
+import { GuideCard } from "@/components/cards/GuideCard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import type { Guide } from "@/lib/mock-data";

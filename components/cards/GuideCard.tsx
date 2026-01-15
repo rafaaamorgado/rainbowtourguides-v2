@@ -1,165 +1,275 @@
+import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Star, MapPin, Languages as LanguagesIcon } from "lucide-react";
+import { Star, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { getStoragePublicUrl } from "@/lib/storage-helpers";
 
 export interface GuideCardProps {
-  id: string;
-  slug?: string; // Optional slug for routing, falls back to id
-  name: string;
-  avatar_url?: string | null;
-  photo_url?: string | null;
-  city_name: string;
-  bio: string;
-  rating: number | null;
-  review_count: number;
-  price_4h: number;
-  price_6h: number;
-  price_8h: number;
-  currency?: string;
-  experience_tags: string[];
-  languages: string[];
+  guide: {
+    id: string;
+    name: string;
+    slug?: string;
+    city_name: string;
+    country_name?: string;
+    avatar_url?: string | null;
+    photo_url?: string | null;
+    tagline?: string;
+    bio?: string;
+    rating: number;
+    review_count: number;
+    price_4h?: number;
+    hourly_rate?: string | number;
+    base_price_4h?: string | null; // Handle string from DB
+    experience_tags?: string[];
+    themes?: string[]; // Fallback for experience_tags
+    verified?: boolean; // legacy
+    is_verified?: boolean; // db standard
+    instant_book?: boolean;
+    currency?: string;
+  };
+  variant?: "default" | "compact";
 }
 
-// Experience tag labels for display
-const EXPERIENCE_LABELS: Record<string, string> = {
-  daytime: "Daytime",
-  nightlife: "Nightlife",
-  food: "Food & Dining",
-  "queer-history": "Queer History",
-  "hidden-gems": "Hidden Gems",
-};
+/**
+ * GuideCard - Premium guide card component matching Brand Style Guide V2
+ * 
+ * Features:
+ * - Premium, minimal design with subtle pride details
+ * - Smooth hover animations
+ * - Verified and instant book badges
+ * - Responsive and mobile-optimized
+ * 
+ * @example
+ * <GuideCard guide={guide} />
+ * <GuideCard guide={guide} variant="compact" />
+ */
+export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
+  ({ guide, variant = "default" }, ref) => {
+    const isCompact = variant === "compact";
 
-export function GuideCard({
-  id,
-  slug,
-  name,
-  avatar_url,
-  photo_url,
-  city_name,
-  bio,
-  rating,
-  review_count,
-  price_4h,
-  price_6h,
-  price_8h,
-  currency = "USD",
-  experience_tags,
-  languages,
-}: GuideCardProps) {
-  // Calculate the lowest price
-  const prices = [price_4h, price_6h, price_8h].filter((p) => p > 0);
-  const lowestPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    // Normalize data fields that might come in different formats
+    const rating = guide.rating ?? 0;
+    const reviewCount = guide.review_count ?? 0;
+    const ratingDisplay = `${Number(rating).toFixed(1)} (${reviewCount})`;
 
-  // Generate tagline from bio (first 80 chars)
-  const tagline = bio
-    ? bio.length > 80
-      ? `${bio.substring(0, 80)}...`
-      : bio
-    : "Local LGBTQ+ tour guide";
+    // Handle tags (themes or experience_tags)
+    const tags = guide.experience_tags ?? guide.themes ?? [];
+    const displayTags = tags.slice(0, 3);
 
-  // Format rating display
-  const ratingDisplay = rating && review_count > 0
-    ? `${rating.toFixed(1)} ★ (${review_count})`
-    : "No reviews yet";
+    // Alternate tag colors for subtle visual interest
+    const getTagBg = (index: number) => {
+      const colors = ["bg-pride-lilac/30", "bg-pride-mint/30", "bg-pride-lilac/30"];
+      return colors[index % colors.length];
+    };
 
-  // Get currency symbol
-  const currencySymbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency;
+    // Standardize avatar URL logic
+    // Prefer avatar_url, fallback to photo_url, then placeholder
+    const avatar = guide.avatar_url ?? guide.photo_url;
+    const photo = getStoragePublicUrl(avatar, "guide-photos") || "/placeholder-avatar.svg";
 
-  // Use slug for routing if available, otherwise fall back to id
-  const href = `/guides/${slug || id}`;
-  
-  // Get public URL for photo
-  const primaryPhoto = avatar_url ?? photo_url;
-  const photoUrl = getStoragePublicUrl(primaryPhoto, "guide-photos") || "/placeholder-avatar.svg";
+    // Handle price display logic
+    // Some sources provide price_4h (number), others provide hourly_rate (string)
+    const price = guide.price_4h ?? Number(guide.hourly_rate ?? guide.base_price_4h ?? 0);
+    const currency = guide.currency === "EUR" ? "€" : "$"; // Simple currency logic
+
+    // Handle Verified status
+    const isVerified = guide.is_verified ?? guide.verified ?? false;
+
+    // Handle taglines/bio
+    const description = guide.tagline ?? guide.bio ?? "";
+
+    // Handle slug (fallback to id)
+    const href = `/guides/${guide.slug || guide.id}`;
+
+    return (
+      <div ref={ref}>
+        <Link
+          href={href}
+          className="block group cursor-pointer"
+        >
+          <div
+            className={cn(
+              "bg-panel-light border border-slate-200 rounded-2xl shadow-md hover:shadow-glass",
+              "transition-all duration-300 overflow-hidden",
+              "hover:-translate-y-0.5"
+            )}
+          >
+            {/* Photo Section */}
+            <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-slate-100">
+              <Image
+                src={photo}
+                alt={guide.name}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
+
+              {/* Verified Badge */}
+              {isVerified && (
+                <div className="absolute top-2 right-2 bg-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
+                  <Star className="h-3 w-3 fill-white" />
+                  Verified
+                </div>
+              )}
+            </div>
+
+            {/* Content Section */}
+            <div className={cn("p-6 space-y-3", isCompact && "p-4 space-y-2")}>
+              {/* Name */}
+              <h3
+                className={cn(
+                  "font-semibold text-ink mb-1 group-hover:text-brand transition-colors",
+                  isCompact ? "text-lg" : "text-xl"
+                )}
+              >
+                {guide.name}
+              </h3>
+
+              {/* Location */}
+              <p className="text-sm text-ink-soft mb-2">
+                {guide.country_name
+                  ? `${guide.city_name}, ${guide.country_name}`
+                  : guide.city_name}
+              </p>
+
+              {/* Rating */}
+              <div className="flex items-center gap-1 mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={cn(
+                      "h-4 w-4",
+                      i < Math.floor(rating)
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-slate-300"
+                    )}
+                  />
+                ))}
+                <span className="text-sm text-ink-soft ml-1">
+                  {ratingDisplay}
+                </span>
+              </div>
+
+              {/* Tagline */}
+              {!isCompact && description && (
+                <p className="text-sm text-ink-soft line-clamp-2 mb-3 leading-relaxed">
+                  {description}
+                </p>
+              )}
+
+              {/* Tags */}
+              {displayTags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {displayTags.map((tag, index) => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                      className={cn(
+                        "text-xs px-3 py-1 rounded-full border-0 font-medium text-slate-700",
+                        getTagBg(index)
+                      )}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* Price and Instant Book */}
+              <div className="flex items-end justify-between pt-2">
+                <div>
+                  <p className="text-xs text-ink-soft mb-0.5">From</p>
+                  <p className="text-lg font-semibold text-ink">
+                    {currency}{price}
+                  </p>
+                </div>
+
+                {guide.instant_book && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-brand/10 text-brand border-0 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1"
+                  >
+                    <Zap className="h-3 w-3 fill-brand" />
+                    Instant Book
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </Link>
+      </div>
+    );
+  }
+);
+
+GuideCard.displayName = "GuideCard";
+
+/**
+ * GuideCardSkeleton - Loading skeleton for guide card
+ */
+export const GuideCardSkeleton = React.forwardRef<
+  HTMLDivElement,
+  { variant?: "default" | "compact" }
+>(({ variant = "default" }, ref) => {
+  const isCompact = variant === "compact";
 
   return (
-    <Link href={href} className="block group">
-      <div className="bg-white rounded-2xl shadow-md hover:shadow-float transition-all duration-300 overflow-hidden hover:-translate-y-1">
-        {/* Guide Photo */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-          <Image
-            src={photoUrl}
-            alt={name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+    <div
+      ref={ref}
+      className="bg-panel-light border border-slate-200 rounded-2xl shadow-md overflow-hidden"
+    >
+      {/* Photo skeleton */}
+      <div className="relative aspect-square bg-slate-200 animate-pulse rounded-t-2xl" />
 
-          {/* Price Badge */}
-          {lowestPrice > 0 && (
-            <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-md">
-              <p className="text-xs text-slate-500 font-medium">from</p>
-              <p className="text-lg font-bold text-brand -mt-1">
-                {currencySymbol}{lowestPrice}
-              </p>
-            </div>
-          )}
-
-          {/* Rating Badge */}
-          <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
-            <Star
-              size={14}
-              className={rating && review_count > 0 ? "fill-amber-400 text-amber-400" : "text-slate-300"}
-            />
-            <span className="text-xs font-semibold text-slate-700">
-              {rating && review_count > 0 ? rating.toFixed(1) : "New"}
-            </span>
-          </div>
+      {/* Content skeleton */}
+      <div className={cn("p-6 space-y-3", isCompact && "p-4 space-y-2")}>
+        <div className="h-6 w-3/4 bg-slate-200 rounded animate-pulse" />
+        <div className="h-4 w-1/2 bg-slate-200 rounded animate-pulse" />
+        <div className="flex gap-1 mb-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-4 w-4 bg-slate-200 rounded animate-pulse" />
+          ))}
         </div>
-
-        {/* Card Content */}
-        <div className="p-5 space-y-3">
-          {/* Name and City */}
-          <div>
-            <h3 className="text-xl font-serif font-bold text-slate-900 group-hover:text-brand transition-colors line-clamp-1">
-              {name}
-            </h3>
-            <div className="flex items-center gap-1.5 text-sm text-slate-500 mt-1">
-              <MapPin size={14} className="text-slate-400 flex-shrink-0" />
-              <span className="line-clamp-1">{city_name}</span>
-            </div>
-          </div>
-
-          {/* Tagline */}
-          <p className="text-sm text-slate-600 font-light leading-relaxed line-clamp-2 min-h-[2.5rem]">
-            {tagline}
-          </p>
-
-          {/* Experience Tags */}
-          {experience_tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {experience_tags.slice(0, 3).map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="text-xs px-2 py-0.5 bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100"
-                >
-                  {EXPERIENCE_LABELS[tag] || tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          {/* Languages */}
-          {languages.length > 0 && (
-            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-              <LanguagesIcon size={14} className="text-slate-400 flex-shrink-0" />
-              <p className="text-xs text-slate-500 line-clamp-1">
-                {languages.join(", ")}
-              </p>
-            </div>
-          )}
-
-          {/* Review Count (if no reviews, show encouraging text) */}
-          {review_count === 0 && (
-            <p className="text-xs text-slate-400 italic pt-1">
-              Be the first to review!
-            </p>
-          )}
+        {!isCompact && (
+          <>
+            <div className="h-4 w-full bg-slate-200 rounded animate-pulse" />
+            <div className="h-4 w-5/6 bg-slate-200 rounded animate-pulse" />
+          </>
+        )}
+        <div className="flex gap-2">
+          <div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse" />
+          <div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" />
+        </div>
+        <div className="flex justify-between items-end pt-2">
+          <div className="h-8 w-20 bg-slate-200 rounded animate-pulse" />
+          <div className="h-6 w-24 bg-slate-200 rounded-full animate-pulse" />
         </div>
       </div>
-    </Link>
+    </div>
   );
-}
+});
+
+GuideCardSkeleton.displayName = "GuideCardSkeleton";
+
+/**
+ * GuideCardGrid - Grid container for guide cards
+ */
+export const GuideCardGrid = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, children, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+));
+
+GuideCardGrid.displayName = "GuideCardGrid";

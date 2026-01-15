@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { GuideCard } from "@/components/cards/guide-card";
+import { GuideCard } from "@/components/cards/GuideCard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";

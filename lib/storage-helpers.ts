@@ -147,19 +147,29 @@ export function getStoragePublicUrl(
     return urlOrPath;
   }
 
-  // If it's a storage path, construct the public URL
-  const supabase = createSupabaseBrowserClient();
-  if (!supabase) {
-    // Fallback: construct URL manually if client not available
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!supabaseUrl) {
-      return null;
-    }
-    return `${supabaseUrl}/storage/v1/object/public/${bucket}/${urlOrPath}`;
+  // Optimize: Construct URL manually without initializing client
+  // This is safe for public buckets and works on both server and client
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (supabaseUrl) {
+    // Ensure no double slashes if vars have trailing/leading slashes
+    const cleanBase = supabaseUrl.replace(/\/$/, "");
+    const cleanBucket = bucket.replace(/\/$/, "");
+    const cleanPath = urlOrPath.startsWith('/') ? urlOrPath.slice(1) : urlOrPath;
+    return `${cleanBase}/storage/v1/object/public/${cleanBucket}/${cleanPath}`;
   }
 
-  const { data } = supabase.storage.from(bucket).getPublicUrl(urlOrPath);
-  return data.publicUrl;
+  // Fallback (unlikely to be reached if env vars are set)
+  try {
+    const supabase = createSupabaseBrowserClient();
+    if (supabase) {
+      const { data } = supabase.storage.from(bucket).getPublicUrl(urlOrPath);
+      return data.publicUrl;
+    }
+  } catch (e) {
+    // Ignore client creation errors on server
+  }
+
+  return null;
 }
 
 // ============================================================================

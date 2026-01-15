@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { Shield, Map, Users, ArrowRight, Search, CheckCircle, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CityCard } from '@/components/ui/CityCard';
-import { GuideCard } from '@/components/ui/GuideCard';
+import { GuideCard } from '@/components/cards/GuideCard';
 import { HeroSearch } from '@/components/home/hero-search';
 import { getCities, getTopGuides } from '@/lib/data-service';
 import type { Guide } from '@/lib/mock-data';
@@ -26,16 +26,17 @@ function adaptGuideForCard(guide: Guide) {
   return {
     id: guide.id,
     slug: guide.slug,
-    status: 'approved' as const,
-    headline: guide.tagline,
-    hourly_rate: guide.price_4h.toString(),
-    currency: '$',
-    rating_avg: guide.rating,
-    profile: {
-      full_name: guide.name, // ⚠️ full_name, not display_name
-      avatar_url: guide.avatar_url ?? guide.photo_url ?? null,
-    },
-    themes: guide.experience_tags.slice(0, 3),
+    name: guide.name, // Added
+    city_name: guide.city_name, // Added
+    avatar_url: guide.avatar_url, // Direct map
+    photo_url: guide.photo_url, // Direct map
+    tagline: guide.tagline,
+    rating: guide.rating,
+    review_count: guide.review_count, // Added
+    price_4h: guide.price_4h,
+    experience_tags: guide.experience_tags,
+    verified: true, // Mocked as true for top guides
+    instant_book: false, // Default
   };
 }
 
@@ -259,7 +260,7 @@ export default async function MarketingPage() {
                 key={guide.id}
                 className="group hover:-translate-y-1 transition-all duration-300"
               >
-                <GuideCard guide={guide as any} />
+                <GuideCard guide={guide} />
               </div>
             ))}
           </div>

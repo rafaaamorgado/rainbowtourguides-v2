@@ -232,20 +232,22 @@ export default async function CityPage({ params }: CityPageProps) {
             {guides.map((guide) => (
               <GuideCard
                 key={guide.id}
-                id={guide.id}
-                slug={guide.slug}
-                name={guide.name}
-                avatar_url={guide.avatar_url ?? guide.photo_url}
-                photo_url={guide.photo_url}
-                city_name={guide.city_name}
-                bio={guide.bio || guide.tagline}
-                rating={guide.rating}
-                review_count={guide.review_count}
-                price_4h={guide.price_4h}
-                price_6h={guide.price_6h}
-                price_8h={guide.price_8h}
-                experience_tags={guide.experience_tags || []}
-                languages={guide.languages || []}
+                guide={{
+                  id: guide.id,
+                  slug: guide.slug,
+                  name: guide.name,
+                  avatar_url: guide.avatar_url ?? guide.photo_url,
+                  photo_url: guide.photo_url,
+                  city_name: guide.city_name,
+                  tagline: guide.bio || guide.tagline, // mapped bio/tagline
+                  rating: guide.rating,
+                  review_count: guide.review_count,
+                  price_4h: guide.price_4h,
+                  // Pass original prices if needed, keeping it simple for now as per component logic
+                  experience_tags: guide.experience_tags || [],
+                  verified: false, // Defaults
+                  instant_book: false, // Defaults
+                }}
               />
             ))}
           </div>

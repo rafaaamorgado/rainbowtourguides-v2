@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { getCities, getGuides } from '@/lib/data-service';
 import { GuidesSearchBar } from '@/components/guides/search-bar';
-import { GuideCard } from '@/components/cards/guide-card';
+import { GuideCard } from '@/components/cards/GuideCard';
 import { FilteredView } from './filtered-view';
 import { Button } from '@/components/ui/button';
 
