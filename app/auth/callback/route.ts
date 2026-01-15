@@ -4,9 +4,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const role = searchParams.get('role'); // Role passed from sign-up form
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get('code');
+  const role = requestUrl.searchParams.get('role'); // Role passed from sign-up form
+  const origin = requestUrl.origin;
+
+  // Use production URL if available, otherwise fall back to request origin
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || origin;
 
   if (code) {
     const cookieStore = await cookies();
@@ -30,7 +34,12 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error && data.user) {
+    if (error) {
+      console.error('Auth callback error:', error);
+      return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=callback_error`);
+    }
+
+    if (data.user) {
       // Check if profile exists
       const { data: profile } = await supabase
         .from('profiles')
@@ -51,7 +60,7 @@ export async function GET(request: NextRequest) {
       // If this is a new user (no profile) and role was passed, create/update the profile
       if (role && (role === 'guide' || role === 'traveler') && !profile) {
         // Insert new profile for OAuth user
-        await supabase
+        const { error: upsertError } = await supabase
           .from('profiles')
           .upsert({
             id: data.user.id,
@@ -59,6 +68,10 @@ export async function GET(request: NextRequest) {
             full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || null,
             avatar_url: data.user.user_metadata?.avatar_url || null,
           });
+
+        if (upsertError) {
+          console.error('Profile upsert error:', upsertError);
+        }
         userRole = role;
       } else if (role && (role === 'guide' || role === 'traveler') && profile && !profile.role) {
         // Update profile if it exists but role is not set
@@ -69,26 +82,19 @@ export async function GET(request: NextRequest) {
         userRole = role;
       }
 
-      // Redirect based on role
-      let redirectPath: string;
-      switch (userRole) {
-        case 'guide':
-          redirectPath = '/guide/dashboard';
-          break;
-        case 'admin':
-          redirectPath = '/admin';
-          break;
-        case 'traveler':
-        default:
-          redirectPath = '/traveler/dashboard';
-          break;
-      }
+      console.log('User authenticated, role:', userRole); // Debug log
 
-      // Use origin from request (works correctly in both dev and production)
-      return NextResponse.redirect(new URL(redirectPath, origin));
+      // Redirect based on role
+      if (userRole === 'admin') {
+        return NextResponse.redirect(`${baseUrl}/admin`);
+      } else if (userRole === 'guide') {
+        return NextResponse.redirect(`${baseUrl}/guide/dashboard`);
+      } else {
+        return NextResponse.redirect(`${baseUrl}/traveler/dashboard`);
+      }
     }
   }
 
-  // Auth error - redirect to error page
-  return NextResponse.redirect(new URL('/auth/auth-code-error', request.url));
+  // No code or user - redirect to sign in
+  return NextResponse.redirect(`${baseUrl}/auth/sign-in`);
 }

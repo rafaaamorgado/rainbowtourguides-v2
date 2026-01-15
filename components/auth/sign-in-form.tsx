@@ -60,14 +60,20 @@ export function SignInForm({ redirectAction }: SignInFormProps) {
       return;
     }
 
+    // Sign-in doesn't pass role - callback will look up existing profile role
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
 
     if (oauthError) {
+      console.error('Google sign in error:', oauthError.message);
       setError(oauthError.message);
       setIsOAuthLoading(false);
     }

@@ -98,17 +98,22 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
       return;
     }
 
-    // For OAuth, pass role via query params since options.data is not available
-    // The callback route will read this and update the profile accordingly
+    // Pass role via URL query params - callback route will read this and set profile role
+    // Note: options.data is NOT available for signInWithOAuth, only for signUp
     const role = initialRole || 'traveler';
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
 
     if (oauthError) {
+      console.error('Google sign up error:', oauthError.message);
       setError(oauthError.message);
       setIsOAuthLoading(false);
     }
