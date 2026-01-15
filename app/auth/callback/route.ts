@@ -2,13 +2,11 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getPostLoginRedirect } from '@/lib/auth/post-login-redirect';
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get('code');
-  const next = requestUrl.searchParams.get('next') ?? '/account'; // Default next path
-  const role = requestUrl.searchParams.get('role');
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get('code');
+  const role = searchParams.get('role'); // Role passed from sign-up form
 
   if (code) {
     const cookieStore = await cookies();
@@ -33,48 +31,64 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      // 1. Ensure profile exists (in case trigger failed or hasn't run yet)
-      // The trigger 'handle_new_user' should have run on insert, but we double-check.
-      // If role was passed (from signup flow), we might need to enforce it.
-
+      // Check if profile exists
       const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select('role')
         .eq('id', data.user.id)
         .single();
 
-      // If profile doesn't exist, wait a moment or insert it manually?
-      // For now, we trust the improved trigger to handle insertion.
-      // We only update role if it's explicitly provided and different.
+      // Determine the user's role:
+      // 1. From existing profile (returning user)
+      // 2. From URL query param (new OAuth sign-up)
+      // 3. From user metadata (if set during sign-up)
+      // 4. Default to 'traveler'
+      let userRole = profile?.role
+        || role
+        || data.user.user_metadata?.role
+        || 'traveler';
 
-      if (role && (role === 'guide' || role === 'traveler')) {
-        // Force update the role if provided in the URL (e.g. from /guide/signup)
-        // This overrides whatever default the trigger might have set if it didn't see the metadata.
+      // If this is a new user (no profile) and role was passed, create/update the profile
+      if (role && (role === 'guide' || role === 'traveler') && !profile) {
+        // Insert new profile for OAuth user
         await supabase
           .from('profiles')
-          .update({ role })
+          .upsert({
+            id: data.user.id,
+            role: role,
+            full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || null,
+            avatar_url: data.user.user_metadata?.avatar_url || null,
+          });
+        userRole = role;
+      } else if (role && (role === 'guide' || role === 'traveler') && profile && !profile.role) {
+        // Update profile if it exists but role is not set
+        await supabase
+          .from('profiles')
+          .update({ role: role })
           .eq('id', data.user.id);
+        userRole = role;
       }
 
-      // 2. Determine redirect path
-      // Uses the 'next' param OR the computed post-login path
-      let finalPath = next;
-      if (!requestUrl.searchParams.has('next')) {
-        const computed = await getPostLoginRedirect();
-        if (computed.path) finalPath = computed.path;
+      // Redirect based on role
+      let redirectPath: string;
+      switch (userRole) {
+        case 'guide':
+          redirectPath = '/guide/dashboard';
+          break;
+        case 'admin':
+          redirectPath = '/admin';
+          break;
+        case 'traveler':
+        default:
+          redirectPath = '/traveler/dashboard';
+          break;
       }
 
-      // 3. Construct absolute redirect URL using robust base URL
-      // This solves the issue where redirects might go to localhost on prod
-      // if headers are missing.
-      const baseUrl = requestUrl.origin; // Usually safe, but can rely on helper if needed
-      // Actually, standard practice is to use the requestUrl.origin if we trust the host header.
-      // Vercel usually sets this correctly.
-
-      return NextResponse.redirect(new URL(finalPath, baseUrl));
+      // Use origin from request (works correctly in both dev and production)
+      return NextResponse.redirect(new URL(redirectPath, origin));
     }
   }
 
-  // Return the user to an error page with instructions
+  // Auth error - redirect to error page
   return NextResponse.redirect(new URL('/auth/auth-code-error', request.url));
 }
