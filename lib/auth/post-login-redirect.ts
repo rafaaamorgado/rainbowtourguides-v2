@@ -38,7 +38,7 @@ export async function getPostLoginRedirect(): Promise<PostLoginRedirectResult> {
     return {
       userId: user.id,
       role,
-      path: isComplete ? "/traveler/bookings" : "/traveler/onboarding",
+      path: isComplete ? "/traveler/dashboard" : "/traveler/onboarding",
     };
   }
 

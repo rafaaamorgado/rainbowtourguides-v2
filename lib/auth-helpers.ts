@@ -15,7 +15,7 @@ export function getRedirectPathForRole(role: ProfileRole): string {
       return "/guide/dashboard";
     case "traveler":
     default:
-      return "/traveler/bookings";
+      return "/traveler/dashboard";
   }
 }
 
@@ -184,9 +184,8 @@ export async function getAuthenticatedUserRedirect(): Promise<string | null> {
       .eq("id", user.id)
       .single();
 
-    return traveler ? "/traveler/bookings" : "/traveler/onboarding";
+    return traveler ? "/traveler/dashboard" : "/traveler/onboarding";
   }
 
   return "/account";
 }
-
