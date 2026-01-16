@@ -1,127 +1,93 @@
-import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { GuideSidebar } from "./sidebar";
-import type { Database } from "@/types/database";
+'use client';
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Guide = Database["public"]["Tables"]["guides"]["Row"];
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  User,
+  MessageSquare,
+  Settings,
+  LogOut,
+  MapPin
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default async function GuideLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const supabase = await createSupabaseServerClient();
+const sidebarNavItems = [
+  {
+    title: "Overview",
+    href: "/guide/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Bookings",
+    href: "/guide/bookings",
+    icon: CalendarDays,
+  },
+  {
+    title: "Availability",
+    href: "/guide/availability",
+    icon: MapPin, // Or Calendar, choosing MapPin for variety or CalendarClock
+  },
+  {
+    title: "Profile & Listing",
+    href: "/guide/profile",
+    icon: User,
+  },
+  {
+    title: "Messages",
+    href: "/guide/messages",
+    icon: MessageSquare,
+  },
+  {
+    title: "Settings",
+    href: "/guide/settings",
+    icon: Settings,
+  },
+];
 
-  // Check authentication
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function GuideLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
 
-  if (!user) {
-    redirect("/auth/sign-in?redirect=/guide/dashboard");
+  // Don't show sidebar on onboarding
+  if (pathname.startsWith("/guide/onboarding")) {
+    return <>{children}</>;
   }
-
-  // Get user profile with role
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  let profile = data as Profile | null;
-
-  // Check role authorization
-  // UNLOCKED FOR DEV: Mock profile if not found
-  if (!profile || error) {
-    // redirect("/auth/sign-in");
-    profile = {
-      id: "mock-guide",
-      full_name: "Dev Guide",
-      avatar_url: null,
-      role: "guide",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      email: "guide@example.com",
-    } as any;
-  }
-
-  // Ensure profile is not null for following code
-  if (!profile) {
-    return null; // Should be unreachable in dev mode
-  }
-  // if (profile.role === "traveler") {
-  //   redirect("/traveler/dashboard");
-  // }
-
-  // Only allow guides and admins
-  // if (profile.role !== "guide" && profile.role !== "admin") {
-  //   redirect("/");
-  // }
-
-  // Get guide-specific data
-  const { data: guideData } = await supabase
-    .from("guides")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  const guide = guideData as Guide | null;
-
-  // Get pending bookings count
-  const { count: pendingCount } = await supabase
-    .from("bookings")
-    .select("*", { count: "exact", head: true })
-    .eq("guide_id", user.id)
-    .eq("status", "pending");
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <GuideSidebar
-        profile={profile}
-        guide={guide}
-        pendingBookingsCount={pendingCount ?? 0}
-      />
-
-      {/* Main Content */}
-      <div className="lg:pl-64">
-        {/* Approval Banner */}
-        {guide && guide.status !== "approved" && (
-          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 m-8 mb-0 rounded-r-xl">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-amber-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-amber-900 mb-1">
-                  Profile Under Review
-                </p>
-                <p className="text-sm text-amber-800">
-                  Your profile is under review. You'll be notified once approved
-                  and can start accepting bookings.
-                </p>
-              </div>
-            </div>
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <aside className="w-full md:w-64 border-r bg-muted/10">
+        <div className="flex flex-col h-full py-4">
+          <div className="px-6 py-2">
+            <h2 className="text-lg font-semibold tracking-tight">Guide Portal</h2>
           </div>
-        )}
-
-        <main className="p-8">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </main>
-      </div>
+          <nav className="flex-1 space-y-1 px-3 py-4">
+            {sidebarNavItems.map((item) => (
+              <Button
+                key={item.href}
+                variant={pathname === item.href ? "secondary" : "ghost"}
+                className={cn(
+                  "w-full justify-start",
+                  pathname === item.href && "bg-muted"
+                )}
+                asChild
+              >
+                <Link href={item.href}>
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.title}
+                </Link>
+              </Button>
+            ))}
+          </nav>
+          <div className="px-3 py-2">
+            {/* Bottom actions if any */}
+          </div>
+        </div>
+      </aside>
+      <main className="flex-1 p-6 md:p-8">
+        {children}
+      </main>
     </div>
   );
 }
-

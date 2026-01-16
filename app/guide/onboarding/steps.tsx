@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
 import { AvatarUpload } from "@/components/ui/avatar-upload";
 import { cn } from "@/lib/utils";
 import type { City } from "@/lib/mock-data";
@@ -82,10 +81,11 @@ export function Step1BasicInfo({
           <label className="text-sm font-semibold text-ink">
             City <span className="text-red-500">*</span>
           </label>
-          <Select
+          <select
             value={data.city_id || ""}
             onChange={(e) => onChange("city_id", e.target.value)}
             required
+            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="">Select your city</option>
             {cities.map((city) => (
@@ -93,7 +93,7 @@ export function Step1BasicInfo({
                 {city.name}, {city.country_name}
               </option>
             ))}
-          </Select>
+          </select>
           {errors.city_id && (
             <p className="text-sm text-red-600">{errors.city_id}</p>
           )}

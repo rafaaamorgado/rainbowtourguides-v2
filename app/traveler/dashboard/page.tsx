@@ -1,431 +1,90 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import {
-    Calendar,
-    Clock,
-    MapPin,
-    MessageSquare,
-    ChevronRight,
-    Star,
-    ArrowRight,
-    User,
-} from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { getBookings } from "@/lib/data-service";
-import { EmptyState } from "@/components/ui/empty-state";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import type { Database } from "@/types/database";
-
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+import { CalendarClock, MapPin } from "lucide-react";
+import Link from "next/link";
+import { format } from "date-fns";
 
 export default async function TravelerDashboardPage() {
-    const supabase = await createSupabaseServerClient();
-
-    // Get authenticated user
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-
-    // UNLOCKED FOR DEV: Mock user/profile if not found
-    // Get profile if user exists
-    let profileData = null;
-    if (user) {
-        const { data } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", user.id)
-            .single();
-        profileData = data;
-    }
-
-    // UNLOCKED FOR DEV: Mock user/profile if not found
-    let userMock = user;
-    let profileMock = profileData as Profile | null;
-
-    if (!userMock || !profileMock) {
-        // redirect("/auth/sign-in");
-        userMock = { id: "mock-traveler" } as any;
-        profileMock = {
-            id: "mock-traveler",
-            full_name: "Dev Traveler",
-            avatar_url: null,
-            role: "traveler",
-        } as any;
-    }
-
-    const profile = profileMock;
-
-    // Ensure we have a user for data fetching
-    if (!userMock || !profile) return null;
-
-    // Fetch bookings
-    const allBookings = await getBookings(userMock.id, "traveler");
-
-    // Calculate stats
-    const upcomingBookings = allBookings.filter(
-        (b) =>
-            (b.status === "confirmed" || b.status === "accepted") &&
-            new Date(b.date) >= new Date()
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: { getAll: () => cookieStore.getAll(), setAll: () => { } },
+        }
     );
 
-    const pendingBookings = allBookings.filter((b) => b.status === "pending");
+    const { data: { user } } = await supabase.auth.getUser();
 
-    const completedBookings = allBookings.filter(
-        (b) => b.status === "completed" && new Date(b.date) < new Date()
-    );
-
-    const uniqueCities = new Set(
-        completedBookings.map((b) => b.city_name)
-    ).size;
-
-    // Show max 3 upcoming bookings on dashboard
-    const displayUpcoming = upcomingBookings.slice(0, 3);
-    const displayPast = completedBookings.slice(0, 3);
+    const { data: bookings } = await supabase
+        .from('bookings')
+        .select(`
+      id,
+      status,
+      starts_at,
+      duration_hours,
+      price_total,
+      currency,
+      guide:guides (
+         profile:profiles (display_name)
+      ),
+      city:cities (name)
+    `)
+        .eq('traveler_id', user?.id)
+        .order('created_at', { ascending: false });
 
     return (
-        <div className="space-y-8">
-            {/* Welcome Header */}
+        <div className="container py-10 space-y-8">
             <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-ink mb-2">
-                    Welcome back, {profile.full_name}!
-                </h1>
-                <p className="text-ink-soft text-lg">
-                    Here's what's happening with your bookings
-                </p>
+                <h1 className="text-3xl font-bold">My Trips</h1>
+                <p className="text-muted-foreground">Manage your booking requests and upcoming tours.</p>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
-                    <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                            <Calendar className="h-6 w-6 text-emerald-600" />
-                        </div>
-                    </div>
-                    <div>
-                        <p className="text-4xl font-bold text-ink">
-                            {upcomingBookings.length}
-                        </p>
-                        <p className="text-sm text-ink-soft mt-1">Upcoming tours</p>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
-                    <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                            <Clock className="h-6 w-6 text-amber-600" />
-                        </div>
-                    </div>
-                    <div>
-                        <p className="text-4xl font-bold text-ink">
-                            {pendingBookings.length}
-                        </p>
-                        <p className="text-sm text-ink-soft mt-1">Pending requests</p>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
-                    <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                            <MapPin className="h-6 w-6 text-blue-600" />
-                        </div>
-                    </div>
-                    <div>
-                        <p className="text-4xl font-bold text-ink">{uniqueCities}</p>
-                        <p className="text-sm text-ink-soft mt-1">Cities explored</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Upcoming Bookings Section */}
-            <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-ink">Upcoming Bookings</h2>
-                    {upcomingBookings.length > 3 && (
-                        <Link
-                            href="/traveler/bookings"
-                            className="text-brand hover:text-brand-dark flex items-center gap-1 text-sm font-medium"
-                        >
-                            View all
-                            <ChevronRight className="h-4 w-4" />
-                        </Link>
-                    )}
-                </div>
-
-                {displayUpcoming.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-slate-200 p-12">
-                        <EmptyState
-                            title="No upcoming tours"
-                            description="Ready to explore? Browse our verified guides and book your next adventure."
-                            icon="calendar"
-                            variant="minimal"
-                            actionLabel="Find a Guide"
-                            actionHref="/cities"
-                        />
+            <div className="grid gap-6">
+                {!bookings || bookings.length === 0 ? (
+                    <div className="text-center py-12 bg-muted/20 rounded-lg">
+                        <p className="text-lg font-medium">No bookings yet</p>
+                        <Button asChild className="mt-4">
+                            <Link href="/">Find a Guide</Link>
+                        </Button>
                     </div>
                 ) : (
-                    <div className="space-y-4">
-                        {displayUpcoming.map((booking) => (
-                            <div
-                                key={booking.id}
-                                className="bg-white rounded-2xl border border-slate-200 p-6 hover:border-brand/50 hover:shadow-md transition-all"
-                            >
-                                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-6 items-center">
-                                    {/* Guide Photo */}
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-pride-lilac to-pride-mint flex-shrink-0">
-                                            <div className="w-full h-full flex items-center justify-center text-white font-semibold text-xl">
-                                                {booking.guide_name.charAt(0)}
-                                            </div>
-                                        </div>
-
-                                        {/* Mobile: Guide info inline */}
-                                        <div className="md:hidden">
-                                            <p className="font-semibold text-ink">
-                                                {booking.guide_name}
-                                            </p>
-                                            <p className="text-sm text-ink-soft flex items-center gap-1">
-                                                <MapPin className="h-3 w-3" />
-                                                {booking.city_name}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="space-y-2">
-                                        {/* Desktop: Guide info */}
-                                        <div className="hidden md:block">
-                                            <p className="font-semibold text-ink text-lg">
-                                                {booking.guide_name}
-                                            </p>
-                                            <p className="text-sm text-ink-soft flex items-center gap-1">
-                                                <MapPin className="h-3 w-3" />
-                                                {booking.city_name}
-                                            </p>
-                                        </div>
-
-                                        {/* Booking Details */}
-                                        <div className="flex flex-wrap items-center gap-4 text-sm text-ink-soft">
-                                            <div className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4" />
-                                                {new Date(booking.date).toLocaleDateString("en-US", {
-                                                    month: "short",
-                                                    day: "numeric",
-                                                    year: "numeric",
-                                                })}
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Clock className="h-4 w-4" />
-                                                {booking.duration} hours
-                                            </div>
-                                            <Badge
-                                                className={cn(
-                                                    "text-xs",
-                                                    booking.status === "confirmed" &&
-                                                    "bg-emerald-100 text-emerald-700 border-0",
-                                                    booking.status === "accepted" &&
-                                                    "bg-blue-100 text-blue-700 border-0",
-                                                    booking.status === "pending" &&
-                                                    "bg-amber-100 text-amber-700 border-0"
-                                                )}
-                                            >
-                                                {booking.status.charAt(0).toUpperCase() +
-                                                    booking.status.slice(1)}
-                                            </Badge>
-                                        </div>
-                                    </div>
-
-                                    {/* Actions */}
-                                    <div className="flex flex-col sm:flex-row md:flex-col gap-2">
-                                        <Button
-                                            asChild
-                                            variant="default"
-                                            size="sm"
-                                            className="w-full sm:w-auto"
-                                        >
-                                            <Link href={`/traveler/bookings/${booking.id}`}>
-                                                View Details
-                                            </Link>
-                                        </Button>
-                                        <Button
-                                            asChild
-                                            variant="outline"
-                                            size="sm"
-                                            className="w-full sm:w-auto"
-                                        >
-                                            <Link
-                                                href={`/traveler/messages/${booking.id}`}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <MessageSquare className="h-4 w-4" />
-                                                Message
-                                            </Link>
-                                        </Button>
+                    bookings.map((booking: any) => (
+                        <Card key={booking.id}>
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <div className="space-y-1">
+                                    <CardTitle className="text-lg">
+                                        {booking.guide?.profile?.display_name} in {booking.city?.name}
+                                    </CardTitle>
+                                    <div className="flex items-center text-sm text-muted-foreground gap-1">
+                                        <CalendarClock className="h-4 w-4" />
+                                        {format(new Date(booking.starts_at), 'PPP')} • {booking.duration_hours}h
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                                <Badge variant={
+                                    booking.status === 'confirmed' ? 'default' :
+                                        booking.status === 'pending' ? 'secondary' : 'outline'
+                                }>
+                                    {booking.status.toUpperCase()}
+                                </Badge>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex justify-between items-end border-t pt-4 mt-2">
+                                    <div className="text-sm">
+                                        Total: <span className="font-semibold">{booking.price_total} {booking.currency}</span>
+                                    </div>
+                                    {booking.status === 'accepted' && (
+                                        <Button size="sm">Pay Now</Button>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))
                 )}
-            </section>
-
-            {/* Past Bookings Section */}
-            {completedBookings.length > 0 && (
-                <section className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-ink">Past Experiences</h2>
-                        {completedBookings.length > 3 && (
-                            <Link
-                                href="/traveler/bookings?filter=completed"
-                                className="text-brand hover:text-brand-dark flex items-center gap-1 text-sm font-medium"
-                            >
-                                View all
-                                <ChevronRight className="h-4 w-4" />
-                            </Link>
-                        )}
-                    </div>
-
-                    <div className="space-y-4">
-                        {displayPast.map((booking) => (
-                            <div
-                                key={booking.id}
-                                className="bg-white rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all"
-                            >
-                                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-6 items-center">
-                                    {/* Guide Photo */}
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-pride-mint to-pride-amber flex-shrink-0">
-                                            <div className="w-full h-full flex items-center justify-center text-white font-semibold text-xl">
-                                                {booking.guide_name.charAt(0)}
-                                            </div>
-                                        </div>
-
-                                        {/* Mobile: Guide info inline */}
-                                        <div className="md:hidden">
-                                            <p className="font-semibold text-ink">
-                                                {booking.guide_name}
-                                            </p>
-                                            <p className="text-sm text-ink-soft flex items-center gap-1">
-                                                <MapPin className="h-3 w-3" />
-                                                {booking.city_name}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="space-y-2">
-                                        {/* Desktop: Guide info */}
-                                        <div className="hidden md:block">
-                                            <p className="font-semibold text-ink text-lg">
-                                                {booking.guide_name}
-                                            </p>
-                                            <p className="text-sm text-ink-soft flex items-center gap-1">
-                                                <MapPin className="h-3 w-3" />
-                                                {booking.city_name}
-                                            </p>
-                                        </div>
-
-                                        {/* Booking Details */}
-                                        <div className="flex flex-wrap items-center gap-4 text-sm text-ink-soft">
-                                            <div className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4" />
-                                                {new Date(booking.date).toLocaleDateString("en-US", {
-                                                    month: "short",
-                                                    day: "numeric",
-                                                    year: "numeric",
-                                                })}
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Clock className="h-4 w-4" />
-                                                {booking.duration} hours
-                                            </div>
-                                        </div>
-
-                                        {/* Review Status (mock - would check if reviewed) */}
-                                        <div className="flex items-center gap-1 text-sm text-amber-600">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    className="h-4 w-4 fill-amber-400 text-amber-400"
-                                                />
-                                            ))}
-                                            <span className="ml-1 text-ink-soft">
-                                                Reviewed
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Actions */}
-                                    <div className="flex flex-col sm:flex-row md:flex-col gap-2">
-                                        <Button
-                                            asChild
-                                            variant="outline"
-                                            size="sm"
-                                            className="w-full sm:w-auto"
-                                        >
-                                            <Link href={`/traveler/bookings/${booking.id}`}>
-                                                View Details
-                                            </Link>
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* Quick Actions */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Link
-                    href="/cities"
-                    className="bg-gradient-to-br from-brand to-pink-500 rounded-2xl p-8 text-white hover:shadow-xl transition-all group"
-                >
-                    <div className="space-y-4">
-                        <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                            <MapPin className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold mb-2">Find a Guide</h3>
-                            <p className="text-white/90 text-sm leading-relaxed">
-                                Explore new cities and connect with verified local guides for
-                                your next adventure.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm font-semibold group-hover:gap-3 transition-all">
-                            Browse cities
-                            <ArrowRight className="h-4 w-4" />
-                        </div>
-                    </div>
-                </Link>
-
-                <Link
-                    href="/traveler/settings"
-                    className="bg-white rounded-2xl p-8 border border-slate-200 hover:border-brand/50 hover:shadow-md transition-all group"
-                >
-                    <div className="space-y-4">
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-brand/10 transition-colors">
-                            <User className="h-6 w-6 text-ink-soft group-hover:text-brand transition-colors" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold text-ink mb-2">
-                                Manage Profile
-                            </h3>
-                            <p className="text-ink-soft text-sm leading-relaxed">
-                                Update your preferences, payment methods, and personal
-                                information.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm font-semibold text-ink-soft group-hover:text-brand group-hover:gap-3 transition-all">
-                            Go to settings
-                            <ArrowRight className="h-4 w-4" />
-                        </div>
-                    </div>
-                </Link>
-            </section>
+            </div>
         </div>
     );
 }

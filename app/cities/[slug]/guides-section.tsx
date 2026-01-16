@@ -5,7 +5,13 @@ import { Search, SlidersHorizontal } from "lucide-react";
 import { GuideCard } from "@/components/cards/GuideCard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Guide } from "@/lib/mock-data";
@@ -120,15 +126,20 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
               </label>
               <Select
                 value={theme}
-                onChange={(e) => setTheme(e.target.value)}
+                onValueChange={setTheme}
               >
-                <option value="all">All Themes</option>
-                <option value="nightlife">Nightlife</option>
-                <option value="daytime culture">Daytime Culture</option>
-                <option value="food & drink">Food & Drink</option>
-                <option value="queer history">Queer History</option>
-                <option value="art scene">Art Scene</option>
-                <option value="hidden gems">Hidden Gems</option>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Themes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Themes</SelectItem>
+                  <SelectItem value="nightlife">Nightlife</SelectItem>
+                  <SelectItem value="daytime culture">Daytime Culture</SelectItem>
+                  <SelectItem value="food & drink">Food & Drink</SelectItem>
+                  <SelectItem value="queer history">Queer History</SelectItem>
+                  <SelectItem value="art scene">Art Scene</SelectItem>
+                  <SelectItem value="hidden gems">Hidden Gems</SelectItem>
+                </SelectContent>
               </Select>
             </div>
 
@@ -139,12 +150,17 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
               </label>
               <Select
                 value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                onValueChange={setDuration}
               >
-                <option value="any">Any Duration</option>
-                <option value="4">4 Hours</option>
-                <option value="6">6 Hours</option>
-                <option value="8">8 Hours</option>
+                <SelectTrigger>
+                  <SelectValue placeholder="Any Duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any Duration</SelectItem>
+                  <SelectItem value="4">4 Hours</SelectItem>
+                  <SelectItem value="6">6 Hours</SelectItem>
+                  <SelectItem value="8">8 Hours</SelectItem>
+                </SelectContent>
               </Select>
             </div>
 
@@ -155,12 +171,17 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
               </label>
               <Select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                onValueChange={(value) => setSortBy(value as SortOption)}
               >
-                <option value="recommended">Recommended</option>
-                <option value="price_low">Price: Low to High</option>
-                <option value="price_high">Price: High to Low</option>
-                <option value="rating">Highest Rated</option>
+                <SelectTrigger>
+                  <SelectValue placeholder="Recommended" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recommended">Recommended</SelectItem>
+                  <SelectItem value="price_low">Price: Low to High</SelectItem>
+                  <SelectItem value="price_high">Price: High to Low</SelectItem>
+                  <SelectItem value="rating">Highest Rated</SelectItem>
+                </SelectContent>
               </Select>
             </div>
 

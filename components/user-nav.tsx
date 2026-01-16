@@ -181,22 +181,17 @@ export function UserNav() {
     console.log('UserNav: Initials:', initials);
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button
-                    type="button"
-                    className="relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:opacity-80"
-                >
-                    <Avatar className="h-9 w-9">
-                        <AvatarImage
-                            src={avatarUrl}
-                            alt={profile?.full_name || 'User'}
-                        />
-                        <AvatarFallback className="bg-brand text-white text-sm font-medium">
-                            {initials}
-                        </AvatarFallback>
-                    </Avatar>
-                </button>
+        <DropdownMenu modal={false}>
+            <DropdownMenuTrigger className="relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:opacity-80 cursor-pointer">
+                <Avatar className="h-9 w-9">
+                    <AvatarImage
+                        src={avatarUrl}
+                        alt={profile?.full_name || 'User'}
+                    />
+                    <AvatarFallback className="bg-brand text-white text-sm font-medium">
+                        {initials}
+                    </AvatarFallback>
+                </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">

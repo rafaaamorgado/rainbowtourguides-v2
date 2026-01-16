@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, MapPin, Calendar, Tag, Clock } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
-import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { City } from "@/lib/mock-data";
@@ -85,16 +84,16 @@ export function GuidesSearchBar({ cities }: GuidesSearchBarProps) {
           </label>
           <div className="relative">
             <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft z-10" />
-            <Select
+            <select
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
-              className="h-12 pl-10"
+              className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 pl-10 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">Any Duration</option>
               <option value="4">4 Hours</option>
               <option value="6">6 Hours</option>
               <option value="8">8 Hours</option>
-            </Select>
+            </select>
           </div>
         </div>
 

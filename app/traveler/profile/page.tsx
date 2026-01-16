@@ -1,22 +1,37 @@
 import { requireRole } from "@/lib/auth-helpers";
-import { EmptyState } from "@/components/ui/empty-state";
+import { TravelerProfileForm } from "@/components/traveler/profile-form";
+import { updateTravelerProfile } from "./actions";
 
 export default async function TravelerProfilePage() {
-    await requireRole("traveler");
+  const { supabase, user, profile } = await requireRole("traveler");
 
-    return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-ink">My Profile</h1>
-                <p className="text-ink-soft">Manage your personal information.</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 min-h-[400px] flex items-center justify-center">
-                <EmptyState
-                    title="Profile Settings"
-                    description="Update your name, avatar, and contact details."
-                    icon="user"
-                />
-            </div>
-        </div>
-    );
+  // Fetch traveler-specific data
+  const { data: traveler } = await supabase
+    .from("travelers")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  // Fetch countries for dropdown
+  const { data: countries } = await supabase
+    .from("countries")
+    .select("*")
+    .order("name");
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-ink">My Profile</h1>
+        <p className="text-ink-soft">Manage your personal information.</p>
+      </div>
+      <div className="bg-white rounded-2xl border border-slate-200 p-8">
+        <TravelerProfileForm
+          profile={profile}
+          traveler={traveler}
+          countries={countries || []}
+          onSubmit={updateTravelerProfile}
+        />
+      </div>
+    </div>
+  );
 }

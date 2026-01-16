@@ -61,19 +61,7 @@ export async function GET(request: NextRequest) {
         || data.user.user_metadata?.role
         || 'traveler';
 
-      const profileUpdates: { full_name?: string | null; avatar_url?: string | null } = {};
-      if (profile) {
-        if (!profile.full_name && fullNameFromMetadata) {
-          profileUpdates.full_name = fullNameFromMetadata;
-        }
-        if (!profile.avatar_url && avatarUrlFromMetadata) {
-          profileUpdates.avatar_url = avatarUrlFromMetadata;
-        }
-      }
-
-      let profileUpdated = false;
-
-      // If this is a new user (no profile) and role was passed, create/update the profile
+      // If this is a new user (no profile) and role was passed, create the profile
       if (role && (role === 'guide' || role === 'traveler') && !profile) {
         // Insert new profile for OAuth user
         const { error: upsertError } = await supabase
@@ -89,21 +77,33 @@ export async function GET(request: NextRequest) {
           console.error('Profile upsert error:', upsertError);
         }
         userRole = role;
-      } else if (role && (role === 'guide' || role === 'traveler') && profile && !profile.role) {
-        // Update profile if it exists but role is not set
-        await supabase
-          .from('profiles')
-          .update({ role: role, ...profileUpdates })
-          .eq('id', data.user.id);
-        userRole = role;
-        profileUpdated = true;
-      }
+      } else if (profile) {
+        // Profile exists - update any missing fields from OAuth metadata
+        const profileUpdates: { full_name?: string | null; avatar_url?: string | null; role?: string } = {};
 
-      if (profile && !profileUpdated && Object.keys(profileUpdates).length > 0) {
-        await supabase
-          .from('profiles')
-          .update(profileUpdates)
-          .eq('id', data.user.id);
+        if (!profile.full_name && fullNameFromMetadata) {
+          profileUpdates.full_name = fullNameFromMetadata;
+        }
+        if (!profile.avatar_url && avatarUrlFromMetadata) {
+          profileUpdates.avatar_url = avatarUrlFromMetadata;
+        }
+        // Update role if it was passed and profile doesn't have one
+        if (role && (role === 'guide' || role === 'traveler') && !profile.role) {
+          profileUpdates.role = role;
+          userRole = role;
+        }
+
+        // Only update if we have changes
+        if (Object.keys(profileUpdates).length > 0) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update(profileUpdates)
+            .eq('id', data.user.id);
+
+          if (updateError) {
+            console.error('Profile update error:', updateError);
+          }
+        }
       }
 
       console.log('User authenticated, role:', userRole); // Debug log

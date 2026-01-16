@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Calendar, Clock, Users, MapPin, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -164,16 +163,17 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
             <Users className="h-4 w-4" />
             Number of Travelers
           </label>
-          <Select
+          <select
             value={travelers.toString()}
             onChange={(e) => setTravelers(parseInt(e.target.value))}
             required
+            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="1">1 person</option>
             <option value="2">2 people</option>
             <option value="3">3 people</option>
             <option value="4">4 people</option>
-          </Select>
+          </select>
           <p className="text-xs text-ink-soft">Max group size: 4 people</p>
         </div>
 
@@ -183,15 +183,16 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
             <MapPin className="h-4 w-4" />
             Meeting Location
           </label>
-          <Select
+          <select
             value={meetingLocation}
             onChange={(e) => setMeetingLocation(e.target.value)}
             required
+            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="default">Guide's Default Meetup</option>
             <option value="hotel">My Hotel</option>
             <option value="custom">Custom Location</option>
-          </Select>
+          </select>
         </div>
 
         {/* Special Requests */}

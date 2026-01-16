@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +10,8 @@ import {
   isSupabaseConfiguredOnClient,
 } from "@/lib/supabase-browser";
 
-type SignInFormProps = {
-  redirectAction: () => Promise<void | never>;
-};
-
-export function SignInForm({ redirectAction }: SignInFormProps) {
+export function SignInForm() {
+  const router = useRouter();
   const isConfigured = isSupabaseConfiguredOnClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +31,7 @@ export function SignInForm({ redirectAction }: SignInFormProps) {
 
     setIsSubmitting(true);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -44,9 +42,28 @@ export function SignInForm({ redirectAction }: SignInFormProps) {
       return;
     }
 
-    // On successful sign-in, call server action to fetch profile and redirect
+    // Fetch profile to get role for redirect
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single() as { data: { role: string } | null };
+
+      // Redirect based on role
+      const role = profile?.role;
+      const redirectPath = role === 'guide'
+        ? '/guide/dashboard'
+        : role === 'admin'
+        ? '/admin'
+        : '/traveler/dashboard';
+
+      // Use hard redirect to ensure session cookies are properly sent
+      window.location.href = redirectPath;
+      return; // Don't reset isSubmitting since we're navigating away
+    }
+
     setIsSubmitting(false);
-    await redirectAction();
   };
 
   const handleGoogleSignIn = async () => {

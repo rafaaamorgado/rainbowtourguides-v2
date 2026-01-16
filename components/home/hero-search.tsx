@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Calendar, Users, Search as SearchIcon } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
-import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -98,16 +97,16 @@ export function HeroSearch({ cities }: HeroSearchProps) {
             </label>
             <div className="relative">
               <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none z-10" />
-              <Select
+              <select
                 value={travelers}
                 onChange={(e) => setTravelers(e.target.value)}
-                className="h-12 pl-10 rounded-xl"
+                className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-transparent px-3 py-2 pl-10 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="1">1 Traveler</option>
                 <option value="2">2 Travelers</option>
                 <option value="3">3 Travelers</option>
                 <option value="4">4 Travelers</option>
-              </Select>
+              </select>
             </div>
           </div>
 

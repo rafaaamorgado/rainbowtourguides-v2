@@ -59,25 +59,9 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
       return;
     }
 
-    // Insert profile with typed insert
-    const profileInsert: Database["public"]["Tables"]["profiles"]["Insert"] = {
-      id: userId,
-      role: initialRole,
-      full_name: name, // ⚠️ full_name, not display_name
-    };
+    // Profile is created automatically by database trigger
+    // verifying user creation was success is enough
 
-    // Type assertion needed for browser client - Supabase browser client typing can be strict
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: profileError } = await (supabase as any)
-      .from("profiles")
-      .insert(profileInsert);
-
-    setIsSubmitting(false);
-
-    if (profileError) {
-      setError("Account created but profile setup failed. Please contact support.");
-      return;
-    }
 
     // Redirect based on role - new users go to onboarding
     const redirectPath = initialRole === "guide"
