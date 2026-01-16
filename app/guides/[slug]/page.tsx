@@ -28,7 +28,6 @@ type GuideRow = {
   status: string;
   profile: {
     full_name?: string | null;
-    display_name?: string | null;
     avatar_url?: string | null;
     languages?: string[] | null;
   } | null;
@@ -132,7 +131,6 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
         status,
         profile:profiles!guides_id_fkey(
           full_name,
-          display_name,
           avatar_url,
           languages
         ),
@@ -154,7 +152,6 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
 
   const fullName =
     guide.profile?.full_name ||
-    guide.profile?.display_name ||
     "Local Guide";
   const verified = guide.status === "approved";
   const coverImage = resolveCover(slug, guide.city?.slug || undefined);

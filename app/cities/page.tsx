@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   },
 };
 
+// Supabase usage requires dynamic rendering so cookies/env are available at runtime
+export const dynamic = "force-dynamic";
+
 /**
  * CityCard - Premium city card with cinematic photo and overlay
  */
@@ -158,9 +161,11 @@ export default async function CitiesPage() {
 
       {/* Cities Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cities.map((city) => (
-          <CityCard key={city.id} city={city} />
-        ))}
+        {cities.map((city) => {
+          const localImage = `/images/cities/${city.slug}.jpg`;
+          const image_url = city.image_url || localImage || "/images/cities/default.jpg";
+          return <CityCard key={city.id} city={{ ...city, image_url }} />;
+        })}
       </div>
       {enableClientDebug && (
         <ClientDebug

@@ -26,7 +26,7 @@ export default async function AdminGuidesPage() {
     .from('guides')
     .select(`
       *,
-      profile:profiles(display_name, email)
+      profile:profiles(full_name, email)
     `)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
@@ -60,7 +60,7 @@ export default async function AdminGuidesPage() {
                   <TableRow key={guide.id}>
                     <TableCell className="font-medium">
                        <div>
-                         <p>{guide.profile?.display_name}</p>
+                        <p>{guide.profile?.full_name}</p>
                          <p className="text-xs text-muted-foreground">ID: {guide.id.slice(0,6)}</p>
                        </div>
                     </TableCell>

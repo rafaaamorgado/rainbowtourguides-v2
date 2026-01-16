@@ -29,7 +29,7 @@ export default async function TravelerDashboardPage() {
       price_total,
       currency,
       guide:guides (
-         profile:profiles (display_name)
+         profile:profiles (full_name)
       ),
       city:cities (name)
     `)
@@ -57,7 +57,7 @@ export default async function TravelerDashboardPage() {
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
                                 <div className="space-y-1">
                                     <CardTitle className="text-lg">
-                                        {booking.guide?.profile?.display_name} in {booking.city?.name}
+                                        {booking.guide?.profile?.full_name} in {booking.city?.name}
                                     </CardTitle>
                                     <div className="flex items-center text-sm text-muted-foreground gap-1">
                                         <CalendarClock className="h-4 w-4" />

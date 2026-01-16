@@ -54,7 +54,7 @@ export default function TravelerBookingsPage() {
       .from("bookings")
       .select(`
         *,
-        guide:profiles!bookings_guide_id_fkey(display_name, full_name),
+        guide:profiles!bookings_guide_id_fkey(full_name),
         city:cities!bookings_city_id_fkey(name)
       `)
       .eq("traveler_id", uid)
@@ -71,7 +71,7 @@ export default function TravelerBookingsPage() {
       traveler_id: b.traveler_id,
       guide_id: b.guide_id,
       city_id: b.city_id,
-      guide_name: b.guide?.display_name || b.guide?.full_name || "Guide",
+      guide_name: b.guide?.full_name || "Guide",
       city_name: b.city?.name || "City",
       date: b.starts_at,
       duration: b.duration_hours || 4,

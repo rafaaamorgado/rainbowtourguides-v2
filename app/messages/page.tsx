@@ -30,8 +30,8 @@ export default async function InboxPage() {
       status,
       created_at,
       city:cities(name),
-      guide:guides(profile:profiles(id, display_name, avatar_url)),
-      traveler:travelers(profile:profiles(id, display_name, avatar_url)) // Assuming we need name of other party
+      guide:guides(profile:profiles(id, full_name, avatar_url)),
+      traveler:travelers(profile:profiles(id, full_name, avatar_url)) // Assuming we need name of other party
     `)
     .or(`guide_id.eq.${user.id},traveler_id.eq.${user.id}`)
     .order('created_at', { ascending: false });
@@ -64,11 +64,11 @@ export default async function InboxPage() {
                     <CardHeader className="flex flex-row items-center gap-4 py-4">
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={other.avatar_url} />
-                        <AvatarFallback>{other.display_name[0]}</AvatarFallback>
+                        <AvatarFallback>{(other.full_name || "?")[0]}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-baseline">
-                          <CardTitle className="text-base truncate">{other.display_name}</CardTitle>
+                          <CardTitle className="text-base truncate">{other.full_name || "Traveler"}</CardTitle>
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}
                           </span>

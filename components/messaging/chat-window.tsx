@@ -15,7 +15,7 @@ interface Message {
   sender_id: string;
   created_at: string;
   sender?: {
-    display_name: string;
+    full_name?: string;
     avatar_url: string | null;
   };
 }
@@ -106,7 +106,7 @@ export function ChatWindow({ bookingId, currentUserId, initialMessages = [] }: C
                 {!isMe && (
                   <Avatar className="h-8 w-8">
                      <AvatarImage src={msg.sender?.avatar_url || ''} />
-                     <AvatarFallback>{msg.sender?.display_name?.[0] || '?'}</AvatarFallback>
+                     <AvatarFallback>{(msg.sender?.full_name || '?')[0]}</AvatarFallback>
                   </Avatar>
                 )}
                 

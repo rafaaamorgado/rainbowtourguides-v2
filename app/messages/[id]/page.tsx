@@ -36,8 +36,8 @@ export default async function MessageThreadPage({ params }: MessageThreadPagePro
     .select(`
       id,
       status,
-      guide:guides(profile:profiles(id, display_name, avatar_url)),
-      traveler:travelers(profile:profiles(id, display_name, avatar_url))
+      guide:guides(profile:profiles(id, full_name, avatar_url)),
+      traveler:travelers(profile:profiles(id, full_name, avatar_url))
     `)
     .eq('id', bookingId)
     .single();
@@ -68,7 +68,7 @@ export default async function MessageThreadPage({ params }: MessageThreadPagePro
       text,
       sender_id,
       created_at,
-      sender:profiles(display_name, avatar_url)
+      sender:profiles(full_name, avatar_url)
     `)
     .eq('booking_id', bookingId)
     .order('created_at', { ascending: true });

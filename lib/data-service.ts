@@ -383,8 +383,7 @@ export async function getGuidesWithMeta(
           name,
           iso_code
         )
-      ),
-      reviews:reviews!reviews_guide_id_fkey(rating)
+      )
     `,
     )
     .eq('status', 'approved');
@@ -545,7 +544,7 @@ export async function searchGuides(query: string): Promise<Guide[]> {
 
   const searchTerm = `%${query}%`;
 
-  // Search in guides table (bio, headline, experience_tags)
+  // Search in guides table (bio, headline, themes)
   // and join with profiles (full_name, languages)
   const { data: guides, error } = await supabase
     .from('guides')
@@ -567,7 +566,7 @@ export async function searchGuides(query: string): Promise<Guide[]> {
     )
     .eq('status', 'approved')
     .or(
-      `bio.ilike.${searchTerm},headline.ilike.${searchTerm},experience_tags.cs.{${query}}`,
+      `bio.ilike.${searchTerm},headline.ilike.${searchTerm},themes.cs.{${query}}`,
     );
 
   if (error || !guides) {
@@ -744,7 +743,10 @@ export async function getBookings(
     .select(
       `
       *,
-      guide:profiles!bookings_guide_id_fkey(full_name),
+      guide:guides!bookings_guide_id_fkey(
+        id,
+        profile:profiles(full_name)
+      ),
       city:cities!bookings_city_id_fkey(name)
     `,
     )
@@ -770,7 +772,7 @@ export async function getBookings(
     adaptBookingFromDB(
       booking,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      booking.guide as any,
+      booking.guide?.profile as any,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       booking.city as any,
     ),
@@ -788,7 +790,10 @@ export async function getBooking(id: string): Promise<Booking | undefined> {
     .select(
       `
       *,
-      guide:profiles!bookings_guide_id_fkey(full_name),
+      guide:guides!bookings_guide_id_fkey(
+        id,
+        profile:profiles(full_name)
+      ),
       city:cities!bookings_city_id_fkey(name)
     `,
     )
@@ -807,7 +812,7 @@ export async function getBooking(id: string): Promise<Booking | undefined> {
   return adaptBookingFromDB(
     bookingData,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    bookingData.guide as any,
+    bookingData.guide?.profile as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     bookingData.city as any,
   );
@@ -843,7 +848,10 @@ export async function createBooking(
     .select(
       `
       *,
-      guide:profiles!bookings_guide_id_fkey(full_name),
+      guide:guides!bookings_guide_id_fkey(
+        id,
+        profile:profiles(full_name)
+      ),
       city:cities!bookings_city_id_fkey(name)
     `,
     )
@@ -853,7 +861,7 @@ export async function createBooking(
     throw new Error(error?.message || 'Failed to create booking');
   }
 
-  return adaptBookingFromDB(booking, booking.guide, booking.city);
+  return adaptBookingFromDB(booking, booking.guide?.profile, booking.city);
 }
 
 /**
@@ -906,7 +914,10 @@ export async function updateBookingStatus(
     .select(
       `
       *,
-      guide:profiles!bookings_guide_id_fkey(full_name),
+      guide:guides!bookings_guide_id_fkey(
+        id,
+        profile:profiles(full_name)
+      ),
       city:cities!bookings_city_id_fkey(name)
     `,
     )
@@ -916,7 +927,7 @@ export async function updateBookingStatus(
     throw new Error(error?.message || 'Booking not found');
   }
 
-  return adaptBookingFromDB(booking, booking.guide, booking.city);
+  return adaptBookingFromDB(booking, booking.guide?.profile, booking.city);
 }
 
 // ============================================================================

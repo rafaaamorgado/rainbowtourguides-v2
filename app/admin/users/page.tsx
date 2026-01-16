@@ -54,7 +54,7 @@ export default async function AdminUsersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Display Name</TableHead>
+              <TableHead>Name</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Email (ID)</TableHead>
               <TableHead>Joined</TableHead>
@@ -66,7 +66,7 @@ export default async function AdminUsersPage() {
               <TableRow key={profile.id}>
                 <TableCell className="font-medium">
                    <div className="flex items-center gap-2">
-                     {profile.display_name || "Unknown"}
+                     {profile.full_name || "Unknown"}
                    </div>
                 </TableCell>
                 <TableCell>

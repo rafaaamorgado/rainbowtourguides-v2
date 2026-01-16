@@ -60,13 +60,13 @@ export default function TravelerOnboardingPage() {
       // Get profile data to pre-fill
       const { data: profile } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, bio")
+        .select("full_name, avatar_url, bio")
         .eq("id", user.id)
         .single();
 
       if (profile) {
         setFormData({
-          full_name: (profile as any).display_name || "",
+          full_name: (profile as any).full_name || "",
           bio: (profile as any).bio || "",
           avatar_url: (profile as any).avatar_url || "",
         });
@@ -121,7 +121,7 @@ export default function TravelerOnboardingPage() {
       const { error: profileError } = await (supabase as any)
         .from("profiles")
         .update({
-          display_name: formData.full_name.trim(),
+          full_name: formData.full_name.trim(),
           bio: formData.bio.trim() || null,
           avatar_url: formData.avatar_url.trim() || null,
         })
