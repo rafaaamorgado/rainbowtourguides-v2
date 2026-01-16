@@ -35,6 +35,17 @@ export function adaptGuideFromDB(
   rating: number,
   reviewCount: number,
 ): Guide {
+  const displayName =
+    profileRow?.full_name ||
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (profileRow as any)?.display_name ||
+    'Unknown';
+
+  const tagline = guideRow.headline || guideRow.tagline || '';
+  const countryName =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (cityData as any)?.country_name || cityData?.country?.name || undefined;
+
   // Handle both base_price_* (from DB schema) and price_* (from views/aliases)
   const price4h = guideRow.price_4h || guideRow.base_price_4h || null;
   const price6h = guideRow.price_6h || guideRow.base_price_6h || null;
@@ -43,12 +54,14 @@ export function adaptGuideFromDB(
 
   return {
     id: guideRow.id,
-    name: profileRow?.full_name || 'Unknown',
+    name: displayName,
     slug: guideRow.slug || guideRow.id, // Use slug if available, fallback to id
     city_id: guideRow.city_id,
     city_name: cityData?.name || 'Unknown',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    country_name: countryName,
     bio: guideRow.bio || '',
-    tagline: guideRow.headline || '',
+    tagline,
     avatar_url: avatarUrl,
     photo_url: avatarUrl,
     languages: profileRow?.languages || [],

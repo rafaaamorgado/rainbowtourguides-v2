@@ -34,6 +34,56 @@ import {
   // searchGuides as searchMockGuides,
 } from './mock-data';
 
+type DebugMeta = {
+  hasUrl: boolean;
+  hasAnonKey: boolean;
+};
+
+type FetchResult<T> = {
+  data: T[];
+  error?: string;
+  debug?: DebugMeta & { rows?: number };
+};
+
+type SupabaseServerClient = Awaited<
+  ReturnType<typeof createSupabaseServerClient>
+>;
+
+async function getSupabaseClientWithDebug(
+  caller: string,
+): Promise<{ client?: SupabaseServerClient; debug: DebugMeta; error?: string }> {
+  const debug = {
+    hasUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    hasAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+  };
+
+  console.log(
+    `[${caller}] Supabase env check`,
+    JSON.stringify(debug),
+  );
+
+  if (!debug.hasUrl || !debug.hasAnonKey) {
+    return {
+      debug,
+      error: 'Supabase environment variables are missing',
+    };
+  }
+
+  try {
+    const client = await createSupabaseServerClient();
+    return { client, debug };
+  } catch (err) {
+    console.error(`[${caller}] Failed to create Supabase client`, err);
+    return {
+      debug,
+      error:
+        err instanceof Error
+          ? err.message
+          : 'Failed to create Supabase client',
+    };
+  }
+}
+
 // ============================================================================
 // Type Definitions
 // ============================================================================
@@ -90,30 +140,53 @@ export interface SendMessageInput {
  * Get all cities with guide counts
  */
 export async function getCities(): Promise<City[]> {
-  const supabase = await createSupabaseServerClient();
+  const { data } = await getCitiesWithMeta();
+  return data;
+}
+
+export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
+  const { client: supabase, debug, error: clientError } =
+    await getSupabaseClientWithDebug('getCities');
+
+  if (!supabase) {
+    return { data: [], error: clientError, debug };
+  }
+
   const startTime = Date.now();
 
   logQuery('SELECT', 'cities', { is_active: true });
 
-  // Get cities with country info
-  const { data: cities, error: citiesError } = await supabase
+  const { data: cities, error: citiesError, status: citiesStatus } = await supabase
     .from('cities')
     .select(
       `
-    *,
-    country:countries!cities_country_id_fkey(*),
-    guides!inner (
-      id 
+    id,
+    name,
+    slug,
+    hero_image_url,
+    country_id,
+    country:countries!cities_country_id_fkey(
+      id,
+      name,
+      iso_code
+    ),
+    guides:guides!guides_city_id_fkey(
+      id,
+      status
     )
     `,
     )
     .eq('is_active', true)
-    .eq('guides.status', 'approved')
     .order('name');
 
   if (citiesError || !cities) {
     logError('SELECT', 'cities', citiesError);
-    return [];
+    console.error('[getCities] Supabase error', {
+      message: citiesError?.message,
+      details: citiesError,
+      status: citiesStatus,
+    });
+    return { data: [], error: citiesError?.message, debug };
   }
 
   logQuery(
@@ -124,35 +197,25 @@ export async function getCities(): Promise<City[]> {
     cities, // Log actual data
   );
 
-  // Get guide counts for each city
-  const citiesWithCounts = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (cities || []).map(async (city: any) => {
-      const countStartTime = Date.now();
-      const { count } = await supabase
-        .from('guides')
-        .select('*', { count: 'exact', head: true })
-        .eq('city_id', city.id)
-        .eq('status', 'approved');
+  // Count guides per city from joined rows (RLS already enforces public visibility)
+  const citiesWithCounts = (cities || []).map((city: any) => {
+    const approvedGuides =
+      (city.guides || []).filter((g: any) => g.status === 'approved') ||
+      [];
 
-      logQuery(
-        'COUNT',
-        'guides',
-        { city_id: city.id, status: 'approved' },
-        Date.now() - countStartTime,
-        { count }, // Log count result
-      );
+    return adaptCityFromDB(
+      city,
+      city.country as any,
+      approvedGuides.length,
+    );
+  });
 
-      return adaptCityFromDB(
-        city,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        city.country as any,
-        count || 0,
-      );
-    }),
+  console.log(
+    '[getCities] Row count',
+    citiesWithCounts.length,
   );
 
-  return citiesWithCounts;
+  return { data: citiesWithCounts, debug: { ...debug, rows: citiesWithCounts.length } };
 }
 
 /**
@@ -261,7 +324,21 @@ export async function getGuides(
   citySlug?: string,
   filters?: GuideFilters,
 ): Promise<Guide[]> {
-  const supabase = await createSupabaseServerClient();
+  const { data } = await getGuidesWithMeta(citySlug, filters);
+  return data;
+}
+
+export async function getGuidesWithMeta(
+  citySlug?: string,
+  filters?: GuideFilters,
+): Promise<FetchResult<Guide>> {
+  const { client: supabase, debug, error: clientError } =
+    await getSupabaseClientWithDebug('getGuides');
+
+  if (!supabase) {
+    return { data: [], error: clientError, debug };
+  }
+
   const startTime = Date.now();
 
   // Get city_id if citySlug is provided
@@ -282,8 +359,21 @@ export async function getGuides(
     .from('guides')
     .select(
       `
-      *,
-      profile:profiles!guides_id_fkey(full_name, avatar_url, languages),
+      id,
+      slug,
+      city_id,
+      headline,
+      tagline,
+      bio,
+      themes,
+      base_price_4h,
+      base_price_6h,
+      base_price_8h,
+      hourly_rate,
+      currency,
+      status,
+      created_at,
+      profile:profiles!guides_id_fkey(full_name, avatar_url),
       city:cities!guides_city_id_fkey(
         id,
         name,
@@ -293,7 +383,8 @@ export async function getGuides(
           name,
           iso_code
         )
-      )
+      ),
+      reviews:reviews!reviews_guide_id_fkey(rating)
     `,
     )
     .eq('status', 'approved');
@@ -311,7 +402,7 @@ export async function getGuides(
   }
 
   if (filters?.tags && filters.tags.length > 0) {
-    query = query.contains('experience_tags', filters.tags);
+    query = query.contains('themes', filters.tags);
   }
 
   if (filters?.minPrice) {
@@ -322,17 +413,24 @@ export async function getGuides(
     query = query.lte('base_price_4h', filters.maxPrice.toString());
   }
 
+  query = query.order('created_at', { ascending: false });
+
   logQuery('SELECT', 'guides', {
     city_id: cityId,
     status: 'approved',
     ...(filters || {}),
   });
 
-  const { data: guides, error } = await query;
+  const { data: guides, error, status } = await query;
 
   if (error || !guides) {
     logError('SELECT', 'guides', error);
-    return [];
+    console.error('[getGuides] Supabase error', {
+      message: error?.message,
+      details: error,
+      status,
+    });
+    return { data: [], error: error?.message, debug };
   }
 
   logQuery(
@@ -344,44 +442,29 @@ export async function getGuides(
   );
 
   // Get ratings and review counts for each guide
-  const guidesWithStats = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (guides || []).map(async (guide: any) => {
-      // Get reviews for this guide (where subject_id = guide.id)
-      const reviewStartTime = Date.now();
-      const { data: reviews } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('subject_id', guide.id);
-
-      logQuery(
-        'SELECT',
-        'reviews',
-        { subject_id: guide.id },
-        Date.now() - reviewStartTime,
-      );
-
+  const guidesWithStats =
+    guides?.map((guide: any) => {
+      const ratings =
+        guide.reviews?.map((r: { rating: number }) => r.rating) || [];
       const rating =
-        reviews && reviews.length > 0
-          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
-            reviews.length
+        ratings.length > 0
+          ? ratings.reduce((sum: number, r: number) => sum + r, 0) /
+            ratings.length
           : 0;
-      const reviewCount = reviews?.length || 0;
+      const reviewCount = ratings.length;
 
       return adaptGuideFromDB(
         guide,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         guide.profile as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         guide.city as any, // city already contains nested country
         rating,
         reviewCount,
       );
-    }),
-  );
+    }) ?? [];
 
-  return guidesWithStats;
+  console.log('[getGuides] Row count', guidesWithStats.length);
+
+  return { data: guidesWithStats, debug: { ...debug, rows: guidesWithStats.length } };
 }
 
 /**

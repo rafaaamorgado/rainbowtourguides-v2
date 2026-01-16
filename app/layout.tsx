@@ -1,25 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono, DM_Serif_Display } from "next/font/google";
 import { MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const dmSerifDisplay = DM_Serif_Display({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-serif",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rainbowtourguides.com"),
@@ -214,7 +197,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${dmSerifDisplay.variable} bg-background text-foreground`}
+        className={`bg-background text-foreground`}
       >
         {/* Noise Overlay */}
         <div className="noise-overlay" />

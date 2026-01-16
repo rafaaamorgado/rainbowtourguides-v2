@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { MapPin, Menu } from "lucide-react";
-import { UserNav } from "@/components/user-nav";
+import { UserMenu } from "@/components/user-menu";
 
 export function SiteHeader() {
     return (
@@ -56,14 +56,14 @@ export function SiteHeader() {
                         FAQ
                     </Link>
                     <Link
-                        href="/auth/sign-up?role=guide"
+                        href="/become-a-guide"
                         className="text-sm font-medium transition-colors text-slate-700 hover:text-brand"
                     >
                         Become a Guide
                     </Link>
 
                     {/* Auth-aware navigation */}
-                    <UserNav />
+                    <UserMenu />
                 </nav>
 
                 {/* Mobile Toggle - TODO: Implement mobile menu */}

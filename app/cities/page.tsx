@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Search } from "lucide-react";
-import { getCities } from "@/lib/data-service";
+import { getCitiesWithMeta } from "@/lib/data-service";
 import { EmptyState } from "@/components/ui/empty-state";
-import { CardSkeleton } from "@/components/ui/loading-skeleton";
-import { cn } from "@/lib/utils";
+import { ClientDebug } from "@/components/dev-debug";
 
 export const metadata: Metadata = {
   title: "Explore Cities - Rainbow Tour Guides",
@@ -97,7 +96,35 @@ function SearchBar() {
  */
 export default async function CitiesPage() {
   // Fetch cities from data service
-  const cities = await getCities();
+  const { data: cities, error, debug } = await getCitiesWithMeta();
+  const showDebugText = process.env.NODE_ENV !== "production";
+  const enableClientDebug = true;
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 space-y-3">
+          <h2 className="text-2xl font-semibold text-red-700">
+            Unable to load cities
+          </h2>
+          <p className="text-sm text-red-700">
+            {error}
+          </p>
+          {showDebugText && (
+            <p className="text-xs text-red-600">
+              Supabase URL present: {debug?.hasUrl ? "yes" : "no"} | Anon key present: {debug?.hasAnonKey ? "yes" : "no"}
+            </p>
+          )}
+        </div>
+        {enableClientDebug && (
+          <ClientDebug
+            label="CitiesPageError"
+            payload={{ error, debug }}
+          />
+        )}
+      </div>
+    );
+  }
 
   // Empty state
   if (cities.length === 0) {
@@ -135,6 +162,12 @@ export default async function CitiesPage() {
           <CityCard key={city.id} city={city} />
         ))}
       </div>
+      {enableClientDebug && (
+        <ClientDebug
+          label="CitiesPageDebug"
+          payload={{ rows: cities.length, debug }}
+        />
+      )}
     </div>
   );
 }

@@ -36,12 +36,14 @@ export interface Guide {
   slug: string;
   city_id: string;
   city_name: string;
+  country_name?: string;
   bio: string;
   tagline: string;
   avatar_url?: string | null;
   photo_url?: string;
   languages: string[];
   experience_tags: string[];
+  themes?: string[];
   price_4h: number;
   price_6h: number;
   price_8h: number;

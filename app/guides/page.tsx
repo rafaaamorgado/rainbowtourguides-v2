@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { getCities, getGuides } from '@/lib/data-service';
+import { getCitiesWithMeta, getGuidesWithMeta } from '@/lib/data-service';
 import { GuidesSearchBar } from '@/components/guides/search-bar';
 import { GuideCard } from '@/components/cards/GuideCard';
 import { FilteredView } from './filtered-view';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ClientDebug } from '@/components/dev-debug';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +25,58 @@ export const metadata: Metadata = {
 
 export default async function GuidesPage() {
   // Fetch all guides and cities
-  const [allGuides, cities] = await Promise.all([getGuides(), getCities()]);
+  const [
+    { data: allGuides, error: guidesError, debug: guidesDebug },
+    { data: cities, error: citiesError, debug: citiesDebug },
+  ] = await Promise.all([getGuidesWithMeta(), getCitiesWithMeta()]);
+
+  const showDebugText = process.env.NODE_ENV !== 'production';
+  const enableClientDebug = true;
+
+  if (guidesError || citiesError) {
+    const primaryError = guidesError || citiesError;
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 space-y-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 space-y-2">
+          <h2 className="text-2xl font-semibold text-red-700">
+            Unable to load guides right now
+          </h2>
+          <p className="text-sm text-red-700">{primaryError}</p>
+          {showDebugText && (
+            <p className="text-xs text-red-600">
+              Supabase URL: {(guidesDebug?.hasUrl ?? citiesDebug?.hasUrl) ? 'yes' : 'no'} | Anon key:{' '}
+              {(guidesDebug?.hasAnonKey ?? citiesDebug?.hasAnonKey) ? 'yes' : 'no'}
+            </p>
+          )}
+        </div>
+        {enableClientDebug && (
+          <ClientDebug
+            label="GuidesPageError"
+            payload={{ guidesError, citiesError, guidesDebug, citiesDebug }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (allGuides.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <EmptyState
+          title="No guides available"
+          description="We couldn't find any guides yet. Please check back soon."
+          icon="users"
+          variant="default"
+        />
+        {enableClientDebug && (
+          <ClientDebug
+            label="GuidesPageEmpty"
+            payload={{ guidesDebug, citiesDebug }}
+          />
+        )}
+      </div>
+    );
+  }
 
   // Sort guides by rating for top-rated section
   const topRatedGuides = [...allGuides]
@@ -38,7 +91,9 @@ export default async function GuidesPage() {
 
   // Get all unique experience tags
   const allTags = Array.from(
-    new Set(allGuides.flatMap((g) => g.experience_tags)),
+    new Set(
+      allGuides.flatMap((g) => g.experience_tags || g.themes || []),
+    ),
   ).sort();
 
   // Cities with low guide count (new destinations)
@@ -134,9 +189,8 @@ export default async function GuidesPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="relative w-16 h-16 rounded-xl overflow-hidden">
-                          {/* TODO: add image_url field to cities table */}
                           <Image
-                            src="/placeholder-city.svg"
+                            src={city.image_url || "/placeholder-city.svg"}
                             alt={city.name}
                             fill
                             className="object-cover"
@@ -178,56 +232,77 @@ export default async function GuidesPage() {
         )}
 
         {/* Popular Destinations */}
-        <section className="space-y-6">
+        {popularDestinations.length > 0 ? (
+          <section className="space-y-6">
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-ink mb-2">
+                Popular Destinations
+              </h2>
+              <p className="text-ink-soft">
+                Cities with the most verified guides
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularDestinations.map((city) => (
+                <Link
+                  key={city.id}
+                  href={`/cities/${city.slug}`}
+                  className="group block relative aspect-[4/3] rounded-2xl overflow-hidden"
+                >
+                  {/* City Photo */}
+                  <div className="absolute inset-0">
+                    <Image
+                      src={city.image_url || "/placeholder-city.svg"}
+                      alt={city.name}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    />
+                  </div>
+
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+                  {/* Content */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <h3 className="text-lg font-bold mb-1 group-hover:text-brand transition-colors">
+                      {city.name}
+                    </h3>
+                    <p className="text-sm text-white/80">{city.country_name}</p>
+                    <p className="text-xs text-white/70 mt-1">
+                      {city.guide_count} guides
+                    </p>
+                  </div>
+
+                  {/* Hover Border */}
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-brand/50 rounded-2xl transition-colors" />
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : (
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold text-ink mb-2">
-              Popular Destinations
-            </h2>
-            <p className="text-ink-soft">
-              Cities with the most verified guides
-            </p>
+            <EmptyState
+              title="No destinations to show yet"
+              description="Once guides are available, featured cities will appear here."
+              icon="map"
+              variant="default"
+            />
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularDestinations.map((city) => (
-              <Link
-                key={city.id}
-                href={`/cities/${city.slug}`}
-                className="group block relative aspect-[4/3] rounded-2xl overflow-hidden"
-              >
-                {/* City Photo */}
-                <div className="absolute inset-0">
-                  {/* TODO: add image_url field to cities table */}
-                  <Image
-                    src="/placeholder-city.svg"
-                    alt={city.name}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  />
-                </div>
-
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                  <h3 className="text-lg font-bold mb-1 group-hover:text-brand transition-colors">
-                    {city.name}
-                  </h3>
-                  <p className="text-sm text-white/80">{city.country_name}</p>
-                  <p className="text-xs text-white/70 mt-1">
-                    {city.guide_count} guides
-                  </p>
-                </div>
-
-                {/* Hover Border */}
-                <div className="absolute inset-0 border-2 border-transparent group-hover:border-brand/50 rounded-2xl transition-colors" />
-              </Link>
-            ))}
-          </div>
-        </section>
+        )}
       </div>
+      {enableClientDebug && (
+        <ClientDebug
+          label="GuidesPageDebug"
+          payload={{
+            guides: allGuides.length,
+            cities: cities.length,
+            guidesDebug,
+            citiesDebug,
+          }}
+        />
+      )}
     </div>
   );
 }

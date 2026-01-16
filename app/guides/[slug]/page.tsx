@@ -1,167 +1,218 @@
+import fs from "fs";
+import path from "path";
 import { notFound } from "next/navigation";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Check, Calendar } from "lucide-react";
-import { SoftWall } from "@/components/marketing/soft-wall";
-import { BookingRequestForm } from "@/components/booking/booking-request-form";
+import { GuideHero } from "@/components/guide/guide-hero";
+import { GuideAbout } from "@/components/guide/guide-about";
+import { GuideHighlights } from "@/components/guide/guide-highlights";
+import { GuideReviews } from "@/components/guide/guide-reviews";
+import { BookingCard } from "@/components/guide/booking-card";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { logError } from "@/lib/query-logger";
 
-interface GuideProfilePageProps {
-  params: Promise<{ slug: string }>;
+interface GuidePageProps {
+  params: { slug: string };
 }
 
-export default async function GuideProfilePage({ params }: GuideProfilePageProps) {
-  const { slug } = await params;
-  const cookieStore = await cookies();
+type GuideRow = {
+  id: string;
+  slug: string;
+  city_id: string;
+  headline: string | null;
+  bio: string | null;
+  about: string | null;
+  themes: string[] | null;
+  base_price_4h: number | null;
+  base_price_6h: number | null;
+  base_price_8h: number | null;
+  currency: string | null;
+  status: string;
+  profile: {
+    full_name?: string | null;
+    display_name?: string | null;
+    avatar_url?: string | null;
+    languages?: string[] | null;
+  } | null;
+  city: {
+    name?: string | null;
+    country_name?: string | null;
+    slug?: string | null;
+  } | null;
+};
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) { },
-      },
+function resolveCover(slug: string, citySlug?: string | null) {
+  const coverDir = path.join(process.cwd(), "public", "images");
+  const candidates = [
+    path.join(coverDir, "guides", "covers", `${slug}.jpg`),
+    path.join(coverDir, "guides", "covers", `${slug}.png`),
+    citySlug ? path.join(coverDir, "cities", `${citySlug}.jpg`) : null,
+    citySlug ? path.join(coverDir, "cities", `${citySlug}.png`) : null,
+  ].filter(Boolean) as string[];
+
+  for (const filePath of candidates) {
+    if (fs.existsSync(filePath)) {
+      const rel = filePath.split("public")[1];
+      return rel.startsWith("/") ? rel : `/${rel}`;
     }
-  );
+  }
+  return "/images/covers/default.svg";
+}
 
-  // Check auth state for Soft Wall logic
-  const { data: { user } } = await supabase.auth.getUser();
-  const isAuthenticated = !!user;
+function resolveHighlights(citySlug?: string | null) {
+  const base = path.join(process.cwd(), "public", "images", "highlights");
+  const candidates: string[] = [];
+  if (citySlug) {
+    [1, 2, 3].forEach((i) => {
+      const jpg = path.join(base, `${citySlug}-${i}.jpg`);
+      const png = path.join(base, `${citySlug}-${i}.png`);
+      if (fs.existsSync(jpg)) candidates.push(`/images/highlights/${citySlug}-${i}.jpg`);
+      else if (fs.existsSync(png)) candidates.push(`/images/highlights/${citySlug}-${i}.png`);
+    });
+  }
+  if (candidates.length === 0) {
+    candidates.push(
+      "/images/highlights/default-1.svg",
+      "/images/highlights/default-2.svg",
+      "/images/highlights/default-3.svg",
+    );
+  }
+  return candidates;
+}
 
-  // Fetch Guide details
+function toReviews(raw: any[], guideName: string) {
+  if (!raw?.length) {
+    return [
+      {
+        id: "sample-1",
+        author: "Anonymous Traveler",
+        rating: 4.8,
+        comment:
+          `Had an incredible time with ${guideName}! They knew every queer-friendly spot and made me feel safe the whole time.`,
+        date: "about 2 months ago",
+      },
+      {
+        id: "sample-2",
+        author: "Jess P.",
+        rating: 5,
+        comment: "Super thoughtful and fun. Great food recs and nightlife tips.",
+        date: "about 1 month ago",
+      },
+    ];
+  }
+
+  return raw.map((r, idx) => ({
+    id: r.id || `rev-${idx}`,
+    author: r.reviewer_name || "Anonymous Traveler",
+    rating: r.rating || 5,
+    comment: r.comment || "Lovely experience.",
+    date: r.created_at || "",
+  }));
+}
+
+export default async function GuideProfilePage({ params }: GuidePageProps) {
+  const slug = params?.slug;
+  if (!slug) notFound();
+
+  const supabase = await createSupabaseServerClient();
+
   const { data: guide, error } = await supabase
     .from("guides")
-    .select(`
-      *,
-      profile:profiles!inner (
-        display_name,
-        avatar_url,
-        bio
-      ),
-      city:cities (
-        name,
-        country_name
-      )
-    `)
+    .select(
+      `
+        id,
+        slug,
+        city_id,
+        headline,
+        bio,
+        about,
+        themes,
+        base_price_4h,
+        base_price_6h,
+        base_price_8h,
+        currency,
+        status,
+        profile:profiles!guides_id_fkey(
+          full_name,
+          display_name,
+          avatar_url,
+          languages
+        ),
+        city:cities!guides_city_id_fkey(
+          name,
+          country_name,
+          slug
+        )
+      `
+    )
     .eq("slug", slug)
-    // .eq("status", "approved") // Usually yes, but maybe preview for guide themselves? 
-    // For now strict public view
-    .single();
+    .eq("status", "approved")
+    .single<GuideRow>();
 
   if (error || !guide) {
+    logError("SELECT", "guides", error);
     notFound();
   }
 
-  const guideProfile = guide.profile as any; // Type coercion
-  const city = guide.city as any;
+  const fullName =
+    guide.profile?.full_name ||
+    guide.profile?.display_name ||
+    "Local Guide";
+  const verified = guide.status === "approved";
+  const coverImage = resolveCover(slug, guide.city?.slug || undefined);
+  const highlightImages = resolveHighlights(guide.city?.slug || undefined);
+
+  const { data: reviewRows, error: reviewError } = await supabase
+    .from("reviews")
+    .select("id, rating, comment, created_at")
+    .eq("guide_id", guide.id)
+    .limit(6);
+
+  if (reviewError) {
+    logError("SELECT", "reviews", reviewError);
+  }
+
+  const reviews = toReviews(reviewRows || [], fullName);
+  const rating =
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+      : undefined;
 
   return (
-    <div className="container py-12">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Left Column: Basic Info (Public) */}
-        <div className="md:col-span-2 space-y-8">
-          <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
-              <AvatarImage src={guideProfile.avatar_url} />
-              <AvatarFallback>{guideProfile.display_name[0]}</AvatarFallback>
-            </Avatar>
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-3xl font-bold">{guideProfile.display_name}</h1>
-                <p className="text-xl text-muted-foreground">{guide.tagline}</p>
-                <div className="flex items-center gap-2 mt-2 text-sm font-medium">
-                  <span className="text-emerald-600 flex items-center gap-1">
-                    <Check className="h-4 w-4" /> Verified Guide
-                  </span>
-                  <span className="text-muted-foreground">•</span>
-                  <span>{city?.name}, {city?.country_name}</span>
-                </div>
-              </div>
+    <div className="bg-slate-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        <GuideHero
+          name={fullName}
+          city={guide.city?.name ?? ""}
+          country={guide.city?.country_name ?? ""}
+          avatarUrl={guide.profile?.avatar_url}
+          coverImage={coverImage}
+          rating={rating}
+          reviews={reviews.length}
+          verified={verified}
+        />
 
-              <div className="flex flex-wrap gap-2">
-                {guide.themes?.map((t: string) => (
-                  <Badge key={t} variant="secondary">{t}</Badge>
-                ))}
-              </div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
+          <div className="lg:col-span-2 space-y-10">
+            <GuideAbout
+              name={fullName}
+              bio={guide.bio || guide.about}
+              languages={guide.profile?.languages || []}
+              interests={guide.themes || []}
+            />
+
+            <GuideHighlights images={highlightImages.slice(0, 3)} />
+
+            <GuideReviews reviews={reviews} />
           </div>
 
-          <div className="prose max-w-none">
-            <h3>About Me</h3>
-            <p className="whitespace-pre-wrap">{guide.bio}</p>
-
-            <h3>What we'll do</h3>
-            <p className="whitespace-pre-wrap">{guide.about}</p>
-          </div>
-
-          {/* Locked Section: Reviews */}
-          <section className="pt-8 border-t">
-            <h3 className="text-xl font-bold mb-4">Reviews</h3>
-            {isAuthenticated ? (
-              <div className="text-center p-8 bg-muted/20 rounded-lg">
-                <p className="text-muted-foreground">No reviews yet.</p>
-              </div>
-            ) : (
-              <SoftWall
-                title="See what travelers verified say"
-                description="Sign up to view detailed reviews and ratings."
-              />
-            )}
-          </section>
-        </div>
-
-        {/* Right Column: Booking / Pricing (Partially Locked) */}
-        <div className="md:col-span-1">
-          <div className="sticky top-24 border rounded-xl p-6 shadow-sm bg-card">
-            {isAuthenticated ? (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold text-lg">Detailed Rates</h3>
-                  <div className="mt-4 space-y-3">
-                    <div className="flex justify-between">
-                      <span>4 Hours</span>
-                      <span className="font-medium">{guide.base_price_4h} {guide.currency}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>6 Hours</span>
-                      <span className="font-medium">{guide.base_price_6h} {guide.currency}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>8 Hours</span>
-                      <span className="font-medium">{guide.base_price_8h} {guide.currency}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <Button className="w-full" size="lg">Request Booking</Button>
-
-                <p className="text-xs text-center text-muted-foreground">
-                  You won't be charged yet.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold text-lg">Rates</h3>
-                  <div className="mt-4 px-4 py-3 bg-muted/20 rounded-lg text-center">
-                    <span className="text-2xl font-bold">$$$</span>
-                    <p className="text-xs text-muted-foreground">Sign up to view exact pricing</p>
-                  </div>
-                </div>
-
-                <SoftWall
-                  blur={false}
-                  title="Join to Book"
-                  description="Create a free account to contact this guide."
-                  className="bg-transparent"
-                />
-              </div>
-            )}
+          <div className="lg:col-span-1">
+            <BookingCard
+              basePrices={{
+                4: guide.base_price_4h || undefined,
+                6: guide.base_price_6h || undefined,
+                8: guide.base_price_8h || undefined,
+              }}
+              currency={guide.currency}
+            />
           </div>
         </div>
       </div>

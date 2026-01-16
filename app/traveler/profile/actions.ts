@@ -29,22 +29,22 @@ export async function updateTravelerProfile(
 
     if (profileError) {
       console.error("[updateTravelerProfile] Profile update error:", profileError);
-      return { success: false, error: "Failed to update profile" };
+      return { success: false, error: profileError.message || "Failed to update profile" };
     }
 
-    // Update travelers table
+    // Upsert travelers table (creates record if it doesn't exist)
     const { error: travelerError } = await db
       .from("travelers")
-      .update({
+      .upsert({
+        id: user.id,
         home_country: data.home_country?.trim() || null,
         interests: data.interests.length > 0 ? data.interests : null,
         photo_urls: data.photo_urls?.length > 0 ? data.photo_urls : [],
-      })
-      .eq("id", user.id);
+      }, { onConflict: 'id' });
 
     if (travelerError) {
-      console.error("[updateTravelerProfile] Traveler update error:", travelerError);
-      return { success: false, error: "Failed to update traveler details" };
+      console.error("[updateTravelerProfile] Traveler upsert error:", travelerError);
+      return { success: false, error: travelerError.message || "Failed to update traveler details" };
     }
 
     revalidatePath("/traveler/profile");
