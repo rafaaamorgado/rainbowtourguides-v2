@@ -85,8 +85,7 @@ export function adaptCityFromDB(
     country_name: countryRow?.name || '', // ⚠️ need to join with countries
     // TODO: add description field to cities table
     description: '',
-    // TODO: add image_url field to cities table
-    image_url: '',
+    image_url: cityRow.hero_image_url || '',
     guide_count: guideCount,
   };
 }

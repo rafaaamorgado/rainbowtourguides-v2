@@ -110,7 +110,7 @@ export default async function MarketingPage() {
               asChild
               size="lg"
               variant="outline"
-              className="text-white border-white/40 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              className="bg-transparent text-white border-white/40 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
             >
               <Link href="/auth/sign-up?role=guide">Become a Guide</Link>
             </Button>

@@ -38,6 +38,7 @@ export async function updateTravelerProfile(
       .update({
         home_country: data.home_country?.trim() || null,
         interests: data.interests.length > 0 ? data.interests : null,
+        photo_urls: data.photo_urls?.length > 0 ? data.photo_urls : [],
       })
       .eq("id", user.id);
 

@@ -82,6 +82,7 @@ type TravelersTable = {
     persona: Record<string, unknown> | null;
     home_country: string | null;
     interests: string[] | null;
+    photo_urls: string[] | null;
     created_at: string;
     updated_at: string;
   };
@@ -90,6 +91,7 @@ type TravelersTable = {
     persona?: Record<string, unknown> | null;
     home_country?: string | null;
     interests?: string[] | null;
+    photo_urls?: string[] | null;
     created_at?: string;
     updated_at?: string;
   };

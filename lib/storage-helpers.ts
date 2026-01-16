@@ -206,6 +206,24 @@ export async function uploadGuidePhoto(
 }
 
 /**
+ * Upload a traveler profile photo to the 'avatars' bucket
+ * Supports multiple photos (up to 4)
+ * @param userId - The traveler's user ID (used as folder name)
+ * @param file - The image file to upload
+ * @param index - The photo index (0-3) for organizing multiple photos
+ * @returns Promise with upload result containing public URL
+ */
+export async function uploadTravelerPhoto(
+  userId: string,
+  file: File,
+  index: number,
+): Promise<UploadResult> {
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const timestamp = Date.now();
+  return uploadFile(file, 'avatars', userId, `photo_${index}_${timestamp}.${fileExt}`);
+}
+
+/**
  * Upload an image to the 'blog-images' bucket (admin only)
  * @param file - The image file to upload
  * @param slug - Optional slug/identifier for organizing images

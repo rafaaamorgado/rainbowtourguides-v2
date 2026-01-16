@@ -108,7 +108,7 @@ export async function getCities(): Promise<City[]> {
     `,
     )
     .eq('is_active', true)
-    .eq('guides.approved', true)
+    .eq('guides.status', 'approved')
     .order('name');
 
   if (citiesError || !cities) {
@@ -133,12 +133,12 @@ export async function getCities(): Promise<City[]> {
         .from('guides')
         .select('*', { count: 'exact', head: true })
         .eq('city_id', city.id)
-        .eq('approved', true);
+        .eq('status', 'approved');
 
       logQuery(
         'COUNT',
         'guides',
-        { city_id: city.id, approved: true },
+        { city_id: city.id, status: 'approved' },
         Date.now() - countStartTime,
         { count }, // Log count result
       );
@@ -196,7 +196,7 @@ export async function getCity(slug: string): Promise<City | undefined> {
     .from('guides')
     .select('*', { count: 'exact', head: true })
     .eq('city_id', cityData.id)
-    .eq('approved', true);
+    .eq('status', 'approved');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return adaptCityFromDB(cityData, cityData.country as any, count || 0);
@@ -296,7 +296,7 @@ export async function getGuides(
       )
     `,
     )
-    .eq('approved', true); // ⚠️ approved boolean, not status enum
+    .eq('status', 'approved');
 
   if (cityId) {
     query = query.eq('city_id', cityId);
@@ -324,7 +324,7 @@ export async function getGuides(
 
   logQuery('SELECT', 'guides', {
     city_id: cityId,
-    approved: true,
+    status: 'approved',
     ...(filters || {}),
   });
 
@@ -338,7 +338,7 @@ export async function getGuides(
   logQuery(
     'SELECT',
     'guides',
-    { city_id: cityId, approved: true },
+    { city_id: cityId, status: 'approved' },
     Date.now() - startTime,
     guides, // Log actual data
   );
@@ -482,7 +482,7 @@ export async function searchGuides(query: string): Promise<Guide[]> {
       )
     `,
     )
-    .eq('approved', true)
+    .eq('status', 'approved')
     .or(
       `bio.ilike.${searchTerm},headline.ilike.${searchTerm},experience_tags.cs.{${query}}`,
     );
@@ -495,7 +495,7 @@ export async function searchGuides(query: string): Promise<Guide[]> {
   logQuery(
     'SELECT',
     'guides',
-    { approved: true, search: query },
+    { status: 'approved', search: query },
     undefined,
     guides,
   ); // Log guides data
@@ -580,14 +580,14 @@ export async function getTopGuides(limit: number = 10): Promise<Guide[]> {
       )
     `,
     )
-    .eq('approved', true);
+    .eq('status', 'approved');
 
   if (error || !guides) {
     logError('SELECT', 'guides', error);
     return [];
   }
 
-  logQuery('SELECT', 'guides', { approved: true }, undefined, guides); // Log guides data
+  logQuery('SELECT', 'guides', { status: 'approved' }, undefined, guides); // Log guides data
 
   // Get ratings and review counts, then sort
   const guidesWithStats = await Promise.all(
