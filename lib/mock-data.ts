@@ -3,7 +3,7 @@
  * Premium, warm, mature tone - no camp
  */
 
-export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled" | "accepted" | "declined" | "paid";
+export type BookingStatus = "draft" | "pending" | "accepted" | "awaiting_payment" | "confirmed" | "declined" | "cancelled_by_traveler" | "cancelled_by_guide" | "completed";
 export type GuideStatus = "pending" | "approved" | "rejected";
 export type UserRole = "traveler" | "guide" | "admin";
 
@@ -1104,7 +1104,7 @@ const MOCK_BOOKINGS: Booking[] = [
   { id: "b11", traveler_id: "u17", guide_id: "g11", guide_name: "Sofia Papadopoulos", city_name: "Athens", date: "2026-01-27", duration: 4, status: "confirmed", price_total: 115 },
   { id: "b12", traveler_id: "u19", guide_id: "g16", guide_name: "Isabel Costa", city_name: "Lisbon", date: "2026-01-12", duration: 8, status: "completed", price_total: 225 },
   { id: "b13", traveler_id: "u3", guide_id: "g18", guide_name: "Olivia Chen", city_name: "New York City", date: "2026-02-15", duration: 6, status: "pending", price_total: 250 },
-  { id: "b14", traveler_id: "u4", guide_id: "g26", guide_name: "Elena Vasquez", city_name: "Barcelona", date: "2026-01-19", duration: 4, status: "cancelled", price_total: 145 },
+  { id: "b14", traveler_id: "u4", guide_id: "g26", guide_name: "Elena Vasquez", city_name: "Barcelona", date: "2026-01-19", duration: 4, status: "cancelled_by_traveler", price_total: 145 },
   { id: "b15", traveler_id: "u6", guide_id: "g29", guide_name: "Hiroshi Tanaka", city_name: "Chiang Mai", date: "2026-02-20", duration: 8, status: "confirmed", price_total: 140 },
 ];
 

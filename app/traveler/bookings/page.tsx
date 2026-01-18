@@ -116,11 +116,11 @@ export default function TravelerBookingsPage() {
 
     try {
       // Get a random approved guide
-      let availableGuides: { id: string; city_id: string; base_price_4h: string | null }[] = [];
+      let availableGuides: { id: string; city_id: string; price_4h: number | null }[] = [];
 
       const { data: approvedGuides } = await supabase
         .from("guides")
-        .select("id, city_id, base_price_4h")
+        .select("id, city_id, price_4h")
         .eq("status", "approved")
         .limit(5);
 
@@ -130,7 +130,7 @@ export default function TravelerBookingsPage() {
         // Try without status filter
         const { data: allGuides } = await supabase
           .from("guides")
-          .select("id, city_id, base_price_4h")
+          .select("id, city_id, price_4h")
           .limit(5);
 
         if (!allGuides || allGuides.length === 0) {
@@ -164,7 +164,7 @@ export default function TravelerBookingsPage() {
           starts_at: startDate.toISOString(),
           ends_at: endDate.toISOString(),
           duration_hours: 4,
-          price_total: randomGuide.base_price_4h || "120",
+          price_total: randomGuide.price_4h || "120",
           currency: "USD",
           status: randomStatus,
           special_requests: "Demo booking created for testing",
@@ -197,7 +197,7 @@ export default function TravelerBookingsPage() {
 
   const pastBookings = bookings.filter(
     (b) =>
-      (b.status === "completed" || b.status === "cancelled") &&
+      (b.status === "completed" || b.status === "cancelled_by_traveler" || b.status === "cancelled_by_guide") &&
       new Date(b.date) < new Date()
   );
 
@@ -215,7 +215,7 @@ export default function TravelerBookingsPage() {
     // Update booking status
     const { error } = await (supabase as any)
       .from("bookings")
-      .update({ status: "cancelled" })
+      .update({ status: "cancelled_by_traveler" })
       .eq("id", bookingToCancel)
       .eq("traveler_id", userId); // Ensure user owns the booking
 
@@ -225,7 +225,7 @@ export default function TravelerBookingsPage() {
       // Update local state
       setBookings((prev) =>
         prev.map((b) =>
-          b.id === bookingToCancel ? { ...b, status: "cancelled" } : b
+          b.id === bookingToCancel ? { ...b, status: "cancelled_by_traveler" as const } : b
         )
       );
     }
@@ -430,7 +430,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
     (booking.status === "confirmed" || booking.status === "accepted") &&
     new Date(booking.date) >= new Date();
   const isCompleted = booking.status === "completed";
-  const isCancelled = booking.status === "cancelled";
+  const isCancelled = booking.status === "cancelled_by_traveler" || booking.status === "cancelled_by_guide";
 
   // Mock: Check if reviewed (in production, check reviews table)
   const hasReview = false;
@@ -487,7 +487,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
                   "bg-emerald-100 text-emerald-700",
                 booking.status === "completed" &&
                   "bg-slate-100 text-slate-700",
-                booking.status === "cancelled" &&
+                (booking.status === "cancelled_by_traveler" || booking.status === "cancelled_by_guide") &&
                   "bg-red-100 text-red-700"
               )}
             >

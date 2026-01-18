@@ -14,6 +14,7 @@ interface GuideHeroProps {
   rating?: number;
   reviews?: number;
   verified?: boolean;
+  headline?: string | null;
 }
 
 export function GuideHero({
@@ -25,6 +26,7 @@ export function GuideHero({
   rating,
   reviews,
   verified,
+  headline,
 }: GuideHeroProps) {
   const photo =
     getStoragePublicUrl(avatarUrl || "") ||
@@ -68,6 +70,11 @@ export function GuideHero({
                 </span>
               )}
             </div>
+            {headline && (
+              <p className="text-white/80 text-sm sm:text-base max-w-2xl">
+                {headline}
+              </p>
+            )}
             <div className="flex items-center gap-3 text-sm text-white/80 flex-wrap">
               <span className="inline-flex items-center gap-1">
                 <MapPin className="h-4 w-4" />

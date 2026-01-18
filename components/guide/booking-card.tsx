@@ -12,9 +12,16 @@ type Duration = 4 | 6 | 8;
 interface BookingCardProps {
   basePrices: Partial<Record<Duration, number>>;
   currency?: string | null;
+  maxGroupSize?: number | null;
+  meetingLocationLabel?: string | null;
 }
 
-export function BookingCard({ basePrices, currency = "USD" }: BookingCardProps) {
+export function BookingCard({
+  basePrices,
+  currency = "USD",
+  maxGroupSize,
+  meetingLocationLabel,
+}: BookingCardProps) {
   const [duration, setDuration] = useState<Duration>(4);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -115,26 +122,30 @@ export function BookingCard({ basePrices, currency = "USD" }: BookingCardProps) 
           <Input
             type="number"
             min={1}
-            max={8}
+            max={maxGroupSize ?? 8}
             value={travelers}
             onChange={(e) => setTravelers(Number(e.target.value))}
             className="pl-10"
           />
         </div>
-        <p className="text-xs text-ink-soft">Max group size: 8 people</p>
+        <p className="text-xs text-ink-soft">
+          Max group size: {maxGroupSize ?? 8} people
+        </p>
       </div>
 
       {/* Location */}
       <div className="space-y-1">
-        <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
-          Meeting location
-        </label>
+          <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
+            Meeting location
+          </label>
         <select
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
         >
-          <option value="default">Guide's default meetup</option>
+          <option value="default">
+            {meetingLocationLabel || "Guide's default meetup"}
+          </option>
           <option value="hotel">Hotel pickup</option>
           <option value="custom">Custom location</option>
         </select>

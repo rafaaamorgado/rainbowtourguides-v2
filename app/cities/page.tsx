@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Search } from "lucide-react";
-import { getCitiesWithMeta } from "@/lib/data-service";
+import { getLiveCities } from "@/lib/data-service";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ClientDebug } from "@/components/dev-debug";
 import { getCityImageUrl } from "@/lib/city-images";
@@ -102,38 +102,12 @@ function SearchBar() {
  */
 export default async function CitiesPage() {
   // Fetch cities from data service
-  const { data: cities, error, debug } = await getCitiesWithMeta();
+  const liveCities = await getLiveCities();
   const showDebugText = process.env.NODE_ENV !== "production";
   const enableClientDebug = true;
 
-  if (error) {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 space-y-3">
-          <h2 className="text-2xl font-semibold text-red-700">
-            Unable to load cities
-          </h2>
-          <p className="text-sm text-red-700">
-            {error}
-          </p>
-          {showDebugText && (
-            <p className="text-xs text-red-600">
-              Supabase URL present: {debug?.hasUrl ? "yes" : "no"} | Anon key present: {debug?.hasAnonKey ? "yes" : "no"}
-            </p>
-          )}
-        </div>
-        {enableClientDebug && (
-          <ClientDebug
-            label="CitiesPageError"
-            payload={{ error, debug }}
-          />
-        )}
-      </div>
-    );
-  }
-
   // Empty state
-  if (cities.length === 0) {
+  if (liveCities.length === 0) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <EmptyState
@@ -154,7 +128,7 @@ export default async function CitiesPage() {
           Explore Cities
         </h1>
         <p className="text-lg text-ink-soft leading-relaxed">
-          Discover trusted LGBTQ+ local guides in {cities.length} cities
+          Discover trusted LGBTQ+ local guides in {liveCities.length} cities
           worldwide
         </p>
       </header>
@@ -164,7 +138,7 @@ export default async function CitiesPage() {
 
       {/* Cities Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cities.map((city) => {
+        {liveCities.map((city) => {
           const image_url = getCityImageUrl(city.slug, city.image_url);
           return <CityCard key={city.id} city={{ ...city, image_url }} />;
         })}
@@ -172,7 +146,7 @@ export default async function CitiesPage() {
       {enableClientDebug && (
         <ClientDebug
           label="CitiesPageDebug"
-          payload={{ rows: cities.length, debug }}
+          payload={{ rows: liveCities.length }}
         />
       )}
     </div>

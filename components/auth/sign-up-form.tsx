@@ -9,7 +9,9 @@ import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
 } from "@/lib/supabase-browser";
-import type { ProfileRole, Database } from "@/types/database";
+import type { Database } from "@/types/database";
+
+type ProfileRole = Database["public"]["Enums"]["profile_role"];
 
 type SignUpFormProps = {
   initialRole?: ProfileRole;

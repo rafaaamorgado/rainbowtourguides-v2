@@ -17,10 +17,12 @@ type GuideRow = {
   id: string;
   slug: string;
   city_id: string;
+  tagline: string | null;
   headline: string | null;
   bio: string | null;
   about: string | null;
   themes: string[] | null;
+  languages: string[] | null;
   base_price_4h: number | null;
   base_price_6h: number | null;
   base_price_8h: number | null;
@@ -77,6 +79,32 @@ function resolveHighlights(citySlug?: string | null) {
   return candidates;
 }
 
+function parseGuideMeta(tagline: string | null) {
+  try {
+    const parsed = tagline ? JSON.parse(tagline) : null;
+    if (parsed && typeof parsed === "object") {
+      return {
+        tagline: typeof parsed.tagline === "string" ? parsed.tagline : null,
+        highlights: Array.isArray(parsed.highlights) ? parsed.highlights : [],
+        meetingLocationLabel:
+          typeof parsed.meeting_location_label === "string"
+            ? parsed.meeting_location_label
+            : null,
+        maxGroupSize:
+          typeof parsed.max_group_size === "number" ? parsed.max_group_size : null,
+      };
+    }
+  } catch {
+    // ignore parsing errors
+  }
+  return {
+    tagline,
+    highlights: [],
+    meetingLocationLabel: null,
+    maxGroupSize: null,
+  };
+}
+
 function toReviews(raw: any[], guideName: string) {
   if (!raw?.length) {
     return [
@@ -120,10 +148,12 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
         id,
         slug,
         city_id,
+        tagline,
         headline,
         bio,
         about,
         themes,
+        languages,
         base_price_4h,
         base_price_6h,
         base_price_8h,
@@ -156,6 +186,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
   const verified = guide.status === "approved";
   const coverImage = resolveCover(slug, guide.city?.slug || undefined);
   const highlightImages = resolveHighlights(guide.city?.slug || undefined);
+  const meta = parseGuideMeta(guide.tagline);
 
   const { data: reviewRows, error: reviewError } = await supabase
     .from("reviews")
@@ -178,6 +209,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         <GuideHero
           name={fullName}
+          headline={guide.headline || meta.tagline || undefined}
           city={guide.city?.name ?? ""}
           country={guide.city?.country_name ?? ""}
           avatarUrl={guide.profile?.avatar_url}
@@ -192,11 +224,14 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
             <GuideAbout
               name={fullName}
               bio={guide.bio || guide.about}
-              languages={guide.profile?.languages || []}
+              languages={guide.profile?.languages || guide.languages || []}
               interests={guide.themes || []}
             />
 
-            <GuideHighlights images={highlightImages.slice(0, 3)} />
+            <GuideHighlights
+              images={highlightImages.slice(0, 3)}
+              highlightTexts={meta.highlights}
+            />
 
             <GuideReviews reviews={reviews} />
           </div>
@@ -209,6 +244,8 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
                 8: guide.base_price_8h || undefined,
               }}
               currency={guide.currency}
+              maxGroupSize={meta.maxGroupSize}
+              meetingLocationLabel={meta.meetingLocationLabel}
             />
           </div>
         </div>

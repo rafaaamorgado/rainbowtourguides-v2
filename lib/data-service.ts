@@ -144,6 +144,18 @@ export async function getCities(): Promise<City[]> {
   return data;
 }
 
+export type LiveCity = {
+  city_id: string;
+  name: string;
+  slug: string;
+  hero_image_url: string | null;
+  hero_image_backup_url?: string | null;
+  hero_image_attribution?: string | null;
+  hero_image_attribution_url?: string | null;
+  approved_guide_count: number;
+  country_name: string | null;
+};
+
 export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
   const { client: supabase, debug, error: clientError } =
     await getSupabaseClientWithDebug('getCities');
@@ -216,6 +228,96 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
   );
 
   return { data: citiesWithCounts, debug: { ...debug, rows: citiesWithCounts.length } };
+}
+
+export async function getLiveCities(): Promise<City[]> {
+  const { client: supabase, error: clientError } = await getSupabaseClientWithDebug('getLiveCities');
+
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('cities_with_approved_guides')
+    .select(
+      `
+        city_id,
+        name,
+        slug,
+        hero_image_url,
+        hero_image_backup_url,
+        approved_guide_count,
+        country_name
+      `,
+    )
+    .gt('approved_guide_count', 0)
+    .eq('is_active', true)
+    .eq('country_is_supported', true)
+    .order('approved_guide_count', { ascending: false })
+    .order('name', { ascending: true });
+
+  if (error || !data) {
+    logError('SELECT', 'cities_with_approved_guides', error ?? clientError);
+    return [];
+  }
+
+  return data.map((row: any) =>
+    adaptCityFromDB(
+      {
+        id: row.city_id,
+        name: row.name,
+        slug: row.slug,
+        hero_image_url: row.hero_image_url,
+      } as any,
+      { name: row.country_name } as any,
+      row.approved_guide_count || 0,
+    ),
+  );
+}
+
+export async function getLiveCityBySlug(
+  slug: string,
+): Promise<LiveCity | null> {
+  const { client: supabase, error: clientError } = await getSupabaseClientWithDebug('getLiveCityBySlug');
+
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from('cities_with_approved_guides')
+    .select(
+      `
+        id,
+        name,
+        slug,
+        hero_image_url,
+        hero_image_backup_url,
+        hero_image_attribution,
+        hero_image_attribution_url,
+        approved_guide_count,
+        country_name,
+        is_active,
+        country_is_supported
+      `,
+    )
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .eq('country_is_supported', true)
+    .maybeSingle();
+
+  if (error || !data || !data.id) {
+    logError('SELECT', 'cities_with_approved_guides', error);
+    return null;
+  }
+
+  return {
+    city_id: data.id,
+    name: data.name ?? '',
+    slug: data.slug ?? '',
+    hero_image_url: data.hero_image_url,
+    hero_image_backup_url: data.hero_image_backup_url,
+    hero_image_attribution: data.hero_image_attribution,
+    hero_image_attribution_url: data.hero_image_attribution_url,
+    approved_guide_count: data.approved_guide_count || 0,
+    country_name: data.country_name,
+  };
 }
 
 /**

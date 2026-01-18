@@ -111,8 +111,8 @@ export function adaptBookingFromDB(
   guideProfile: ProfileRow | null,
   cityRow: CityRow | null,
 ): Booking {
-  // Calculate end time from starts_at + duration_hours
-  const startAt = new Date(bookingRow.starts_at); // ⚠️ starts_at, not start_at
+  // Calculate end time from start_at + duration_hours
+  const startAt = new Date(bookingRow.start_at);
   const endAt = new Date(startAt);
   if (bookingRow.duration_hours) {
     endAt.setHours(endAt.getHours() + bookingRow.duration_hours);
@@ -124,7 +124,7 @@ export function adaptBookingFromDB(
     guide_id: bookingRow.guide_id,
     guide_name: guideProfile?.full_name || 'Unknown',
     city_name: cityRow?.name || 'Unknown',
-    date: bookingRow.starts_at, // ⚠️ starts_at → date (ISO string)
+    date: bookingRow.start_at,
     duration: bookingRow.duration_hours || 0, // Handle null case
     status: bookingRow.status, // ✅ BookingStatus enum matches
     price_total: parseFloat(bookingRow.price_total.toString()),
@@ -141,7 +141,7 @@ export function adaptReviewFromDB(
   return {
     id: reviewRow.id,
     booking_id: reviewRow.booking_id,
-    guide_id: reviewRow.guide_id, // ⚠️ guide_id, not subject_id
+    guide_id: reviewRow.subject_id,
     traveler_name: authorProfile?.full_name || 'Unknown',
     rating: reviewRow.rating,
     comment: reviewRow.comment || '',
@@ -161,7 +161,7 @@ export function adaptMessageFromDB(
     booking_id: messageRow.booking_id,
     sender_id: messageRow.sender_id,
     sender_name: senderProfile?.full_name || 'Unknown',
-    content: messageRow.text, // ⚠️ text, not body
+    content: messageRow.body,
     timestamp: messageRow.created_at,
   };
 }

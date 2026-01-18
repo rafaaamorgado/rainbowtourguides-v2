@@ -44,10 +44,10 @@ export function GuideOnboardingForm({
   // Form state with defaults from existing guide
   const [cityId, setCityId] = useState(existingGuide?.city_id ?? "");
   const [headline, setHeadline] = useState(existingGuide?.headline ?? "");
-  const [about, setAbout] = useState(existingGuide?.about ?? "");
-  const [languages, setLanguages] = useState(existingGuide?.languages?.join(", ") ?? "");
-  const [selectedThemes, setSelectedThemes] = useState<string[]>(existingGuide?.themes ?? []);
-  const [hourlyRate, setHourlyRate] = useState(existingGuide?.hourly_rate ?? "");
+  const [about, setAbout] = useState(existingGuide?.bio ?? "");
+  const [languages, setLanguages] = useState("");
+  const [selectedThemes, setSelectedThemes] = useState<string[]>(existingGuide?.experience_tags ?? []);
+  const [hourlyRate, setHourlyRate] = useState(existingGuide?.price_4h?.toString() ?? "");
 
   const handleThemeToggle = (theme: string) => {
     setSelectedThemes((prev) =>
@@ -129,7 +129,7 @@ export function GuideOnboardingForm({
               <option value="">Select a city...</option>
               {cities.map((city) => (
                 <option key={city.id} value={city.id}>
-                  {city.name}, {city.country_name}
+                  {city.name}
                 </option>
               ))}
             </select>

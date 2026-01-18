@@ -70,9 +70,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Update booking status to 'paid' after successful payment
+    // Update booking status to 'confirmed' after successful payment
     const bookingUpdate: Database['public']['Tables']['bookings']['Update'] = {
-      status: 'paid',
+      status: 'confirmed',
     };
 
     // Type assertion needed for Supabase update operation

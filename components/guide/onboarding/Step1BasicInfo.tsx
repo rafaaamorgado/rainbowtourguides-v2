@@ -168,7 +168,7 @@ export function Step1BasicInfo({ data, cities, onChange }: Step1BasicInfoProps) 
             <option value="">Select your city...</option>
             {cities.map((city) => (
               <option key={city.id} value={city.id}>
-                {city.name}{city.country_name ? `, ${city.country_name}` : ""}
+                {city.name}
               </option>
             ))}
           </select>

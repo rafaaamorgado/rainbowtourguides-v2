@@ -95,7 +95,7 @@ export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, 
               <div>
                 <p className="text-xs text-slate-500">City</p>
                 <p className="font-semibold text-slate-900">
-                  {selectedCity?.name}{selectedCity?.country_name ? `, ${selectedCity.country_name}` : ""}
+                  {selectedCity?.name}
                 </p>
               </div>
               <div>

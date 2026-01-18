@@ -11,7 +11,13 @@ export type GuideRow = Database['public']['Tables']['guides']['Row'];
 export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 export type BookingRow = Database['public']['Tables']['bookings']['Row'];
 export type CountryRow = Database['public']['Tables']['countries']['Row'];
-export type TravelerRow = Database['public']['Tables']['travelers']['Row'];
+// Traveler table not in generated schema - using placeholder type
+export type TravelerRow = {
+  id: string;
+  home_country?: string | null;
+  interests?: string[] | null;
+  photo_urls?: string[] | null;
+};
 export type MessageRow = Database['public']['Tables']['messages']['Row'];
 export type ReviewRow = Database['public']['Tables']['reviews']['Row'];
 

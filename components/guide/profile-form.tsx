@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,10 @@ export interface GuideProfileFormData {
   base_price_6h: string | null;
   base_price_8h: string | null;
   currency: string;
+  headline: string | null;
+  highlights: string[];
+  meeting_location_label: string | null;
+  max_group_size: number | null;
 }
 
 export function GuideProfileForm({
@@ -66,18 +70,23 @@ export function GuideProfileForm({
     bio: guide.bio || "",
     city_id: guide.city_id || "",
     tagline: guide.tagline || "",
-    about: guide.about || "",
-    themes: guide.themes || [],
-    languages: guide.languages || [],
-    base_price_4h: guide.base_price_4h || "",
-    base_price_6h: guide.base_price_6h || "",
-    base_price_8h: guide.base_price_8h || "",
+    headline: guide.headline || "",
+    about: guide.bio || "",
+    themes: guide.experience_tags || [],
+    languages: profile.languages || [],
+    base_price_4h: guide.price_4h?.toString() || "",
+    base_price_6h: guide.price_6h?.toString() || "",
+    base_price_8h: guide.price_8h?.toString() || "",
     currency: guide.currency || "USD",
+    highlights: [],
+    meeting_location_label: null,
+    max_group_size: null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [highlightInput, setHighlightInput] = useState("");
 
   const handleAvatarUpload = useCallback(
     async (file: File) => {
@@ -92,7 +101,7 @@ export function GuideProfileForm({
 
   const handleChange = (
     field: keyof GuideProfileFormData,
-    value: string | string[] | null
+    value: string | string[] | number | null
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
@@ -133,6 +142,52 @@ export function GuideProfileForm({
     const currency = CURRENCY_OPTIONS.find((c) => c.value === code);
     return currency?.symbol || "$";
   };
+
+  // Hydrate highlights and meta from tagline if it was stored as JSON
+  useEffect(() => {
+    if (!guide.tagline) return;
+    try {
+      const parsed = JSON.parse(guide.tagline as string);
+      if (parsed && typeof parsed === "object") {
+        setFormData((prev) => ({
+          ...prev,
+          tagline:
+            typeof parsed.tagline === "string"
+              ? parsed.tagline
+              : prev.tagline,
+          highlights: Array.isArray(parsed.highlights) ? parsed.highlights : [],
+          meeting_location_label:
+            typeof parsed.meeting_location_label === "string"
+              ? parsed.meeting_location_label
+              : prev.meeting_location_label,
+          max_group_size:
+            typeof parsed.max_group_size === "number"
+              ? parsed.max_group_size
+              : prev.max_group_size,
+        }));
+      }
+    } catch {
+      // If tagline was plain text, leave highlights empty
+    }
+  }, [guide.tagline]);
+
+  const addHighlight = (highlight: string) => {
+    const trimmed = highlight.trim();
+    if (!trimmed) return;
+    setFormData((prev) => ({
+      ...prev,
+      highlights: [...(prev.highlights || []), trimmed].slice(0, 6),
+    }));
+    setHighlightInput("");
+  };
+
+  const removeHighlight = (idx: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      highlights: prev.highlights.filter((_, i) => i !== idx),
+    }));
+  };
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -242,6 +297,20 @@ export function GuideProfileForm({
         <TabsContent value="tour" className="space-y-6">
           <div className="grid gap-4">
             <div className="grid gap-2">
+              <Label htmlFor="headline">Headline</Label>
+              <Input
+                id="headline"
+                value={formData.headline || ""}
+                onChange={(e) => handleChange("headline", e.target.value)}
+                placeholder="Queer food, art, and nightlife in Berlin"
+                maxLength={140}
+              />
+              <p className="text-xs text-muted-foreground">
+                A short intro shown on your public profile and search results.
+              </p>
+            </div>
+
+            <div className="grid gap-2">
               <Label htmlFor="tagline">Tagline</Label>
               <Input
                 id="tagline"
@@ -314,6 +383,77 @@ export function GuideProfileForm({
                   <span className="text-sm font-medium">{language}</span>
                 </label>
               ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium">Tour Highlights</h3>
+              <p className="text-sm text-muted-foreground">
+                Add up to 6 quick highlights travelers can expect.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                value={highlightInput}
+                onChange={(e) => setHighlightInput(e.target.value)}
+                placeholder="Hidden speakeasies, queer history walk..."
+              />
+              <Button type="button" variant="secondary" onClick={() => addHighlight(highlightInput)}>
+                Add
+              </Button>
+            </div>
+            {formData.highlights.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {formData.highlights.map((item, idx) => (
+                  <span
+                    key={`${item}-${idx}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm"
+                  >
+                    {item}
+                    <button
+                      type="button"
+                      className="text-slate-500 hover:text-slate-700"
+                      onClick={() => removeHighlight(idx)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="meeting_location_label">Default Meeting Location</Label>
+              <Input
+                id="meeting_location_label"
+                value={formData.meeting_location_label || ""}
+                onChange={(e) => handleChange("meeting_location_label", e.target.value)}
+                placeholder="In front of the main square fountain"
+              />
+              <p className="text-xs text-muted-foreground">
+                Travelers will see this as the suggested meetup spot.
+              </p>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="max_group_size">Max Group Size</Label>
+              <Input
+                id="max_group_size"
+                type="number"
+                min={1}
+                max={20}
+                value={formData.max_group_size ?? ""}
+                onChange={(e) =>
+                  handleChange(
+                    "max_group_size",
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+                placeholder="e.g., 8"
+              />
             </div>
           </div>
         </TabsContent>

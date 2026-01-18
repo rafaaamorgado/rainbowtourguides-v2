@@ -3,10 +3,22 @@ import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignUpForm } from "@/components/auth/sign-up-form";
-import { isValidRole } from "@/lib/auth-helpers";
 import { getPostLoginRedirect } from "@/lib/auth/post-login-redirect";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
-import type { ProfileRole } from "@/types/database";
+
+/**
+ * Allowed roles for public sign-up (excludes admin).
+ */
+type SignUpRole = "traveler" | "guide";
+
+/**
+ * Returns a safe sign-up role from URL param.
+ * Only "guide" is allowed explicitly; everything else defaults to "traveler".
+ * Admin sign-up via URL is blocked.
+ */
+function getSignUpRole(roleParam: string | undefined): SignUpRole {
+  if (roleParam === "guide") return "guide";
+  return "traveler";
+}
 
 type SignUpPageProps = {
   searchParams: Promise<{ role?: string }>;
@@ -17,13 +29,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   if (path) redirect(path);
 
   const params = await searchParams;
-  const roleParam = params.role;
-  
-  // Validate role from query param, default to 'traveler'
-  // Don't allow admin sign-up via URL
-  const initialRole: ProfileRole = isValidRole(roleParam) && roleParam !== "admin" 
-    ? roleParam 
-    : "traveler";
+  const initialRole = getSignUpRole(params.role);
   
   const isGuideSignUp = initialRole === "guide";
 

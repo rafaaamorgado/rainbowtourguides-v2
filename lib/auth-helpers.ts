@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import type { ProfileRole, Database } from "@/types/database";
+import type { Database } from "@/types/database";
 
+type ProfileRole = Database["public"]["Enums"]["profile_role"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 /**
@@ -178,7 +179,7 @@ export async function getAuthenticatedUserRedirect(): Promise<string | null> {
   }
 
   if (role === "traveler") {
-    const { data: traveler } = await supabase
+    const { data: traveler } = await (supabase as any)
       .from("travelers")
       .select("id")
       .eq("id", user.id)

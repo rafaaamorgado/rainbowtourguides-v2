@@ -21,8 +21,14 @@ import { Loader2, Plus, X, Star } from "lucide-react";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Traveler = Database["public"]["Tables"]["travelers"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
+
+// Traveler table type not in generated schema, use inline type
+type Traveler = {
+  home_country?: string | null;
+  interests?: string[] | null;
+  photo_urls?: string[] | null;
+};
 
 interface TravelerProfileFormProps {
   profile: Profile;

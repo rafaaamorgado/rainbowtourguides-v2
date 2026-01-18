@@ -6,7 +6,7 @@ export default async function TravelerProfilePage() {
   const { supabase, user, profile } = await requireRole("traveler");
 
   // Fetch traveler-specific data
-  const { data: traveler } = await supabase
+  const { data: traveler } = await (supabase as any)
     .from("travelers")
     .select("*")
     .eq("id", user.id)

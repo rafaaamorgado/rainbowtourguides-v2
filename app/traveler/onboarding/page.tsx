@@ -45,7 +45,7 @@ export default function TravelerOnboardingPage() {
       setUserId(user.id);
 
       // Check if traveler profile already exists
-      const { data: traveler } = await supabase
+      const { data: traveler } = await (supabase as any)
         .from("travelers")
         .select("id")
         .eq("id", user.id)

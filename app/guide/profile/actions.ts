@@ -21,12 +21,20 @@ export async function updateGuideProfile(
       return { success: false, error: "Please select a city" };
     }
 
+    const taglinePayload = JSON.stringify({
+      tagline: data.tagline || null,
+      highlights: data.highlights || [],
+      meeting_location_label: data.meeting_location_label || null,
+      max_group_size: data.max_group_size || null,
+    });
+
     // Update profiles table (shared fields)
     const { error: profileError } = await db
       .from("profiles")
       .update({
         full_name: data.display_name.trim(),
         avatar_url: data.avatar_url,
+        languages: data.languages && data.languages.length > 0 ? data.languages : null,
       })
       .eq("id", user.id);
 
@@ -48,10 +56,11 @@ export async function updateGuideProfile(
       .update({
         bio: data.bio?.trim() || null,
         city_id: data.city_id,
-        tagline: data.tagline?.trim() || null,
+        tagline: taglinePayload,
+        headline: data.headline?.trim() || null,
         about: data.about?.trim() || null,
         themes: data.themes.length > 0 ? data.themes : null,
-        languages: data.languages.length > 0 ? data.languages : null,
+        languages: data.languages && data.languages.length > 0 ? data.languages : null,
         base_price_4h: data.base_price_4h || null,
         base_price_6h: data.base_price_6h || null,
         base_price_8h: data.base_price_8h || null,

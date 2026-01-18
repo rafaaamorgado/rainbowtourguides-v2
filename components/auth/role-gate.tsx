@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
-import type { ProfileRole } from '@/types/database';
+import type { Database } from '@/types/database';
+
+type ProfileRole = Database["public"]["Enums"]["profile_role"];
 
 interface RoleGateProps {
     children: React.ReactNode;

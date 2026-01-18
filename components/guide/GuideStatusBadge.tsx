@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import type { GuideStatus } from "@/types/database";
+import type { Database } from "@/types/database";
+
+type GuideStatus = Database["public"]["Enums"]["guide_status"];
 
 type GuideStatusBadgeProps = {
   status: GuideStatus;

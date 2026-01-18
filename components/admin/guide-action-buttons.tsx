@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Check, X, Loader2 } from "lucide-react";
 
 export function AdminGuideAction({ guideId }: { guideId: string }) {
@@ -13,21 +12,16 @@ export function AdminGuideAction({ guideId }: { guideId: string }) {
   const handleAction = async (status: 'approved' | 'rejected') => {
       if (!confirm(`Are you sure you want to ${status} this guide?`)) return;
       setLoading(true);
-      
-      const supabase = createSupabaseBrowserClient();
-      if (!supabase) {
-          alert("Supabase client not configured");
-          return;
-      }
 
       try {
-          const { error } = await (supabase
-            .from('guides') as any)
-            .update({ status })
-            .eq('id', guideId);
-            
-          if (error) throw error;
-          
+          const res = await fetch("/api/admin/guides/status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ guideId, status }),
+          });
+          if (!res.ok) {
+            throw new Error("Failed to update guide status");
+          }
           router.refresh();
       } catch (err) {
           console.error(err);
