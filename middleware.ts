@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // Public routes - skip all checks for these paths
-    const publicRoutes = ['/guides', '/cities', '/blog', '/how-it-works', '/become-a-guide', '/faq', '/legal'];
+    const publicRoutes = ['/auth', '/guides', '/cities', '/blog', '/how-it-works', '/become-a-guide', '/faq', '/legal'];
     const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route));
     
     if (isPublicRoute) {
@@ -69,17 +69,49 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 4. Guide/Traveler Route Protection (Optional, can be strict here or relied on Layouts)
+    // 4. Guide Route Protection - Only guides and admins
     if (request.nextUrl.pathname.startsWith('/guide')) {
         if (!user) {
-            return NextResponse.redirect(new URL('/auth/sign-in?role=guide', request.url))
+            return NextResponse.redirect(new URL('/auth/sign-in?redirect=/guide/dashboard', request.url))
         }
-        // Could check role here too
+
+        // Check role - only guides and admins can access
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role !== 'guide' && profile?.role !== 'admin') {
+            // Redirect traveler to their dashboard
+            if (profile?.role === 'traveler') {
+                return NextResponse.redirect(new URL('/traveler/dashboard', request.url))
+            }
+            // Unknown role - redirect to home
+            return NextResponse.redirect(new URL('/', request.url))
+        }
     }
 
+    // 5. Traveler Route Protection - Only travelers and admins
     if (request.nextUrl.pathname.startsWith('/traveler')) {
         if (!user) {
-            return NextResponse.redirect(new URL('/auth/sign-in?role=traveler', request.url))
+            return NextResponse.redirect(new URL('/auth/sign-in?redirect=/traveler/dashboard', request.url))
+        }
+
+        // Check role - only travelers and admins can access
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role !== 'traveler' && profile?.role !== 'admin') {
+            // Redirect guide to their dashboard
+            if (profile?.role === 'guide') {
+                return NextResponse.redirect(new URL('/guide/dashboard', request.url))
+            }
+            // Unknown role - redirect to home
+            return NextResponse.redirect(new URL('/', request.url))
         }
     }
 

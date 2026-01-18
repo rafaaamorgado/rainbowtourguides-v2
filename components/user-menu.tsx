@@ -36,72 +36,99 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 export function UserMenu() {
     const router = useRouter();
     const [session, setSession] = useState<Session | null>(null);
-    const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
 
     const supabaseConfigured = isSupabaseConfiguredOnClient();
 
     useEffect(() => {
+        console.log('[UserMenu] useEffect START');
+
         if (!supabaseConfigured) {
+            console.log('[UserMenu] Supabase not configured');
             setLoading(false);
             return;
         }
 
-        const supabase = createSupabaseBrowserClient();
-        if (!supabase) {
-            setLoading(false);
-            return;
-        }
-
-        const fetchProfile = async (userId: string) => {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id, role, full_name, avatar_url')
-                .eq('id', userId)
-                .single();
-
-            if (error) {
-                console.error('UserMenu: failed to load profile', error);
-                setProfile(null);
-                return;
-            }
-
-            setProfile(data as Profile);
-        };
-
-        const syncSession = async () => {
-            const { data } = await supabase.auth.getSession();
-            const nextSession = data.session ?? null;
-            setSession(nextSession);
-
-            const userId = nextSession?.user?.id;
-            if (userId) {
-                await fetchProfile(userId);
-            } else {
-                setProfile(null);
-            }
-
-            setLoading(false);
-        };
-
-        syncSession();
-
-        const { data: listener } = supabase.auth.onAuthStateChange(
-            async (_event, nextSession) => {
-                setSession(nextSession ?? null);
-                const userId = nextSession?.user?.id;
-                if (userId) {
-                    await fetchProfile(userId);
-                } else {
-                    setProfile(null);
+        // Read session directly from localStorage (synchronous!)
+        const loadSessionFromStorage = () => {
+            try {
+                // Debug: show ALL localStorage keys
+                const allKeys = Object.keys(localStorage);
+                console.log('[UserMenu] ALL localStorage keys:', allKeys);
+                
+                // Try different possible key patterns
+                const possibleKeys = [
+                    ...allKeys.filter(key => key.includes('supabase')),
+                    ...allKeys.filter(key => key.includes('auth')),
+                    ...allKeys.filter(key => key.includes('sb-')),
+                ];
+                
+                console.log('[UserMenu] Possible auth keys:', possibleKeys);
+                
+                // Try each key
+                for (const key of possibleKeys) {
+                    try {
+                        const stored = localStorage.getItem(key);
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            console.log(`[UserMenu] Key "${key}":`, {
+                                hasAccessToken: !!parsed?.access_token,
+                                hasUser: !!parsed?.user,
+                                structure: Object.keys(parsed || {})
+                            });
+                            
+                            if (parsed?.access_token && parsed?.user) {
+                                setSession(parsed as Session);
+                                console.log('[UserMenu] ✅ Session loaded from:', key);
+                                setLoading(false);
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        // Skip invalid JSON
+                    }
                 }
-            },
-        );
-
-        return () => {
-            listener?.subscription.unsubscribe();
+                
+                console.log('[UserMenu] ❌ No valid session found in localStorage');
+                setSession(null);
+            } catch (err) {
+                console.error('[UserMenu] Error reading localStorage:', err);
+                setSession(null);
+            } finally {
+                setLoading(false);
+            }
         };
+
+        loadSessionFromStorage();
+
+        // Also try to set up listener (but don't rely on it)
+        const supabase = createSupabaseBrowserClient();
+        if (supabase) {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+                console.log('[UserMenu] 🔔 Auth event:', event);
+                setSession(newSession);
+            });
+
+            return () => {
+                subscription.unsubscribe();
+            };
+        }
     }, [supabaseConfigured]);
+
+    // Derive profile from session (no separate state needed)
+    const profile = useMemo(() => {
+        if (!session?.user) return null;
+        
+        const user = session.user;
+        const metadata = user.user_metadata || {};
+        
+        return {
+            id: user.id,
+            role: (metadata.role as Profile['role']) || 'traveler',
+            full_name: (metadata.full_name as string) || (metadata.name as string) || user.email || 'User',
+            avatar_url: (metadata.avatar_url as string) || (metadata.picture as string) || null,
+        } as Profile;
+    }, [session]);
 
     const handleSignOut = async () => {
         const supabase = createSupabaseBrowserClient();
@@ -109,7 +136,6 @@ export function UserMenu() {
             await supabase.auth.signOut();
         }
         setSession(null);
-        setProfile(null);
         router.push('/');
         router.refresh();
     };
@@ -141,15 +167,23 @@ export function UserMenu() {
 
     const avatarUrl = getAvatarUrl(rawAvatar);
 
-    if (loading) {
-        return <div className="h-9 w-9 rounded-full bg-slate-200 animate-pulse" />;
-    }
+    console.log('[UserMenu] RENDER - loading:', loading, 'hasSession:', !!session, 'hasProfile:', !!profile);
 
     if (!supabaseConfigured) {
+        console.log('[UserMenu] RENDER - returning null (not configured)');
         return null;
     }
 
+    // Show loading skeleton while checking auth
+    if (loading) {
+        console.log('[UserMenu] RENDER - showing loading skeleton');
+        return <div className="h-9 w-9 rounded-full bg-slate-200 animate-pulse" />;
+    }
+
+    // Show Sign in/Sign up buttons when not authenticated
     if (!session) {
+        console.log('[UserMenu] RENDER - showing sign in/up buttons');
+
         return (
             <div className="flex items-center gap-2">
                 <Button variant="ghost" asChild>
@@ -169,6 +203,8 @@ export function UserMenu() {
             </div>
         );
     }
+
+    console.log('[UserMenu] RENDER - showing dropdown menu');
 
     return (
         <DropdownMenu modal={false}>
