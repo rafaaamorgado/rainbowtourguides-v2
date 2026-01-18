@@ -20,8 +20,8 @@ import {
   Star,
   Settings,
   Image as ImageIcon,
+  ExternalLink,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -33,7 +33,9 @@ interface SidebarProps {
     role: string;
   };
   guide: {
+    id: string;
     status: string;
+    slug: string | null;
   } | null;
   pendingBookingsCount: number;
 }
@@ -183,36 +185,77 @@ export function GuideSidebar({
 
             {/* User Info Card */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                {/* Avatar */}
-                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-pride-mint to-pride-amber flex-shrink-0">
-                  {profile.avatar_url ? (
-                    <Image
-                      src={profile.avatar_url}
-                      alt={profile.full_name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white font-semibold text-lg">
-                      {profile.full_name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
+              {guide ? (
+                <Link 
+                  href={`/guides/${guide.slug || guide.id}`}
+                  target="_blank"
+                  className="flex items-center gap-3 hover:bg-slate-50 p-2 -mx-2 rounded-lg transition-colors cursor-pointer group"
+                  title="View public profile"
+                >
+                  {/* Avatar */}
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-pride-mint to-pride-amber flex-shrink-0">
+                    {profile.avatar_url ? (
+                      <Image
+                        src={profile.avatar_url}
+                        alt={profile.full_name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white font-semibold text-lg">
+                        {profile.full_name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
 
-                {/* User Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-ink truncate">
-                    {profile.full_name} {/* ⚠️ full_name, not display_name */}
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="mt-1 text-xs bg-emerald-100 text-emerald-700"
-                  >
-                    Guide
-                  </Badge>
+                  {/* User Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <p className="font-semibold text-ink truncate">
+                        {profile.full_name} {/* ⚠️ full_name, not display_name */}
+                      </p>
+                      <ExternalLink className="h-3 w-3 text-ink-soft opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="mt-1 text-xs bg-emerald-100 text-emerald-700"
+                    >
+                      Guide
+                    </Badge>
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex items-center gap-3">
+                  {/* Avatar */}
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-pride-mint to-pride-amber flex-shrink-0">
+                    {profile.avatar_url ? (
+                      <Image
+                        src={profile.avatar_url}
+                        alt={profile.full_name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white font-semibold text-lg">
+                        {profile.full_name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* User Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-ink truncate">
+                      {profile.full_name} {/* ⚠️ full_name, not display_name */}
+                    </p>
+                    <Badge
+                      variant="secondary"
+                      className="mt-1 text-xs bg-emerald-100 text-emerald-700"
+                    >
+                      Guide
+                    </Badge>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

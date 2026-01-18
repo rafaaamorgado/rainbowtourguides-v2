@@ -112,7 +112,7 @@ export function UserMenu() {
             if (!supabase) return;
 
             console.log('[UserMenu] Loading profile for user:', session.user.id);
-
+        
             const { data, error } = await supabase
                 .from('profiles')
                 .select('id, role, full_name, avatar_url')
@@ -125,9 +125,9 @@ export function UserMenu() {
                 const metadata = session.user.user_metadata || {};
                 setProfile({
                     id: session.user.id,
-                    role: (metadata.role as Profile['role']) || 'traveler',
+            role: (metadata.role as Profile['role']) || 'traveler',
                     full_name: (metadata.full_name as string) || (metadata.name as string) || session.user.email || 'User',
-                    avatar_url: (metadata.avatar_url as string) || (metadata.picture as string) || null,
+            avatar_url: (metadata.avatar_url as string) || (metadata.picture as string) || null,
                 } as Profile);
             } else {
                 console.log('[UserMenu] Profile loaded:', data);

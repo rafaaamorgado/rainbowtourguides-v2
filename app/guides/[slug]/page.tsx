@@ -114,7 +114,12 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
 
   const supabase = await createSupabaseServerClient();
 
-  const { data: guide, error } = await supabase
+  // Try to find guide by slug first, then by ID
+  let guide: GuideRow | null = null;
+  let error: any = null;
+
+  // First attempt: search by slug
+  const { data: guideBySlug, error: slugError } = await supabase
     .from("guides")
     .select(
       `
@@ -145,6 +150,54 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
     )
     .eq("slug", slug)
     .single<GuideRow>();
+
+  if (guideBySlug) {
+    guide = guideBySlug;
+  } else {
+    // Second attempt: search by ID (if slug looks like a UUID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(slug)) {
+      const { data: guideById, error: idError } = await supabase
+        .from("guides")
+        .select(
+          `
+            id,
+            slug,
+            city_id,
+            headline,
+            bio,
+            experience_tags,
+            price_4h,
+            price_6h,
+            price_8h,
+            currency,
+            status,
+            profile:profiles!guides_id_fkey(
+              full_name,
+              avatar_url,
+              languages
+            ),
+            city:cities!guides_city_id_fkey(
+              name,
+              slug,
+              country:countries!cities_country_id_fkey(
+                name
+              )
+            )
+          `
+        )
+        .eq("id", slug)
+        .single<GuideRow>();
+
+      if (guideById) {
+        guide = guideById;
+      } else {
+        error = idError;
+      }
+    } else {
+      error = slugError;
+    }
+  }
 
   if (error || !guide) {
     logError("SELECT", "guides", error);

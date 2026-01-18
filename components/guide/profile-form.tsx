@@ -67,12 +67,12 @@ export function GuideProfileForm({
     city_id: guide.city_id || "",
     tagline: guide.tagline || "",
     about: guide.about || "",
-    themes: guide.themes || [],
+    themes: guide.experience_tags || [],
     languages: guide.languages || [],
-    base_price_4h: guide.base_price_4h || "",
-    base_price_6h: guide.base_price_6h || "",
-    base_price_8h: guide.base_price_8h || "",
-    currency: guide.currency || "USD",
+    base_price_4h: guide.price_4h || "",
+    base_price_6h: guide.price_6h || "",
+    base_price_8h: guide.price_8h || "",
+    currency: guide.currency || "EUR",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,6 +119,8 @@ export function GuideProfileForm({
       const result = await onSubmit(formData);
       if (result.success) {
         setSuccess(true);
+        // Dispatch event to update header
+        window.dispatchEvent(new Event('profile-updated'));
       } else {
         setError(result.error || "Failed to update profile");
       }

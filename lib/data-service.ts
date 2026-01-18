@@ -505,12 +505,12 @@ export async function getGuide(id: string): Promise<Guide | undefined> {
   const { data: reviews } = await supabase
     .from('reviews')
     .select('rating')
-    .eq('subject_id', guideData.id);
+    .eq('guide_id', guideData.id);
 
   logQuery(
     'SELECT',
     'reviews',
-    { subject_id: guideData.id },
+    { guide_id: guideData.id },
     Date.now() - reviewStartTime,
     reviews, // Log reviews data
   );
@@ -603,12 +603,12 @@ export async function searchGuides(query: string): Promise<Guide[]> {
       const { data: reviews } = await supabase
         .from('reviews')
         .select('rating')
-        .eq('subject_id', guide.id);
+        .eq('guide_id', guide.id);
 
       logQuery(
         'SELECT',
         'reviews',
-        { subject_id: guide.id },
+        { guide_id: guide.id },
         Date.now() - reviewStartTime,
         reviews, // Log reviews data
       );
@@ -679,12 +679,12 @@ export async function getTopGuides(limit: number = 10): Promise<Guide[]> {
       const { data: reviews } = await supabase
         .from('reviews')
         .select('rating')
-        .eq('subject_id', guide.id);
+        .eq('guide_id', guide.id);
 
       logQuery(
         'SELECT',
         'reviews',
-        { subject_id: guide.id },
+        { guide_id: guide.id },
         Date.now() - reviewStartTime,
         reviews, // Log reviews data
       );
@@ -940,16 +940,16 @@ export async function updateBookingStatus(
 export async function getReviews(guideId: string): Promise<Review[]> {
   const supabase = await createSupabaseServerClient();
 
-  // Get reviews where subject_id = guideId (the guide being reviewed)
+  // Get reviews where guide_id = guideId (the guide being reviewed)
   const { data: reviews, error } = await supabase
     .from('reviews')
     .select(
       `
       *,
-      author:profiles!reviews_author_id_fkey(full_name)
+      author:profiles!reviews_traveler_id_fkey(full_name)
     `,
     )
-    .eq('subject_id', guideId) // ⚠️ subject_id is the guide
+    .eq('guide_id', guideId) // ⚠️ guide_id is the guide
     .order('created_at', { ascending: false });
 
   if (error || !reviews) {
@@ -957,7 +957,7 @@ export async function getReviews(guideId: string): Promise<Review[]> {
     return [];
   }
 
-  logQuery('SELECT', 'reviews', { subject_id: guideId }, undefined, reviews); // Log reviews data
+  logQuery('SELECT', 'reviews', { guide_id: guideId }, undefined, reviews); // Log reviews data
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (reviews || []).map((review: any) =>
@@ -977,8 +977,8 @@ export async function createReview(data: CreateReviewInput): Promise<Review> {
 
   const reviewInsert = {
     booking_id: data.booking_id,
-    author_id: data.traveler_id, // ⚠️ author_id, not traveler_id
-    subject_id: data.guide_id, // ⚠️ subject_id is the guide being reviewed
+    traveler_id: data.traveler_id,
+    guide_id: data.guide_id,
     rating: data.rating,
     comment: data.comment || null,
   };
@@ -990,7 +990,7 @@ export async function createReview(data: CreateReviewInput): Promise<Review> {
     .select(
       `
       *,
-      author:profiles!reviews_author_id_fkey(full_name)
+      author:profiles!reviews_traveler_id_fkey(full_name)
     `,
     )
     .single();

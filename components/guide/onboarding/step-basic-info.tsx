@@ -41,6 +41,31 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
                 </p>
             </div>
 
+            {/* Profile Photo Section - UI Only */}
+            <div className="space-y-4">
+                <div>
+                    <h3 className="text-base font-medium">Profile Photo</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Your main profile photo visible to travelers
+                    </p>
+                </div>
+                <div className="flex items-center gap-6">
+                    <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-brand to-pink-500 flex-shrink-0">
+                        <div className="w-full h-full flex items-center justify-center text-white font-semibold text-3xl">
+                            {form.watch("display_name")?.charAt(0)?.toUpperCase() || "G"}
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
+                            Photo upload coming soon
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            You'll be able to add photos after completing onboarding
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <FormField
                 control={form.control}
                 name="display_name"
@@ -61,7 +86,7 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Primary City</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select your city" />

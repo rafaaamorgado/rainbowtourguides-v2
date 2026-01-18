@@ -6,6 +6,7 @@ type GuideStatusBadgeProps = {
 };
 
 const statusConfig: Record<GuideStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  draft: { label: "Draft", variant: "outline" },
   pending: { label: "Pending Review", variant: "secondary" },
   approved: { label: "Approved", variant: "default" },
   rejected: { label: "Rejected", variant: "destructive" },
