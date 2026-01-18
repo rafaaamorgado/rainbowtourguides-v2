@@ -125,7 +125,6 @@ export function BookingRequestForm({ guideId, cityId, priceRates }: BookingReque
             router.push("/traveler/dashboard?success=booking_requested");
 
         } catch (error) {
-            console.error(error);
             alert("Failed to submit request."); // Fallback
         } finally {
             setIsSubmitting(false);

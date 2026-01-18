@@ -33,7 +33,6 @@ export async function POST() {
       .select();
 
     if (error) {
-      console.error('[approve-all-guides] Error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -43,7 +42,6 @@ export async function POST() {
       message: `Successfully approved ${data?.length || 0} guides`,
     });
   } catch (error) {
-    console.error('[approve-all-guides] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

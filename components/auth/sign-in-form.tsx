@@ -90,7 +90,6 @@ export function SignInForm() {
     });
 
     if (oauthError) {
-      console.error('Google sign in error:', oauthError.message);
       setError(oauthError.message);
       setIsOAuthLoading(false);
     }

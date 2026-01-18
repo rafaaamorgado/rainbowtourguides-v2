@@ -69,7 +69,6 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
         setUploadError(result.error || 'Failed to upload document');
       }
     } catch (error) {
-      console.error('[Step6IDUpload] Document upload error:', error);
       setUploadError('An unexpected error occurred');
     } finally {
       setIsUploading(false);

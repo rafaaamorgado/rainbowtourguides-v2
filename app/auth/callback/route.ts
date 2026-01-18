@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      console.error('Auth callback error:', error);
       return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=callback_error`);
     }
 
@@ -74,7 +73,7 @@ export async function GET(request: NextRequest) {
           });
 
         if (upsertError) {
-          console.error('Profile upsert error:', upsertError);
+          // Silent error, continue with auth flow
         }
         userRole = role;
       } else if (profile) {
@@ -101,12 +100,10 @@ export async function GET(request: NextRequest) {
             .eq('id', data.user.id);
 
           if (updateError) {
-            console.error('Profile update error:', updateError);
+            // Silent error, continue with auth flow
           }
         }
       }
-
-      console.log('User authenticated, role:', userRole); // Debug log
 
       // Redirect based on role
       if (userRole === 'admin') {

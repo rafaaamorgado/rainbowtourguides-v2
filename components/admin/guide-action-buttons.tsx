@@ -30,7 +30,6 @@ export function AdminGuideAction({ guideId }: { guideId: string }) {
           
           router.refresh();
       } catch (err) {
-          console.error(err);
           alert("Action failed");
       } finally {
           setLoading(false);

@@ -63,7 +63,6 @@ export function ReviewForm({ bookingId, guideId, travelerId, onSuccess }: Review
       if (onSuccess) onSuccess();
 
     } catch (err) {
-      console.error(err);
       alert("Failed to submit review");
     } finally {
       setIsSubmitting(false);

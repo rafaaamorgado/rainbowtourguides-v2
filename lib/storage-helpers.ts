@@ -45,7 +45,6 @@ export async function uploadFile(
       });
 
     if (error) {
-      console.error('[uploadFile] Upload error:', error);
       return {
         success: false,
         error: error.message,
@@ -62,7 +61,6 @@ export async function uploadFile(
       url: urlData.publicUrl,
     };
   } catch (err) {
-    console.error('[uploadFile] Unexpected error:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Upload failed',
@@ -93,7 +91,6 @@ export async function deleteFile(
     const { error } = await supabase.storage.from(bucket).remove([filePath]);
 
     if (error) {
-      console.error('[deleteFile] Delete error:', error);
       return {
         success: false,
         error: error.message,
@@ -102,7 +99,6 @@ export async function deleteFile(
 
     return { success: true };
   } catch (err) {
-    console.error('[deleteFile] Unexpected error:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Delete failed',

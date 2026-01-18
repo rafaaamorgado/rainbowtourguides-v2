@@ -80,7 +80,7 @@ export function ChatWindow({ bookingId, currentUserId, initialMessages = [] }: C
       if (error) throw error;
       setNewMessage('');
     } catch (error) {
-      console.error('Error sending message:', error);
+      // Silent error
     } finally {
       setIsLoading(false);
     }

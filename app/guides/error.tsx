@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { ErrorState } from "@/components/ui/error-state";
 
 export default function GuidesError({
@@ -10,10 +9,6 @@ export default function GuidesError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("Guides page error:", error);
-  }, [error]);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 flex items-center justify-center">
       <ErrorState

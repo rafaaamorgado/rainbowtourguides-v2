@@ -26,7 +26,6 @@ export async function getStoragePublicUrlServer(
     const { data } = supabase.storage.from(bucket).getPublicUrl(urlOrPath);
     return data.publicUrl;
   } catch (error) {
-    console.error('[getStoragePublicUrlServer] Error:', error);
     // Fallback: construct URL manually if client not available
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!supabaseUrl) {

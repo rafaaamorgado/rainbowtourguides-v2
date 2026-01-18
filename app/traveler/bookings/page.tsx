@@ -61,7 +61,6 @@ export default function TravelerBookingsPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching bookings:", error);
       return;
     }
 
@@ -171,7 +170,6 @@ export default function TravelerBookingsPage() {
         });
 
       if (insertError) {
-        console.error("Error creating demo booking:", insertError);
         alert(`Error: ${insertError.message}`);
         setIsCreatingDemo(false);
         return;
@@ -180,7 +178,7 @@ export default function TravelerBookingsPage() {
       // Refresh bookings
       await fetchBookings(userId);
     } catch (err) {
-      console.error("Error creating demo booking:", err);
+      // Silent error
     } finally {
       setIsCreatingDemo(false);
     }
@@ -220,7 +218,7 @@ export default function TravelerBookingsPage() {
       .eq("traveler_id", userId); // Ensure user owns the booking
 
     if (error) {
-      console.error("Error cancelling booking:", error);
+      // Silent error
     } else {
       // Update local state
       setBookings((prev) =>

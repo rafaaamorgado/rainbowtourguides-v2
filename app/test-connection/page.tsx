@@ -269,7 +269,6 @@ export default async function TestConnectionPage() {
     queryStats = getQueryStats();
   } catch (error) {
     // Query logger might not be initialized yet
-    console.warn('Query logger not available:', error);
   }
 
   return (

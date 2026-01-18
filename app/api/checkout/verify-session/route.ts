@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     // Initialize Stripe
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecretKey) {
-      console.error('[verify-session] STRIPE_SECRET_KEY is not set');
       return NextResponse.json(
         { ok: false, error: 'Stripe is not configured' },
         { status: 500 },
@@ -135,17 +134,15 @@ export async function GET(request: NextRequest) {
         cityName,
         date: formattedDate,
         link: `${baseUrl}/traveler/bookings`,
-      }).catch((error) => {
-        console.error('[verify-session] Failed to send email:', error);
+      }).catch(() => {
+        // Silent failure - don't block payment verification
       });
     } catch (error) {
-      console.error('[verify-session] Failed to prepare email data:', error);
       // Don't fail the payment verification if email prep fails
     }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error('[verify-session] Error:', error);
     return NextResponse.json(
       { ok: false, error: 'Failed to verify session' },
       { status: 500 },

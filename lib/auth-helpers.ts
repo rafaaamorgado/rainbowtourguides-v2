@@ -50,21 +50,7 @@ export async function requireUser(): Promise<{
   } = await supabase.auth.getUser();
 
   if (!user) {
-    // redirect("/auth/sign-in");
-    // UNLOCKED FOR DEV: Return mock user
-    console.log("[requireUser] Mocking user for dev");
-    return {
-      supabase,
-      user: { id: "mock-dev-id", email: "dev@example.com" },
-      profile: {
-        id: "mock-dev-id",
-        full_name: "Developer",
-        avatar_url: null,
-        role: "admin", // Default to admin, overwritten by requireRole
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as any,
-    };
+    redirect("/auth/sign-in");
   }
 
   const { data: profile, error } = await supabase
@@ -74,21 +60,7 @@ export async function requireUser(): Promise<{
     .single();
 
   if (error || !profile) {
-    // Mock if auth exists but profile doesn't
-    console.error("[requireUser] Profile not found for user:", user.id);
-    return {
-      supabase,
-      user: { id: user.id, email: user.email },
-      profile: {
-        id: user.id,
-        full_name: "Dev User",
-        avatar_url: null,
-        role: "traveler",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as any,
-    };
-    // redirect("/auth/sign-in");
+    redirect("/auth/sign-in");
   }
 
   return { supabase, user, profile };
@@ -104,11 +76,6 @@ export async function requireRole(requiredRole: ProfileRole): Promise<{
   profile: Profile;
 }> {
   const result = await requireUser();
-
-  // UNLOCKED FOR DEV: If mock user, adapt role to pass check
-  if (result.user.id === "mock-dev-id" && result.profile.role !== requiredRole) {
-    (result.profile as any).role = requiredRole;
-  }
 
   if (result.profile.role !== requiredRole) {
     redirect("/");

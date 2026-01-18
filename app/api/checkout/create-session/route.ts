@@ -97,7 +97,6 @@ export async function POST(request: NextRequest) {
     // Initialize Stripe
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecretKey) {
-      console.error("[create-session] STRIPE_SECRET_KEY is not set");
       return NextResponse.json(
         { error: "Stripe is not configured" },
         { status: 500 }
@@ -147,7 +146,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("[create-session] Error:", error);
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }

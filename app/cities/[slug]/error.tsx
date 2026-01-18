@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { ErrorState } from "@/components/ui/error-state";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,10 +11,6 @@ export default function CityDetailError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("City detail page error:", error);
-  }, [error]);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 flex items-center justify-center">
       <div className="text-center space-y-6 p-6">

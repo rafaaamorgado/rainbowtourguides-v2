@@ -37,7 +37,6 @@ export function ApproveAllGuidesButton({ count }: { count: number }) {
       alert(`✅ Successfully approved ${data.count} guides!`);
       router.refresh();
     } catch (error) {
-      console.error('[ApproveAllGuidesButton] Error:', error);
       alert(
         `❌ Failed to approve guides: ${error instanceof Error ? error.message : 'Unknown error'}`
       );

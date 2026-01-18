@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { ErrorState } from "@/components/ui/error-state";
 
 export default function GuideDashboardError({
@@ -10,10 +9,6 @@ export default function GuideDashboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("Guide dashboard error:", error);
-  }, [error]);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 flex items-center justify-center">
       <ErrorState

@@ -31,7 +31,6 @@ export async function updateGuideProfile(
       .eq("id", user.id);
 
     if (profileError) {
-      console.error("[updateGuideProfile] Profile update error:", profileError);
       return { success: false, error: "Failed to update profile" };
     }
 
@@ -60,7 +59,6 @@ export async function updateGuideProfile(
       .eq("id", user.id);
 
     if (guideError) {
-      console.error("[updateGuideProfile] Guide update error:", guideError);
       return { success: false, error: "Failed to update guide details" };
     }
 
@@ -75,7 +73,6 @@ export async function updateGuideProfile(
 
     return { success: true };
   } catch (error) {
-    console.error("[updateGuideProfile] Unexpected error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }

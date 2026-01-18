@@ -5,13 +5,6 @@ import { updateTravelerProfile } from "./actions";
 export default async function TravelerProfilePage() {
   const { supabase, user, profile } = await requireRole("traveler");
 
-  // Fetch traveler-specific data
-  const { data: traveler } = await supabase
-    .from("travelers")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
   // Fetch countries for dropdown
   const { data: countries } = await supabase
     .from("countries")
@@ -27,7 +20,6 @@ export default async function TravelerProfilePage() {
       <div className="bg-white rounded-2xl border border-slate-200 p-8">
         <TravelerProfileForm
           profile={profile}
-          traveler={traveler}
           countries={countries || []}
           onSubmit={updateTravelerProfile}
         />

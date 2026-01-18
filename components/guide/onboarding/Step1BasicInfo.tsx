@@ -53,7 +53,6 @@ export function Step1BasicInfo({ data, cities, onChange }: Step1BasicInfoProps) 
         setUploadError(result.error || "Failed to upload photo");
       }
     } catch (error) {
-      console.error("[Step1BasicInfo] Photo upload error:", error);
       setUploadError("An unexpected error occurred");
     } finally {
       setIsUploading(false);

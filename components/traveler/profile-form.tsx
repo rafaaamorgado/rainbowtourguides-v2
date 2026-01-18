@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,35 +14,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AvatarUpload } from "@/components/ui/avatar-upload";
-import { uploadAvatar, uploadTravelerPhoto } from "@/lib/storage-helpers";
-import { TRAVELER_INTERESTS } from "@/lib/constants/profile-options";
-import { Loader2, Plus, X, Star } from "lucide-react";
+import { Loader2, Star, X } from "lucide-react";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Traveler = Database["public"]["Tables"]["travelers"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
 
 interface TravelerProfileFormProps {
   profile: Profile;
-  traveler: Traveler | null;
   countries: Country[];
   onSubmit: (data: TravelerProfileFormData) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface TravelerProfileFormData {
   full_name: string;
-  avatar_url: string | null;
+  avatar_url?: string | null;
   bio: string | null;
-  home_country: string | null;
-  interests: string[];
-  photo_urls: string[];
+  pronouns: string | null;
+  country_of_origin: string | null;
+  languages: string[];
+  photo_urls?: string[];
 }
 
 export function TravelerProfileForm({
   profile,
-  traveler,
   countries,
   onSubmit,
 }: TravelerProfileFormProps) {
@@ -50,27 +45,15 @@ export function TravelerProfileForm({
     full_name: profile.full_name || "",
     avatar_url: profile.avatar_url,
     bio: profile.bio || "",
-    home_country: traveler?.home_country || "",
-    interests: traveler?.interests || [],
-    photo_urls: traveler?.photo_urls || [],
+    pronouns: profile.pronouns || "",
+    country_of_origin: profile.country_of_origin || "",
+    languages: profile.languages || [],
+    photo_urls: [], // Empty for now, will be populated from DB later
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const photoInputRef = useRef<HTMLInputElement>(null);
-
-  const handleAvatarUpload = useCallback(
-    async (file: File) => {
-      return uploadAvatar(profile.id, file);
-    },
-    [profile.id]
-  );
-
-  const handleAvatarChange = (url: string | null) => {
-    setFormData((prev) => ({ ...prev, avatar_url: url }));
-  };
 
   const handleChange = (field: keyof TravelerProfileFormData, value: string | string[] | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -78,49 +61,17 @@ export function TravelerProfileForm({
     setSuccess(false);
   };
 
-  const handleInterestToggle = (interest: string) => {
+  const handleLanguageToggle = (language: string) => {
     setFormData((prev) => {
-      const currentInterests = prev.interests || [];
-      const newInterests = currentInterests.includes(interest)
-        ? currentInterests.filter((i) => i !== interest)
-        : [...currentInterests, interest];
-      return { ...prev, interests: newInterests };
+      const currentLanguages = prev.languages || [];
+      const newLanguages = currentLanguages.includes(language)
+        ? currentLanguages.filter((l) => l !== language)
+        : [...currentLanguages, language];
+      return { ...prev, languages: newLanguages };
     });
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const currentPhotos = formData.photo_urls || [];
-    if (currentPhotos.length >= 4) {
-      setError("You can upload a maximum of 4 photos");
-      return;
-    }
-
-    setUploadingPhoto(true);
-    setError(null);
-
-    try {
-      const result = await uploadTravelerPhoto(profile.id, file, currentPhotos.length);
-      if (result.success && result.url) {
-        setFormData((prev) => ({
-          ...prev,
-          photo_urls: [...(prev.photo_urls || []), result.url!],
-        }));
-      } else {
-        setError(result.error || "Failed to upload photo");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to upload photo");
-    } finally {
-      setUploadingPhoto(false);
-      if (photoInputRef.current) {
-        photoInputRef.current.value = "";
-      }
-    }
-  };
-
+  // Photo management handlers (not connected yet)
   const handleRemovePhoto = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -137,18 +88,30 @@ export function TravelerProfileForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🟢 [ProfileForm] Submitting form with data:", formData);
+    
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
 
     try {
+      console.log("🟢 [ProfileForm] Calling onSubmit...");
       const result = await onSubmit(formData);
+      console.log("🟢 [ProfileForm] onSubmit result:", result);
+      
       if (result.success) {
         setSuccess(true);
+        console.log("✅ [ProfileForm] Profile updated successfully!");
+        
+        // Dispatch custom event to update UserMenu
+        window.dispatchEvent(new Event('profile-updated'));
+        console.log("🔄 [ProfileForm] Dispatched profile-updated event");
       } else {
         setError(result.error || "Failed to update profile");
+        console.error("❌ [ProfileForm] Update failed:", result.error);
       }
     } catch (err) {
+      console.error("❌ [ProfileForm] Exception:", err);
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
@@ -177,12 +140,27 @@ export function TravelerProfileForm({
             This is your main profile photo visible to guides.
           </p>
         </div>
-        <AvatarUpload
-          value={formData.avatar_url}
-          onChange={handleAvatarChange}
-          onUpload={handleAvatarUpload}
-          size="lg"
-        />
+        <div className="flex items-center gap-6">
+          <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-pride-lilac to-pride-mint flex-shrink-0">
+            {formData.avatar_url ? (
+              <Image
+                src={formData.avatar_url}
+                alt={formData.full_name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white font-semibold text-3xl">
+                {formData.full_name.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Photo upload coming soon
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Additional Photos Section */}
@@ -237,28 +215,11 @@ export function TravelerProfileForm({
           ))}
 
           {(formData.photo_urls || []).length < 4 && (
-            <label
-              className={`aspect-square rounded-lg border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:border-brand hover:bg-brand/5 transition-colors ${
-                uploadingPhoto ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              <input
-                ref={photoInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                disabled={uploadingPhoto}
-                className="sr-only"
-              />
-              {uploadingPhoto ? (
-                <Loader2 className="h-8 w-8 text-slate-400 animate-spin" />
-              ) : (
-                <>
-                  <Plus className="h-8 w-8 text-slate-400" />
-                  <span className="text-xs text-slate-500 mt-2">Add Photo</span>
-                </>
-              )}
-            </label>
+            <div className="aspect-square rounded-lg border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50">
+              <p className="text-xs text-slate-400 text-center px-4">
+                Photo upload<br />coming soon
+              </p>
+            </div>
           )}
         </div>
 
@@ -304,12 +265,22 @@ export function TravelerProfileForm({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="home_country">Home Country</Label>
+            <Label htmlFor="pronouns">Pronouns</Label>
+            <Input
+              id="pronouns"
+              value={formData.pronouns || ""}
+              onChange={(e) => handleChange("pronouns", e.target.value)}
+              placeholder="e.g., he/him, she/her, they/them"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="country_of_origin">Country of Origin</Label>
             <Select
-              value={formData.home_country || ""}
-              onValueChange={(value) => handleChange("home_country", value)}
+              value={formData.country_of_origin || ""}
+              onValueChange={(value) => handleChange("country_of_origin", value)}
             >
-              <SelectTrigger id="home_country">
+              <SelectTrigger id="country_of_origin">
                 <SelectValue placeholder="Select your country" />
               </SelectTrigger>
               <SelectContent>
@@ -324,26 +295,26 @@ export function TravelerProfileForm({
         </div>
       </div>
 
-      {/* Interests Section */}
+      {/* Languages Section */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-medium">Travel Interests</h3>
+          <h3 className="text-lg font-medium">Languages</h3>
           <p className="text-sm text-muted-foreground">
-            Select the types of experiences you enjoy. This helps guides personalize your tour.
+            Select the languages you speak. This helps guides communicate with you better.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {TRAVELER_INTERESTS.map((interest) => (
+          {["English", "Spanish", "French", "German", "Italian", "Portuguese", "Russian", "Chinese", "Japanese", "Korean"].map((language) => (
             <label
-              key={interest}
+              key={language}
               className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg border hover:bg-accent/50 transition-colors"
             >
               <Checkbox
-                checked={(formData.interests || []).includes(interest)}
-                onCheckedChange={() => handleInterestToggle(interest)}
+                checked={(formData.languages || []).includes(language)}
+                onCheckedChange={() => handleLanguageToggle(language)}
               />
-              <span className="text-sm font-medium">{interest}</span>
+              <span className="text-sm font-medium">{language}</span>
             </label>
           ))}
         </div>

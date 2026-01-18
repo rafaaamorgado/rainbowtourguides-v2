@@ -57,11 +57,6 @@ async function getSupabaseClientWithDebug(
     hasAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
   };
 
-  console.log(
-    `[${caller}] Supabase env check`,
-    JSON.stringify(debug),
-  );
-
   if (!debug.hasUrl || !debug.hasAnonKey) {
     return {
       debug,
@@ -73,7 +68,6 @@ async function getSupabaseClientWithDebug(
     const client = await createSupabaseServerClient();
     return { client, debug };
   } catch (err) {
-    console.error(`[${caller}] Failed to create Supabase client`, err);
     return {
       debug,
       error:
@@ -182,11 +176,6 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
 
   if (citiesError || !cities) {
     logError('SELECT', 'cities', citiesError);
-    console.error('[getCities] Supabase error', {
-      message: citiesError?.message,
-      details: citiesError,
-      status: citiesStatus,
-    });
     return { data: [], error: citiesError?.message, debug };
   }
 
@@ -206,16 +195,10 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
       g.status === 'approved' || g.approved === true
     );
 
-    // Debug logging
-    console.log(`[getCities] City: ${city.name}`, {
+    // Database data: guides fetched from DB
+    console.log(`[getCities] City: ${city.name} - DB data:`, {
       totalGuidesFromDB: allGuides.length,
       approvedCount: approvedGuides.length,
-      guides: allGuides.map((g: any) => ({ 
-        id: g.id?.substring(0, 8), 
-        status: g.status,
-        approved: g.approved 
-      })),
-      country: city.country,
     });
 
     const adapted = adaptCityFromDB(
@@ -224,25 +207,11 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
       approvedGuides.length,
     );
 
-    console.log(`[getCities] Adapted city ${city.name}:`, {
-      guide_count: adapted.guide_count,
-      country_name: adapted.country_name,
-    });
-
     return adapted;
   });
 
   // Filter out cities with no guides (as per requirement)
   const citiesWithGuides = citiesWithCounts.filter(city => city.guide_count > 0);
-
-  console.log(
-    '[getCities] Summary:',
-    {
-      totalCities: citiesWithCounts.length,
-      citiesWithGuides: citiesWithGuides.length,
-      cities: citiesWithGuides.map(c => ({ name: c.name, guide_count: c.guide_count }))
-    }
-  );
 
   return { data: citiesWithGuides, debug: { ...debug, rows: citiesWithGuides.length } };
 }
@@ -456,11 +425,6 @@ export async function getGuidesWithMeta(
 
   if (error || !guides) {
     logError('SELECT', 'guides', error);
-    console.error('[getGuides] Supabase error', {
-      message: error?.message,
-      details: error,
-      status,
-    });
     return { data: [], error: error?.message, debug };
   }
 
@@ -492,8 +456,6 @@ export async function getGuidesWithMeta(
         reviewCount,
       );
     }) ?? [];
-
-  console.log('[getGuides] Row count', guidesWithStats.length);
 
   // NOTE: Profile data fetch disabled due to RLS infinite recursion
   // Guide names are extracted from slug as temporary workaround

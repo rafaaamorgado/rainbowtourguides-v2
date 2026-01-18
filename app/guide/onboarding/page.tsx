@@ -110,7 +110,6 @@ export default function GuideOnboardingPage() {
       router.push('/guide/dashboard');
 
     } catch (err: any) {
-      console.error(err);
       setError(err.message || "Failed to submit application");
     } finally {
       setIsSubmitting(false);

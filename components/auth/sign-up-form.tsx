@@ -97,7 +97,6 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
     });
 
     if (oauthError) {
-      console.error('Google sign up error:', oauthError.message);
       setError(oauthError.message);
       setIsOAuthLoading(false);
     }

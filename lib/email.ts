@@ -31,7 +31,6 @@ async function getUserEmail(userId: string): Promise<string | null> {
     }
     return data.user.email;
   } catch (error) {
-    console.error("[getUserEmail] Failed to get user email:", error);
     return null;
   }
 }
@@ -45,11 +44,6 @@ function getResendClient(): Resend | null {
   const emailFrom = process.env.EMAIL_FROM;
 
   if (!apiKey || !emailFrom) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(
-        "[email] Resend not configured. Set RESEND_API_KEY and EMAIL_FROM in .env.local to enable emails."
-      );
-    }
     return null;
   }
 
@@ -85,7 +79,6 @@ export async function sendBookingRequestEmail({
   }
 
   if (!email) {
-    console.warn("[sendBookingRequestEmail] No email available for guide, skipping email");
     return;
   }
   const client = getResendClient();
@@ -116,7 +109,6 @@ export async function sendBookingRequestEmail({
     });
   } catch (error) {
     // Don't break the main flow if email fails
-    console.error("[sendBookingRequestEmail] Failed to send email:", error);
   }
 }
 
@@ -146,7 +138,6 @@ export async function sendBookingStatusEmail({
   }
 
   if (!email) {
-    console.warn("[sendBookingStatusEmail] No email available for traveler, skipping email");
     return;
   }
   const client = getResendClient();
@@ -182,7 +173,6 @@ export async function sendBookingStatusEmail({
     });
   } catch (error) {
     // Don't break the main flow if email fails
-    console.error("[sendBookingStatusEmail] Failed to send email:", error);
   }
 }
 
@@ -250,7 +240,7 @@ export async function sendBookingPaidEmail({
       `,
       });
     } catch (error) {
-      console.error("[sendBookingPaidEmail] Failed to send email to traveler:", error);
+      // Don't break the main flow if email fails
     }
   }
 
@@ -272,7 +262,7 @@ export async function sendBookingPaidEmail({
       `,
       });
     } catch (error) {
-      console.error("[sendBookingPaidEmail] Failed to send email to guide:", error);
+      // Don't break the main flow if email fails
     }
   }
 }

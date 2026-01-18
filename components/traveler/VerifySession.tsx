@@ -28,7 +28,6 @@ export function VerifySession({ sessionId }: VerifySessionProps) {
           setStatus("error");
         }
       } catch (error) {
-        console.error("[VerifySession] Error:", error);
         setStatus("error");
       }
     };
