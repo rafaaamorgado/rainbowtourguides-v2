@@ -49,12 +49,12 @@ export async function updateGuideProfile(
         city_id: data.city_id,
         tagline: data.tagline?.trim() || null,
         about: data.about?.trim() || null,
-        themes: data.themes.length > 0 ? data.themes : null,
+        experience_tags: data.themes.length > 0 ? data.themes : null,
         languages: data.languages.length > 0 ? data.languages : null,
-        base_price_4h: data.base_price_4h || null,
-        base_price_6h: data.base_price_6h || null,
-        base_price_8h: data.base_price_8h || null,
-        currency: data.currency || "USD",
+        price_4h: data.base_price_4h || null,
+        price_6h: data.base_price_6h || null,
+        price_8h: data.base_price_8h || null,
+        currency: data.currency || "EUR",
       })
       .eq("id", user.id);
 

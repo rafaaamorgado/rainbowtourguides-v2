@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +15,7 @@ import { StepRates } from "@/components/guide/onboarding/step-rates";
 import { StepAvailability } from "@/components/guide/onboarding/step-availability";
 import { StepVerification } from "@/components/guide/onboarding/step-verification";
 import { Progress } from "@/components/ui/progress";
+import { Loader2 } from "lucide-react";
 
 const STEPS = [
   "Basics",
@@ -29,23 +30,171 @@ export default function GuideOnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [guideExists, setGuideExists] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const form = useForm<GuideOnboardingData>({
     resolver: zodResolver(guideOnboardingSchema),
     defaultValues: {
+      display_name: "",
+      city_id: "",
+      bio: "",
       lgbtq_alignment: {
         affirms_identity: false,
         agrees_conduct: false,
         no_sexual_services: false,
+        why_guiding: "",
+        expectations: "",
       },
       specialties: [],
       languages: ["English"],
-      available_days: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      headline: "",
+      about: "",
+      base_price_4h: 0,
+      base_price_6h: 0,
+      base_price_8h: 0,
       currency: "USD",
+      available_days: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      typical_start_time: "09:00",
+      typical_end_time: "18:00",
     },
     mode: "onChange", // Validate on change to enable Next button check
   });
+
+  // Load existing draft on mount
+  useEffect(() => {
+    async function loadDraft() {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      setUserId(user.id);
+
+      console.log("📄 [Onboarding] Loading user data for:", user.id);
+
+      // Load profile data
+      const { data: profile, error: profileError } = await (supabase as any)
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error("❌ [Onboarding] Profile load error:", profileError);
+      }
+
+      // Check if guide record exists (draft)
+      const { data: guide, error: guideError } = await (supabase as any)
+        .from('guides')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (!guideError && guide) {
+        console.log("📄 [Onboarding] Loading existing draft:", guide);
+        setGuideExists(true);
+
+        // Populate form with existing data
+        form.reset({
+          display_name: profile?.full_name || user.email || "",
+          city_id: guide.city_id || "",
+          bio: guide.bio || "",
+          lgbtq_alignment: guide.lgbtq_alignment || {
+            affirms_identity: false,
+            agrees_conduct: false,
+            no_sexual_services: false,
+            why_guiding: "",
+            expectations: "",
+          },
+          specialties: guide.experience_tags || [],
+          languages: guide.languages || ["English"],
+          headline: guide.tagline || "",
+          about: guide.about || "",
+          base_price_4h: parseFloat(guide.price_4h || "0"),
+          base_price_6h: parseFloat(guide.price_6h || "0"),
+          base_price_8h: parseFloat(guide.price_8h || "0"),
+          currency: guide.currency || "EUR",
+          available_days: guide.available_days || ["monday", "tuesday", "wednesday", "thursday", "friday"],
+          typical_start_time: guide.typical_start_time || "09:00",
+          typical_end_time: guide.typical_end_time || "18:00",
+        });
+        console.log("✅ [Onboarding] Form populated with existing data");
+      } else {
+        // No guide record yet, just set display name from profile
+        console.log("📄 [Onboarding] No existing draft, starting fresh");
+        if (profile?.full_name) {
+          form.setValue('display_name', profile.full_name);
+        }
+      }
+    }
+
+    loadDraft();
+  }, [form]);
+
+  // Auto-save current step data
+  const saveCurrentStep = async () => {
+    if (!userId) return;
+
+    setIsSaving(true);
+    const data = form.getValues();
+
+    console.log("💾 [Onboarding] Auto-saving step", currentStep, data);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) throw new Error("Supabase client not initialized");
+
+      const guideData = {
+        city_id: data.city_id || null,
+        tagline: data.headline || null,
+        bio: data.bio || null,
+        about: data.about || null,
+        experience_tags: data.specialties || [],
+        languages: data.languages || [],
+        price_4h: data.base_price_4h?.toString() || null,
+        price_6h: data.base_price_6h?.toString() || null,
+        price_8h: data.base_price_8h?.toString() || null,
+        currency: data.currency || "EUR",
+        available_days: data.available_days || [],
+        typical_start_time: data.typical_start_time || null,
+        typical_end_time: data.typical_end_time || null,
+        lgbtq_alignment: data.lgbtq_alignment || null,
+        status: 'draft', // Save as draft until final submission
+        approved: false,
+      };
+
+      if (guideExists) {
+        // Update existing record
+        console.log("💾 [Onboarding] Updating existing guide...");
+        const { error } = await (supabase as any)
+          .from('guides')
+          .update(guideData)
+          .eq('id', userId);
+
+        if (error) throw error;
+      } else {
+        // Create new record
+        console.log("💾 [Onboarding] Creating new guide...");
+        const { error } = await (supabase as any)
+          .from('guides')
+          .insert({ id: userId, ...guideData });
+
+        if (error) throw error;
+        setGuideExists(true);
+      }
+
+      console.log("✅ [Onboarding] Auto-save successful");
+    } catch (err: any) {
+      console.error("❌ [Onboarding] Auto-save error:", err);
+      // Don't block progression on save error
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const nextStep = async () => {
     // Validate fields for current step before moving
@@ -61,6 +210,9 @@ export default function GuideOnboardingPage() {
 
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) {
+      // Auto-save before moving to next step
+      await saveCurrentStep();
+      
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
       window.scrollTo(0, 0);
     }
@@ -75,41 +227,63 @@ export default function GuideOnboardingPage() {
     setIsSubmitting(true);
     setError(null);
 
+    console.log("🟢 [Onboarding] Final submission with data:", data);
+
     try {
       const supabase = createSupabaseBrowserClient();
       if (!supabase) throw new Error("Supabase client failed to initialize");
+      
       const { data: { user } } = await supabase.auth.getUser();
-
       if (!user) throw new Error("Not authenticated");
 
-      // 1. Create guide record
-      const { error: guideError } = await supabase.from('guides').insert({
-        id: user.id,
-        city_id: data.city_id,
-        tagline: data.headline, // mapping headline -> tagline
-        bio: data.bio, // mapping bio -> bio
-        about: data.about, // mapping about -> about
-        specialties: data.specialties, // Wait, schema needs to support specialties? Need to check schema.
-        // Schema check: "themes" text[] exists. "specialties" might map to "themes"
-        themes: data.specialties,
-        languages: data.languages,
-        base_price_4h: data.base_price_4h,
-        base_price_6h: data.base_price_6h,
-        base_price_8h: data.base_price_8h,
-        currency: data.currency,
-        available_days: data.available_days,
-        typical_start_time: data.typical_start_time,
-        typical_end_time: data.typical_end_time,
-        lgbtq_alignment: data.lgbtq_alignment,
-        status: 'pending', // Pending admin approval
-      } as any);
+      console.log("🟢 [Onboarding] User ID:", user.id);
 
-      if (guideError) throw guideError;
+      // Save final data one more time
+      await saveCurrentStep();
 
-      // 2. Redirect to dashboard
+      // Update status from 'draft' to 'pending' (ready for admin review)
+      console.log("🟢 [Onboarding] Submitting for review...");
+      
+      const { error: statusError } = await (supabase as any)
+        .from('guides')
+        .update({ 
+          status: 'pending',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (statusError) {
+        console.error("❌ [Onboarding] Status update error:", statusError);
+        throw statusError;
+      }
+
+      // Update profile display name if provided
+      if (data.display_name && data.display_name !== user.email) {
+        console.log("🟢 [Onboarding] Updating profile full_name to:", data.display_name);
+        
+        const { error: profileError } = await (supabase as any)
+          .from('profiles')
+          .update({ full_name: data.display_name })
+          .eq('id', user.id);
+
+        if (profileError) {
+          console.warn("⚠️ [Onboarding] Profile update warning:", profileError);
+        }
+      }
+
+      console.log("✅ [Onboarding] Application submitted for review!");
+      
+      // Dispatch event to update UserMenu
+      window.dispatchEvent(new Event('profile-updated'));
+      
+      // Small delay to ensure DB commit
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       router.push('/guide/dashboard');
+      router.refresh();
 
     } catch (err: any) {
+      console.error("❌ [Onboarding] Error:", err);
       setError(err.message || "Failed to submit application");
     } finally {
       setIsSubmitting(false);
@@ -119,11 +293,24 @@ export default function GuideOnboardingPage() {
   return (
     <div className="container max-w-2xl mx-auto py-12 px-4">
       <div className="mb-8 space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight">Become a Guide</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">Become a Guide</h1>
+          {isSaving && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </div>
+          )}
+        </div>
         <Progress value={((currentStep + 1) / STEPS.length) * 100} className="h-2" />
         <div className="text-sm text-muted-foreground text-right">
           Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep]}
         </div>
+        {guideExists && (
+          <div className="text-xs text-emerald-600 text-right">
+            ✓ Draft saved automatically
+          </div>
+        )}
       </div>
 
       <Form {...form}>
@@ -147,18 +334,32 @@ export default function GuideOnboardingPage() {
               type="button"
               variant="outline"
               onClick={prevStep}
-              disabled={currentStep === 0 || isSubmitting}
+              disabled={currentStep === 0 || isSubmitting || isSaving}
             >
               Back
             </Button>
 
             {currentStep < STEPS.length - 1 ? (
-              <Button type="button" onClick={nextStep}>
-                Next Step
+              <Button type="button" onClick={nextStep} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Next Step"
+                )}
               </Button>
             ) : (
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Submit Application"}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit for Review"
+                )}
               </Button>
             )}
           </div>

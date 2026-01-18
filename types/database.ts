@@ -1,5 +1,5 @@
 export type ProfileRole = "traveler" | "guide" | "admin";
-export type GuideStatus = "pending" | "approved" | "rejected";
+export type GuideStatus = "draft" | "pending" | "approved" | "rejected";
 export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled" | "accepted" | "declined" | "paid";
 
 type CountriesTable = {
@@ -114,10 +114,16 @@ type GuidesTable = {
     about: string | null;
     languages: string[] | null;
     themes: string[] | null;
+    experience_tags: string[] | null;
+    available_days: string[] | null;
+    typical_start_time: string | null;
+    typical_end_time: string | null;
+    lgbtq_alignment: Record<string, any> | null;
     is_verified: boolean;
-    base_price_4h: string | null;
-    base_price_6h: string | null;
-    base_price_8h: string | null;
+    approved: boolean;
+    price_4h: string | null;
+    price_6h: string | null;
+    price_8h: string | null;
     hourly_rate: string | null;
     currency: string | null;
     status: GuideStatus;
@@ -134,10 +140,16 @@ type GuidesTable = {
     about?: string | null;
     languages?: string[] | null;
     themes?: string[] | null;
+    experience_tags?: string[] | null;
+    available_days?: string[] | null;
+    typical_start_time?: string | null;
+    typical_end_time?: string | null;
+    lgbtq_alignment?: Record<string, any> | null;
     is_verified?: boolean;
-    base_price_4h?: string | null;
-    base_price_6h?: string | null;
-    base_price_8h?: string | null;
+    approved?: boolean;
+    price_4h?: string | null;
+    price_6h?: string | null;
+    price_8h?: string | null;
     hourly_rate?: string | null;
     currency?: string | null;
     status?: GuideStatus;

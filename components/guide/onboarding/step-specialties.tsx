@@ -9,6 +9,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -51,83 +52,75 @@ export function StepSpecialties({ form }: StepSpecialtiesProps) {
                 </p>
             </div>
 
-            <div className="space-y-4">
-                <FormLabel>Specialties</FormLabel>
-                <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                        control={form.control}
-                        name="specialties"
-                        render={({ field }) => {
-                            return (
-                                <>
-                                    {SPECIALTIES_OPTIONS.map((item) => (
-                                        <FormItem
-                                            key={item}
-                                            className="flex flex-row items-center space-x-2 space-y-0"
-                                        >
-                                            <FormControl>
-                                                <Checkbox
-                                                    checked={field.value?.includes(item)}
-                                                    onCheckedChange={(checked) => {
-                                                        return checked
-                                                            ? field.onChange([...(field.value || []), item])
-                                                            : field.onChange(
-                                                                field.value?.filter((value) => value !== item)
-                                                            );
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <FormLabel className="font-normal cursor-pointer">
-                                                {item}
-                                            </FormLabel>
-                                        </FormItem>
-                                    ))}
-                                    <FormMessage />
-                                </>
-                            );
-                        }}
-                    />
-                </div>
-            </div>
+            <FormField
+                control={form.control}
+                name="specialties"
+                render={({ field }) => (
+                    <FormItem>
+                        <Label className="text-sm font-medium">Specialties</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                            {SPECIALTIES_OPTIONS.map((item) => (
+                                <div
+                                    key={item}
+                                    className="flex flex-row items-center space-x-2 space-y-0"
+                                >
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value?.includes(item)}
+                                            onCheckedChange={(checked) => {
+                                                return checked
+                                                    ? field.onChange([...(field.value || []), item])
+                                                    : field.onChange(
+                                                        field.value?.filter((value) => value !== item)
+                                                    );
+                                            }}
+                                        />
+                                    </FormControl>
+                                    <Label className="font-normal cursor-pointer">
+                                        {item}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
-            <div className="space-y-4 pt-4">
-                <FormLabel>Languages</FormLabel>
-                <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                        control={form.control}
-                        name="languages"
-                        render={({ field }) => {
-                            return (
-                                <>
-                                    {LANGUAGE_OPTIONS.map((item) => (
-                                        <FormItem
-                                            key={item}
-                                            className="flex flex-row items-center space-x-2 space-y-0"
-                                        >
-                                            <FormControl>
-                                                <Checkbox
-                                                    checked={field.value?.includes(item)}
-                                                    onCheckedChange={(checked) => {
-                                                        return checked
-                                                            ? field.onChange([...(field.value || []), item])
-                                                            : field.onChange(
-                                                                field.value?.filter((value) => value !== item)
-                                                            );
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <FormLabel className="font-normal cursor-pointer">
-                                                {item}
-                                            </FormLabel>
-                                        </FormItem>
-                                    ))}
-                                    <FormMessage />
-                                </>
-                            );
-                        }}
-                    />
-                </div>
-            </div>
+            <FormField
+                control={form.control}
+                name="languages"
+                render={({ field }) => (
+                    <FormItem className="pt-4">
+                        <Label className="text-sm font-medium">Languages</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                            {LANGUAGE_OPTIONS.map((item) => (
+                                <div
+                                    key={item}
+                                    className="flex flex-row items-center space-x-2 space-y-0"
+                                >
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value?.includes(item)}
+                                            onCheckedChange={(checked) => {
+                                                return checked
+                                                    ? field.onChange([...(field.value || []), item])
+                                                    : field.onChange(
+                                                        field.value?.filter((value) => value !== item)
+                                                    );
+                                            }}
+                                        />
+                                    </FormControl>
+                                    <Label className="font-normal cursor-pointer">
+                                        {item}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
             <FormField
                 control={form.control}
