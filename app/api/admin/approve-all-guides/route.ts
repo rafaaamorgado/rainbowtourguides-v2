@@ -20,13 +20,14 @@ export async function POST() {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'admin') {
+    if ((profile as { role: string } | null)?.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Update all pending guides to approved
     const { data, error } = await supabase
       .from('guides')
+      // @ts-expect-error - Type inference issue
       .update({ status: 'approved' })
       .eq('status', 'pending')
       .select();
