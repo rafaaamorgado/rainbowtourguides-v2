@@ -172,7 +172,7 @@ export function UserMenu() {
             <DropdownMenuTrigger asChild>
                 <button
                     type="button"
-                    className="relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:opacity-80"
+                    className="relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:opacity-80 cursor-pointer"
                     aria-label="User menu"
                 >
                     <Avatar className="h-9 w-9">
@@ -183,7 +183,7 @@ export function UserMenu() {
                     </Avatar>
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56 z-[100]" align="end" forceMount sideOffset={8}>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">{displayName}</p>
