@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Calendar, Users, Search as SearchIcon } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { City } from "@/lib/mock-data";
 
 interface HeroSearchProps {
@@ -26,7 +25,8 @@ export function HeroSearch({ cities }: HeroSearchProps) {
     label: `${city.name}, ${city.country_name}`,
   }));
 
-  const handleSearch = () => {
+  const handleSearch = (e?: FormEvent) => {
+    e?.preventDefault();
     setError("");
 
     // Validation: at least city must be selected
@@ -48,59 +48,71 @@ export function HeroSearch({ cities }: HeroSearchProps) {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
-      <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl border border-white/40 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {/* City Autocomplete */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1">
-              Where?
+    <form onSubmit={handleSearch} className="w-full">
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr,1fr,1fr,0.8fr,auto] gap-4 lg:gap-5 items-end">
+          {/* City Autocomplete - Where to */}
+          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+            <label htmlFor="city-search" className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
+              Where to
             </label>
             <Combobox
               options={cityOptions}
               value={selectedCity}
               onChange={setSelectedCity}
-              placeholder="Select city..."
+              placeholder="Search destinations..."
               icon={<MapPin className="h-4 w-4" />}
             />
           </div>
 
-          {/* Date Range */}
-          <div className="space-y-1 md:col-span-2">
-            <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1">
-              When?
+          {/* Start Date */}
+          <div className="space-y-2">
+            <label htmlFor="start-date" className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
+              Start date
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               <Input
+                id="start-date"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 min={new Date().toISOString().split("T")[0]}
-                className="h-12 rounded-xl text-sm"
-                placeholder="Start"
+                className="h-12 rounded-xl text-sm pl-10 bg-white border-slate-200 focus:border-brand focus:ring-brand"
               />
+            </div>
+          </div>
+
+          {/* End Date */}
+          <div className="space-y-2">
+            <label htmlFor="end-date" className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
+              End date
+            </label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               <Input
+                id="end-date"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate || new Date().toISOString().split("T")[0]}
-                className="h-12 rounded-xl text-sm"
-                placeholder="End"
+                className="h-12 rounded-xl text-sm pl-10 bg-white border-slate-200 focus:border-brand focus:ring-brand"
               />
             </div>
           </div>
 
           {/* Travelers */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1">
+          <div className="space-y-2">
+            <label htmlFor="travelers" className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
               Travelers
             </label>
             <div className="relative">
-              <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none z-10" />
+              <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none z-10" />
               <select
+                id="travelers"
                 value={travelers}
                 onChange={(e) => setTravelers(e.target.value)}
-                className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-transparent px-3 py-2 pl-10 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 pl-10 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer"
               >
                 <option value="1">1 Traveler</option>
                 <option value="2">2 Travelers</option>
@@ -111,43 +123,32 @@ export function HeroSearch({ cities }: HeroSearchProps) {
           </div>
 
           {/* Search Button */}
-          <div className={cn("space-y-1", error && "space-y-0")}>
-            <label className="text-xs font-semibold text-transparent uppercase tracking-wider px-1 select-none">
-              Search
-            </label>
+          <div className="sm:col-span-2 lg:col-span-1">
             <Button
-              onClick={handleSearch}
-              className="w-full h-12 rounded-xl text-base font-semibold flex items-center justify-center gap-2"
+              type="submit"
+              size="lg"
+              className="w-full h-12 rounded-xl text-base font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
             >
-              <SearchIcon className="h-4 w-4" />
-              Search Guides
+              <SearchIcon className="h-5 w-5" />
+              <span className="hidden sm:inline">Search Now</span>
+              <span className="sm:hidden">Search</span>
             </Button>
           </div>
         </div>
 
+        {/* Helper Text */}
+        <p className="mt-4 text-sm text-slate-500">
+          Flexible dates? Leave them blank and explore guides in your destination.
+        </p>
+
         {/* Error Message */}
         {error && (
-          <div className="mt-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+          <div className="mt-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
             {error}
           </div>
         )}
       </div>
-
-      {/* Quick Stats */}
-      <div className="flex items-center justify-center gap-6 mt-6 text-white/70 text-sm">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4" />
-          <span>{cities.length} Cities</span>
-        </div>
-        <div className="w-1 h-1 rounded-full bg-white/50" />
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4" />
-          <span>
-            {cities.reduce((sum, city) => sum + city.guide_count, 0)} Guides
-          </span>
-        </div>
-      </div>
-    </div>
+    </form>
   );
 }
 

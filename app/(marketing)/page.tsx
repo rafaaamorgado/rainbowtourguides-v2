@@ -55,78 +55,106 @@ export default async function MarketingPage() {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col justify-end items-center px-4 pb-16 pt-32 md:pt-40 overflow-hidden">
-        {/* Cinematic Background */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2574&auto=format&fit=crop"
-            alt="LGBTQ+ Travel Connection"
-            fill
-            className="object-cover object-center animate-scale-slow"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto animate-fade-in-up">
-          <div className="grid lg:grid-cols-[1.05fr,0.95fr] gap-10 items-center">
-            <div className="space-y-8 lg:space-y-10">
-              <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 mb-2 sm:mb-4">
+      {/* Hero Section - Light Background */}
+      <section className="bg-white py-12 md:py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Hero Top: Text + Image Grid */}
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left Column: Text Content */}
+            <div className="space-y-6 lg:space-y-8">
+              <div className="inline-flex items-center gap-2 text-brand text-sm font-medium">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
                 </span>
-                <span className="text-white text-xs font-bold uppercase tracking-[0.2em]">
-                  The New Standard in Queer Travel
-                </span>
+                Safe, inclusive, authentic
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white leading-[0.95] tracking-tight">
-                TRAVEL SOLO.
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-[1.1] tracking-tight">
+                Discover cities with
                 <br />
-                <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/50">
-                  NEVER ALONE.
-                </span>
+                <span className="text-brand">LGBTQ+ local guides</span>
               </h1>
 
-              <p className="text-base md:text-lg text-white/90 max-w-[55ch] font-light leading-relaxed" style={{ animationDelay: '0.2s' }}>
-                Curated local companions for gay men who value authentic
-                connection, safety, and culture over crowds.
+              <p className="text-base md:text-lg text-slate-600 max-w-[55ch] font-light leading-relaxed">
+                Book verified guides who know every queer-friendly corner, hidden speakeasy,
+                and community hotspot—so you can explore with confidence.
               </p>
 
-              {/* Hero Search Bar */}
-              <div className="pt-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-                <HeroSearch cities={allCities} />
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-                <Button asChild size="lg" className="shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
-                  <Link href="/cities">Start Exploring</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="bg-transparent text-white border-white/40 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                >
-                  <Link href="/auth/sign-up?role=guide">Become a Guide</Link>
-                </Button>
+              {/* Trusted By Section */}
+              <div className="space-y-2 pt-2">
+                <p className="text-sm text-slate-500 font-medium">
+                  Trusted by travelers worldwide
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🇦🇷</span>
+                  <span className="text-lg">🇲🇽</span>
+                  <span className="text-lg">🇯🇵</span>
+                  <span className="text-lg">🇱🇨</span>
+                  <span className="text-xs text-slate-400 ml-1">
+                    8+ verified guides across 56 cities
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="relative w-full max-w-xl mx-auto lg:mx-0 aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-white/5 backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-              <Image
-                src="/images/hero.png"
-                alt="Travel safely with Rainbow Tour Guides"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
+            {/* Right Column: Hero Image Card */}
+            <div className="relative w-full max-w-xl mx-auto lg:mx-0 lg:ml-auto">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
+                {/* Gradient Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-brand/80 via-purple-500/70 to-pink-400/60" />
+
+                {/* Hero Image */}
+                <Image
+                  src="/images/hero.png"
+                  alt="Travel safely with Rainbow Tour Guides"
+                  fill
+                  className="object-cover mix-blend-overlay opacity-50"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+
+                {/* Card Content Overlay */}
+                <div className="absolute inset-0 p-6 flex flex-col justify-between">
+                  <div className="space-y-1">
+                    <p className="text-white/80 text-xs font-medium uppercase tracking-wider">
+                      Safety first
+                    </p>
+                    <p className="text-white text-lg font-semibold">
+                      Guides vetted by our community
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <p className="text-white/90 text-sm">
+                      Book now availability
+                    </p>
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 rounded-full bg-white/40" />
+                      <span className="w-2 h-2 rounded-full bg-white/40" />
+                      <span className="w-2 h-2 rounded-full bg-white" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Trust Chips Row - Below Hero Grid */}
+          <div className="flex flex-wrap justify-start gap-3 mt-10 lg:mt-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium">
+              <Shield className="h-4 w-4 text-brand" />
+              Verified locals
+            </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium">
+              <Map className="h-4 w-4 text-brand" />
+              Queer-owned spots
+            </div>
+          </div>
+
+          {/* Full-Width Search Card - Below Chips */}
+          <div className="w-full mt-8 lg:mt-10">
+            <HeroSearch cities={allCities} />
           </div>
         </div>
       </section>

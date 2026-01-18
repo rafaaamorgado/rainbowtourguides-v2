@@ -11,6 +11,8 @@ interface HeroSectionProps {
   totalGuides: number;
 }
 
+const containerClasses = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8";
+
 export function HeroSection({ cities, totalGuides }: HeroSectionProps) {
   const cityCount = cities.length;
   const avatarFallbacks = ["AR", "MS", "JP", "LC"];
@@ -23,107 +25,131 @@ export function HeroSection({ cities, totalGuides }: HeroSectionProps) {
         <div className="absolute right-10 bottom-10 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative py-16 lg:py-20">
-        {/* Single column layout */}
-        <div className="space-y-12">
-          {/* Hero Text - Full width centered */}
-          <div className="text-center max-w-4xl mx-auto space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white shadow-sm border border-slate-200 px-3 py-1 text-sm font-medium text-brand">
-              <Sparkles className="h-4 w-4" />
-              Safe, inclusive, authentic
-            </div>
+      <div className={`${containerClasses} relative py-16 lg:py-20 space-y-8 lg:space-y-10`}>
+        <HeroTop
+          avatarFallbacks={avatarFallbacks}
+          cityCount={cityCount}
+          totalGuides={totalGuides}
+        />
+        <TrustChipsRow />
+        <HomeSearchCard cities={cities} />
+      </div>
+    </section>
+  );
+}
 
-            <h1 className="text-4xl sm:text-5xl xl:text-6xl font-bold leading-tight text-ink">
-              Discover cities with{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-indigo-500">
-                LGBTQ+ local guides
-              </span>
-            </h1>
+interface HeroTopProps {
+  avatarFallbacks: string[];
+  cityCount: number;
+  totalGuides: number;
+}
 
-            <p className="text-lg md:text-xl text-ink-soft max-w-3xl mx-auto leading-relaxed">
-              Book verified guides who know every queer-friendly corner, hidden speakeasy,
-              and community hotspot—so you can explore with confidence.
+function HeroTop({ avatarFallbacks, cityCount, totalGuides }: HeroTopProps) {
+  return (
+    <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+      <div className="space-y-7 lg:space-y-8">
+        <div className="inline-flex items-center gap-2 rounded-full bg-white shadow-sm border border-slate-200 px-4 py-1.5 text-sm font-medium text-brand">
+          <Sparkles className="h-4 w-4" />
+          Safe, inclusive, authentic
+        </div>
+
+        <div className="space-y-4">
+          <h1 className="text-4xl sm:text-5xl xl:text-6xl font-bold leading-tight text-ink">
+            Discover cities with{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-indigo-500">
+              LGBTQ+ local guides
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-ink-soft max-w-2xl leading-relaxed">
+            Book verified guides who know every queer-friendly corner, hidden speakeasy,
+            and community hotspot—so you can explore with confidence.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="flex -space-x-3">
+            {avatarFallbacks.map((fallback) => (
+              <Avatar
+                key={fallback}
+                className="border-2 border-white h-10 w-10 bg-brand/10 text-brand"
+              >
+                <AvatarFallback className="font-semibold">{fallback}</AvatarFallback>
+              </Avatar>
+            ))}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-ink">Trusted by travelers worldwide</p>
+            <p className="text-sm text-ink-soft">
+              {totalGuides}+ verified guides across {cityCount}+ cities
             </p>
           </div>
+        </div>
+      </div>
 
-          {/* Hero Image - Full width */}
-          <div className="relative max-w-5xl mx-auto">
-            <div className="relative overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5 bg-slate-900 aspect-[16/9] md:aspect-[21/9]">
-              <Image
-                src="/images/home/hero-aurora.svg"
-                alt="Travelers exploring a vibrant city"
-                fill
-                priority
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-slate-900/10 to-transparent" />
+      <div className="relative">
+        <div className="relative overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-black/5 bg-slate-900 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[5/4]">
+          <Image
+            src="/images/home/hero-aurora.svg"
+            alt="Travelers exploring a vibrant city"
+            fill
+            priority
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-slate-900/10 to-transparent" />
 
-              {/* Overlay content */}
-              <div className="absolute bottom-6 left-6 right-6 grid gap-3 text-white">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-white/80">Safety first</p>
-                    <p className="font-semibold">Guides vetted by our community</p>
-                  </div>
-                </div>
-                <div className="h-px bg-white/20" />
-                <div className="flex items-center justify-between text-sm text-white/80">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
-                    Real-time availability
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {[0, 1, 2].map((dot) => (
-                      <span
-                        key={dot}
-                        className="h-2 w-2 rounded-full bg-white/70"
-                        aria-hidden
-                      />
-                    ))}
-                  </div>
-                </div>
+          {/* Overlay content */}
+          <div className="absolute bottom-6 left-6 right-6 grid gap-3 text-white">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-white/80">Safety first</p>
+                <p className="font-semibold">Guides vetted by our community</p>
               </div>
             </div>
-          </div>
-
-          {/* Social Proof */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <div className="flex -space-x-3">
-              {avatarFallbacks.map((fallback) => (
-                <Avatar key={fallback} className="border-2 border-white h-10 w-10 bg-brand/10 text-brand">
-                  <AvatarFallback className="font-semibold">{fallback}</AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
-            <div className="text-center sm:text-left">
-              <p className="text-sm font-semibold text-ink">Trusted by travelers worldwide</p>
-              <p className="text-sm text-ink-soft">
-                {totalGuides}+ verified guides across {cityCount}+ cities
-              </p>
-            </div>
-          </div>
-
-          {/* Search Bar - Below image, full width */}
-          <div className="max-w-3xl mx-auto w-full">
-            <HomeSearchBar cities={cities} />
-          </div>
-
-          {/* Quick badges */}
-          <div className="flex flex-wrap justify-center gap-3 text-sm text-ink">
-            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white shadow-sm border border-slate-200">
-              <ShieldCheck className="h-4 w-4 text-brand" />
-              Verified locals
-            </div>
-            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white shadow-sm border border-slate-200">
-              <MapPin className="h-4 w-4 text-brand" />
-              Queer-owned spots
+            <div className="h-px bg-white/20" />
+            <div className="flex items-center justify-between text-sm text-white/80">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
+                Real-time availability
+              </div>
+              <div className="flex items-center gap-2">
+                {[0, 1, 2].map((dot) => (
+                  <span
+                    key={dot}
+                    className="h-2 w-2 rounded-full bg-white/70"
+                    aria-hidden
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  );
+}
+
+function TrustChipsRow() {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200">
+        <ShieldCheck className="h-4 w-4 text-brand" />
+        <span className="text-sm font-semibold text-ink">Verified locals</span>
+      </div>
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200">
+        <MapPin className="h-4 w-4 text-brand" />
+        <span className="text-sm font-semibold text-ink">Queer-owned spots</span>
+      </div>
+    </div>
+  );
+}
+
+function HomeSearchCard({ cities }: { cities: City[] }) {
+  return (
+    <div className="w-full">
+      <HomeSearchBar cities={cities} />
+    </div>
   );
 }

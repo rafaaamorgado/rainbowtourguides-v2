@@ -17,6 +17,8 @@ export interface ComboboxProps {
   placeholder?: string;
   icon?: React.ReactNode;
   className?: string;
+  ariaLabel?: string;
+  ariaLabelledby?: string;
 }
 
 export function Combobox({
@@ -26,6 +28,8 @@ export function Combobox({
   placeholder = "Select...",
   icon,
   className,
+  ariaLabel,
+  ariaLabelledby,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
@@ -50,6 +54,11 @@ export function Combobox({
           "transition-all",
           !value && "text-ink-soft"
         )}
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledby}
       >
         <div className="flex items-center gap-2">
           {icon && <span className="text-ink-soft">{icon}</span>}
@@ -121,4 +130,3 @@ export function Combobox({
     </div>
   );
 }
-

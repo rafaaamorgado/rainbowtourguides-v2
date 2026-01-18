@@ -44,14 +44,22 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
     router.push(`/guides${query ? `?${query}` : ''}`);
   };
 
+  const whereLabelId = 'home-search-where';
+  const startLabelId = 'home-search-start';
+  const endLabelId = 'home-search-end';
+  const travelersLabelId = 'home-search-travelers';
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full rounded-2xl bg-white/80 backdrop-blur-lg shadow-xl border border-white/60 p-4 md:p-5 space-y-3"
+      className="w-full rounded-2xl bg-white/90 backdrop-blur-lg shadow-2xl ring-1 ring-black/5 border border-white/70 p-4 sm:p-6 space-y-4"
     >
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="space-y-2">
+          <label
+            id={whereLabelId}
+            className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1"
+          >
             Where to?
           </label>
           <Combobox
@@ -60,16 +68,22 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
             onChange={setCity}
             placeholder="Search cities"
             icon={<MapPin className="h-4 w-4" />}
+            ariaLabelledby={whereLabelId}
           />
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1">
+        <div className="space-y-2">
+          <label
+            htmlFor={startLabelId}
+            id={`${startLabelId}-label`}
+            className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1"
+          >
             Start
           </label>
           <div className="relative">
             <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" />
             <Input
+              id={startLabelId}
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
@@ -79,13 +93,18 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1">
+        <div className="space-y-2">
+          <label
+            htmlFor={endLabelId}
+            id={`${endLabelId}-label`}
+            className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1"
+          >
             End
           </label>
           <div className="relative">
             <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" />
             <Input
+              id={endLabelId}
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
@@ -95,13 +114,18 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1">
+        <div className="space-y-2">
+          <label
+            htmlFor={travelersLabelId}
+            id={`${travelersLabelId}-label`}
+            className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1"
+          >
             Travelers
           </label>
           <div className="relative">
             <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none z-10" />
             <select
+              id={travelersLabelId}
               value={travelers}
               onChange={(e) => setTravelers(e.target.value)}
               className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-transparent px-3 py-2 pl-11 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
@@ -116,13 +140,13 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-ink-soft">
           Flexible dates? Leave them blank and explore guides in your destination.
         </p>
         <Button
           type="submit"
-          className="w-full md:w-auto h-12 px-6 rounded-xl text-base font-semibold flex items-center justify-center gap-2"
+          className="w-full sm:w-auto h-12 px-6 rounded-xl text-base font-semibold flex items-center justify-center gap-2"
         >
           <Search className="h-4 w-4" />
           Search Now
