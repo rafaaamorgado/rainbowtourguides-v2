@@ -161,7 +161,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
   const { data: reviewRows, error: reviewError } = await supabase
     .from("reviews")
     .select("id, rating, comment, created_at")
-    .eq("guide_id", guide.id)
+    .eq("subject_id", guide.id)
     .limit(6);
 
   if (reviewError) {
