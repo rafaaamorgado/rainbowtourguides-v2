@@ -35,18 +35,28 @@ export function adaptGuideFromDB(
   rating: number,
   reviewCount: number,
 ): Guide {
+  // Extract name from slug as workaround for RLS recursion issue
+  const nameFromSlug = guideRow.slug
+    ? guideRow.slug
+        .split('-')
+        .slice(0, -1) // Remove UUID part
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    : null;
+
   const displayName =
     profileRow?.full_name ||
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (profileRow as any)?.display_name ||
-    'Unknown';
+    nameFromSlug ||
+    'Local Guide';
 
   const tagline = guideRow.headline || guideRow.tagline || '';
   const countryName =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (cityData as any)?.country_name || cityData?.country?.name || undefined;
 
-  // Handle both base_price_* (from DB schema) and price_* (from views/aliases)
+  // Handle both price_* (current DB) and base_price_* (legacy)
   const price4h = guideRow.price_4h || guideRow.base_price_4h || null;
   const price6h = guideRow.price_6h || guideRow.base_price_6h || null;
   const price8h = guideRow.price_8h || guideRow.base_price_8h || null;

@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AdminGuideAction } from "@/components/admin/guide-action-buttons";
+import { ApproveAllGuidesButton } from "@/components/admin/approve-all-guides-button";
 
 export default async function AdminGuidesPage() {
   const cookieStore = await cookies();
@@ -35,6 +36,9 @@ export default async function AdminGuidesPage() {
       <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Guide Verification Queue</h1>
+        {guides && guides.length > 0 && (
+          <ApproveAllGuidesButton count={guides.length} />
+        )}
       </div>
 
       <div className="border rounded-lg bg-card text-card-foreground shadow-sm">

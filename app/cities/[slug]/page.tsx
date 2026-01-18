@@ -7,7 +7,7 @@ import { getCity, getGuidesWithMeta } from "@/lib/data-service";
 import { getMockCity, getMockGuides } from "@/lib/mock-data";
 
 interface CityPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 function resolveCityImage(slug: string) {
@@ -26,7 +26,7 @@ function resolveCityImage(slug: string) {
 }
 
 export default async function CityPage({ params }: CityPageProps) {
-  const slug = params?.slug;
+  const { slug } = await params;
   if (!slug) {
     notFound();
   }

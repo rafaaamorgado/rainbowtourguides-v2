@@ -172,7 +172,8 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
     ),
     guides:guides!guides_city_id_fkey(
       id,
-      status
+      status,
+      approved
     )
     `,
     )
@@ -199,23 +200,51 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
 
   // Count guides per city from joined rows (RLS already enforces public visibility)
   const citiesWithCounts = (cities || []).map((city: any) => {
-    const approvedGuides =
-      (city.guides || []).filter((g: any) => g.status === 'approved') ||
-      [];
+    const allGuides = city.guides || [];
+    // Support both status field (enum) and approved field (boolean)
+    const approvedGuides = allGuides.filter((g: any) => 
+      g.status === 'approved' || g.approved === true
+    );
 
-    return adaptCityFromDB(
+    // Debug logging
+    console.log(`[getCities] City: ${city.name}`, {
+      totalGuidesFromDB: allGuides.length,
+      approvedCount: approvedGuides.length,
+      guides: allGuides.map((g: any) => ({ 
+        id: g.id?.substring(0, 8), 
+        status: g.status,
+        approved: g.approved 
+      })),
+      country: city.country,
+    });
+
+    const adapted = adaptCityFromDB(
       city,
       city.country as any,
       approvedGuides.length,
     );
+
+    console.log(`[getCities] Adapted city ${city.name}:`, {
+      guide_count: adapted.guide_count,
+      country_name: adapted.country_name,
+    });
+
+    return adapted;
   });
 
+  // Filter out cities with no guides (as per requirement)
+  const citiesWithGuides = citiesWithCounts.filter(city => city.guide_count > 0);
+
   console.log(
-    '[getCities] Row count',
-    citiesWithCounts.length,
+    '[getCities] Summary:',
+    {
+      totalCities: citiesWithCounts.length,
+      citiesWithGuides: citiesWithGuides.length,
+      cities: citiesWithGuides.map(c => ({ name: c.name, guide_count: c.guide_count }))
+    }
   );
 
-  return { data: citiesWithCounts, debug: { ...debug, rows: citiesWithCounts.length } };
+  return { data: citiesWithGuides, debug: { ...debug, rows: citiesWithGuides.length } };
 }
 
 /**
@@ -259,7 +288,8 @@ export async function getCity(slug: string): Promise<City | undefined> {
     .from('guides')
     .select('*', { count: 'exact', head: true })
     .eq('city_id', cityData.id)
-    .eq('status', 'approved');
+    // Support both status field and approved field
+    .or('status.eq.approved,approved.eq.true');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return adaptCityFromDB(cityData, cityData.country as any, count || 0);
@@ -355,6 +385,8 @@ export async function getGuidesWithMeta(
   }
 
   // Build query
+  // NOTE: Removed profile JOIN to avoid RLS infinite recursion error
+  // Profile data will need to be fetched separately if needed
   let query = supabase
     .from('guides')
     .select(
@@ -365,15 +397,14 @@ export async function getGuidesWithMeta(
       headline,
       tagline,
       bio,
-      themes,
-      base_price_4h,
-      base_price_6h,
-      base_price_8h,
-      hourly_rate,
+      experience_tags,
+      price_4h,
+      price_6h,
+      price_8h,
       currency,
       status,
+      approved,
       created_at,
-      profile:profiles!guides_id_fkey(full_name, avatar_url),
       city:cities!guides_city_id_fkey(
         id,
         name,
@@ -386,7 +417,8 @@ export async function getGuidesWithMeta(
       )
     `,
     )
-    .eq('status', 'approved');
+    // Support both status field and approved field
+    .or('status.eq.approved,approved.eq.true');
 
   if (cityId) {
     query = query.eq('city_id', cityId);
@@ -401,15 +433,15 @@ export async function getGuidesWithMeta(
   }
 
   if (filters?.tags && filters.tags.length > 0) {
-    query = query.contains('themes', filters.tags);
+    query = query.contains('experience_tags', filters.tags);
   }
 
   if (filters?.minPrice) {
-    query = query.gte('base_price_4h', filters.minPrice.toString());
+    query = query.gte('price_4h', filters.minPrice.toString());
   }
 
   if (filters?.maxPrice) {
-    query = query.lte('base_price_4h', filters.maxPrice.toString());
+    query = query.lte('price_4h', filters.maxPrice.toString());
   }
 
   query = query.order('created_at', { ascending: false });
@@ -454,7 +486,7 @@ export async function getGuidesWithMeta(
 
       return adaptGuideFromDB(
         guide,
-        guide.profile as any,
+        null, // profile removed to avoid RLS recursion
         guide.city as any, // city already contains nested country
         rating,
         reviewCount,
@@ -462,6 +494,10 @@ export async function getGuidesWithMeta(
     }) ?? [];
 
   console.log('[getGuides] Row count', guidesWithStats.length);
+
+  // NOTE: Profile data fetch disabled due to RLS infinite recursion
+  // Guide names are extracted from slug as temporary workaround
+  // TODO: Fix RLS policies in Supabase for profiles table
 
   return { data: guidesWithStats, debug: { ...debug, rows: guidesWithStats.length } };
 }
@@ -544,7 +580,7 @@ export async function searchGuides(query: string): Promise<Guide[]> {
 
   const searchTerm = `%${query}%`;
 
-  // Search in guides table (bio, headline, themes)
+  // Search in guides table (bio, headline, experience_tags)
   // and join with profiles (full_name, languages)
   const { data: guides, error } = await supabase
     .from('guides')
@@ -564,9 +600,10 @@ export async function searchGuides(query: string): Promise<Guide[]> {
       )
     `,
     )
-    .eq('status', 'approved')
+    // Support both status field and approved field
+    .or('status.eq.approved,approved.eq.true')
     .or(
-      `bio.ilike.${searchTerm},headline.ilike.${searchTerm},themes.cs.{${query}}`,
+      `bio.ilike.${searchTerm},headline.ilike.${searchTerm},experience_tags.cs.{${query}}`,
     );
 
   if (error || !guides) {
@@ -662,7 +699,8 @@ export async function getTopGuides(limit: number = 10): Promise<Guide[]> {
       )
     `,
     )
-    .eq('status', 'approved');
+    // Support both status field and approved field
+    .or('status.eq.approved,approved.eq.true');
 
   if (error || !guides) {
     logError('SELECT', 'guides', error);
