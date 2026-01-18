@@ -33,6 +33,14 @@ export async function middleware(request: NextRequest) {
     // 2. Auth Check - Refresh Session
     const { data: { user } } = await supabase.auth.getUser()
 
+    // Public routes - skip all checks for these paths
+    const publicRoutes = ['/guides', '/cities', '/blog', '/how-it-works', '/become-a-guide', '/faq', '/legal'];
+    const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route));
+    
+    if (isPublicRoute) {
+        return response;
+    }
+
     // 3. Admin Route Protection
     if (request.nextUrl.pathname.startsWith('/admin')) {
         if (!user) {

@@ -10,7 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { logError } from "@/lib/query-logger";
 
 interface GuidePageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 type GuideRow = {
@@ -19,11 +19,10 @@ type GuideRow = {
   city_id: string;
   headline: string | null;
   bio: string | null;
-  about: string | null;
-  themes: string[] | null;
-  base_price_4h: number | null;
-  base_price_6h: number | null;
-  base_price_8h: number | null;
+  experience_tags: string[] | null;
+  price_4h: string | null;
+  price_6h: string | null;
+  price_8h: string | null;
   currency: string | null;
   status: string;
   profile: {
@@ -33,8 +32,10 @@ type GuideRow = {
   } | null;
   city: {
     name?: string | null;
-    country_name?: string | null;
     slug?: string | null;
+    country?: {
+      name?: string | null;
+    } | null;
   } | null;
 };
 
@@ -108,7 +109,7 @@ function toReviews(raw: any[], guideName: string) {
 }
 
 export default async function GuideProfilePage({ params }: GuidePageProps) {
-  const slug = params?.slug;
+  const { slug } = await params;
   if (!slug) notFound();
 
   const supabase = await createSupabaseServerClient();
@@ -122,11 +123,10 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
         city_id,
         headline,
         bio,
-        about,
-        themes,
-        base_price_4h,
-        base_price_6h,
-        base_price_8h,
+        experience_tags,
+        price_4h,
+        price_6h,
+        price_8h,
         currency,
         status,
         profile:profiles!guides_id_fkey(
@@ -136,13 +136,14 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
         ),
         city:cities!guides_city_id_fkey(
           name,
-          country_name,
-          slug
+          slug,
+          country:countries!cities_country_id_fkey(
+            name
+          )
         )
       `
     )
     .eq("slug", slug)
-    .eq("status", "approved")
     .single<GuideRow>();
 
   if (error || !guide) {
@@ -179,7 +180,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
         <GuideHero
           name={fullName}
           city={guide.city?.name ?? ""}
-          country={guide.city?.country_name ?? ""}
+          country={guide.city?.country?.name ?? ""}
           avatarUrl={guide.profile?.avatar_url}
           coverImage={coverImage}
           rating={rating}
@@ -191,9 +192,9 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
           <div className="lg:col-span-2 space-y-10">
             <GuideAbout
               name={fullName}
-              bio={guide.bio || guide.about}
+              bio={guide.bio || ""}
               languages={guide.profile?.languages || []}
-              interests={guide.themes || []}
+              interests={guide.experience_tags || []}
             />
 
             <GuideHighlights images={highlightImages.slice(0, 3)} />
@@ -204,9 +205,9 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
           <div className="lg:col-span-1">
             <BookingCard
               basePrices={{
-                4: guide.base_price_4h || undefined,
-                6: guide.base_price_6h || undefined,
-                8: guide.base_price_8h || undefined,
+                4: guide.price_4h ? Number(guide.price_4h) : undefined,
+                6: guide.price_6h ? Number(guide.price_6h) : undefined,
+                8: guide.price_8h ? Number(guide.price_8h) : undefined,
               }}
               currency={guide.currency}
             />
