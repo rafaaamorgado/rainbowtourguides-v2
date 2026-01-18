@@ -19,9 +19,8 @@ export function CityCard({ city }: CityCardProps) {
       href={`/cities/${city.slug}`}
       className="group block relative overflow-hidden rounded-3xl aspect-[3/4] shadow-lg cursor-pointer"
     >
-      {/* TODO: add image_url field to cities table */}
       <Image
-        src="/placeholder-city.svg"
+        src={city.image_url || "/placeholder-city.svg"}
         alt={city.name}
         fill
         className="object-cover transition-transform duration-1000 group-hover:scale-110"
