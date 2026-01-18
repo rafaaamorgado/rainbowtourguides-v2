@@ -1,7 +1,8 @@
 'use client';
 
+import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { UserMenu } from "@/components/user-menu";
 
 export function SiteHeader() {
@@ -10,17 +11,14 @@ export function SiteHeader() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 group">
-                    <div className="bg-brand p-1.5 rounded-full text-white group-hover:scale-110 transition-transform">
-                        <MapPin size={20} fill="currentColor" strokeWidth={0} />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="font-bold tracking-tight uppercase leading-none text-slate-900">
-                            Rainbow
-                        </span>
-                        <span className="text-[10px] tracking-widest font-semibold uppercase leading-none text-slate-500">
-                            Tour Guides
-                        </span>
-                    </div>
+                    <Image
+                        src="/images/rtg-logo.png"
+                        alt="Rainbow Tour Guides"
+                        width={160}
+                        height={40}
+                        className="h-8 w-auto sm:h-8"
+                        priority
+                    />
                 </Link>
 
                 {/* Desktop Nav */}

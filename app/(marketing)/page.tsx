@@ -71,49 +71,62 @@ export default async function MarketingPage() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto space-y-12 animate-fade-in-up">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 mb-6">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
-              </span>
-              <span className="text-white text-xs font-bold uppercase tracking-[0.2em]">
-                The New Standard in Queer Travel
-              </span>
+        <div className="relative z-10 w-full max-w-7xl mx-auto animate-fade-in-up">
+          <div className="grid lg:grid-cols-[1.05fr,0.95fr] gap-10 items-center">
+            <div className="space-y-8 lg:space-y-10">
+              <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 mb-2 sm:mb-4">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+                </span>
+                <span className="text-white text-xs font-bold uppercase tracking-[0.2em]">
+                  The New Standard in Queer Travel
+                </span>
+              </div>
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white leading-[0.95] tracking-tight">
+                TRAVEL SOLO.
+                <br />
+                <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/50">
+                  NEVER ALONE.
+                </span>
+              </h1>
+
+              <p className="text-base md:text-lg text-white/90 max-w-[55ch] font-light leading-relaxed" style={{ animationDelay: '0.2s' }}>
+                Curated local companions for gay men who value authentic
+                connection, safety, and culture over crowds.
+              </p>
+
+              {/* Hero Search Bar */}
+              <div className="pt-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                <HeroSearch cities={allCities} />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                <Button asChild size="lg" className="shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
+                  <Link href="/cities">Start Exploring</Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="bg-transparent text-white border-white/40 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                >
+                  <Link href="/auth/sign-up?role=guide">Become a Guide</Link>
+                </Button>
+              </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-6 animate-fade-in-up">
-              TRAVEL SOLO.
-              <br />
-              <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/50">
-                NEVER ALONE.
-              </span>
-            </h1>
-
-            <p className="text-base md:text-lg text-white/90 max-w-[55ch] font-light leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              Curated local companions for gay men who value authentic
-              connection, safety, and culture over crowds.
-            </p>
-          </div>
-
-          {/* Hero Search Bar */}
-          <div className="pt-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <HeroSearch cities={allCities} />
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 pt-8 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <Button asChild size="lg" className="shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
-              <Link href="/cities">Start Exploring</Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="bg-transparent text-white border-white/40 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-            >
-              <Link href="/auth/sign-up?role=guide">Become a Guide</Link>
-            </Button>
+            <div className="relative w-full max-w-xl mx-auto lg:mx-0 aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-white/5 backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+              <Image
+                src="/images/hero.png"
+                alt="Travel safely with Rainbow Tour Guides"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
+            </div>
           </div>
         </div>
       </section>

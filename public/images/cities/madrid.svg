@@ -1,0 +1,22 @@
+<svg width="960" height="640" viewBox="0 0 960 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mad-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827" />
+      <stop offset="45%" stop-color="#1f2937" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="mad-accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.34" />
+      <stop offset="50%" stop-color="#f472b6" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.28" />
+    </linearGradient>
+  </defs>
+  <rect width="960" height="640" fill="url(#mad-bg)"/>
+  <rect x="90" y="110" width="780" height="420" rx="36" fill="url(#mad-accent)" opacity="0.9"/>
+  <g opacity="0.26" stroke="#ffffff" stroke-width="6" stroke-linecap="round">
+    <path d="M150 430 L200 320 L240 380 L280 290 L340 410 L390 320 L440 430 L490 280 L540 380 L590 330 L650 430 L700 300 L760 380 L810 320" />
+    <path d="M170 450 H800" stroke-width="4" opacity="0.5"/>
+    <path d="M220 250 H740" stroke-width="5" opacity="0.35"/>
+  </g>
+  <text x="50%" y="74%" text-anchor="middle" fill="#ffffff" fill-opacity="0.22" font-size="74" font-family="Inter, system-ui, -apple-system, sans-serif" font-weight="700" letter-spacing="6">MADRID</text>
+</svg>

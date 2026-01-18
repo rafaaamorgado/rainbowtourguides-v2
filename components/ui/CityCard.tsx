@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import { getCityImageSrc } from "@/lib/city-images";
 
 type CityCardProps = {
   city: {
@@ -14,6 +15,8 @@ type CityCardProps = {
 };
 
 export function CityCard({ city }: CityCardProps) {
+  const imageSrc = getCityImageSrc(city.slug, city.image_url);
+
   return (
     <Link
       href={`/cities/${city.slug}`}
