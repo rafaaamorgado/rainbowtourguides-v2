@@ -3,20 +3,58 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { GuideSidebar } from "./sidebar";
 import type { Database } from "@/types/database";
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Guide = Database["public"]["Tables"]["guides"]["Row"];
+import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  User,
+  MessageSquare,
+  Settings,
+  MapPin,
+} from "lucide-react";
+import DashboardShell from "@/components/shells/DashboardShell";
+import { SidebarNav, type SidebarNavItem } from "@/components/shells/SidebarNav";
 
-export default async function GuideLayout({
+const sidebarNavItems: SidebarNavItem[] = [
+  {
+    title: "Overview",
+    href: "/guide/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Bookings",
+    href: "/guide/bookings",
+    icon: CalendarDays,
+  },
+  {
+    title: "Availability",
+    href: "/guide/availability",
+    icon: MapPin,
+  },
+  {
+    title: "Profile & Listing",
+    href: "/guide/profile",
+    icon: User,
+  },
+  {
+    title: "Messages",
+    href: "/guide/messages",
+    icon: MessageSquare,
+  },
+  {
+    title: "Settings",
+    href: "/guide/settings",
+    icon: Settings,
+  },
+];
+
+export default function GuideLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
-  const supabase = await createSupabaseServerClient();
-
-  // Check authentication
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const pathname = usePathname();
 
   if (!user) {
     redirect("/auth/sign-in?redirect=/guide/dashboard");
@@ -63,19 +101,23 @@ export default async function GuideLayout({
     .eq("status", "pending");
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <GuideSidebar
-        profile={profile}
-        guide={guide}
-        pendingBookingsCount={pendingBookingsCount || 0}
-      />
-
-      {/* Main Content */}
-      <div className="lg:pl-64">
-        <main className="p-8">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </main>
-      </div>
-    </div>
+    <DashboardShell
+      sidebar={
+        <SidebarNav
+          items={sidebarNavItems}
+          brandHref="/"
+          brandLabel="Rainbow Tours"
+          mobileHeaderLabel="Rainbow Tour Guides"
+          userName="Guide"
+          userBadge="Guide"
+          userBadgeClassName="bg-emerald-100 text-emerald-700"
+          avatarGradientClassName="from-pride-mint to-pride-amber"
+          browseHref=""
+          signOutHref="/auth/sign-out"
+        />
+      }
+    >
+      {children}
+    </DashboardShell>
   );
 }

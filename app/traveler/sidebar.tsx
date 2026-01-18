@@ -11,7 +11,6 @@ import {
   User,
   Settings,
   Menu,
-  X,
   MapPin,
   LogOut,
   ChevronRight,
@@ -81,7 +80,7 @@ export function TravelerSidebar({ profile }: SidebarProps) {
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden fixed top-20 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center">
             <span className="text-white font-bold text-sm">RT</span>
@@ -100,7 +99,7 @@ export function TravelerSidebar({ profile }: SidebarProps) {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-50"
+          className="lg:hidden fixed top-20 left-0 right-0 bottom-0 bg-black/50 z-50"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -108,7 +107,7 @@ export function TravelerSidebar({ profile }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200',
+          'fixed top-20 bottom-0 left-0 z-40 w-64 bg-white border-r border-slate-200',
           'transform transition-transform duration-300 ease-in-out',
           'lg:translate-x-0',
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
@@ -117,25 +116,6 @@ export function TravelerSidebar({ profile }: SidebarProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
-            <div className="flex items-center justify-between mb-6">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">RT</span>
-                </div>
-                <span className="font-bold text-ink text-sm">
-                  Rainbow Tours
-                </span>
-              </Link>
-
-              {/* Close button (mobile only) */}
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="lg:hidden p-1 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <X className="h-5 w-5 text-ink-soft" />
-              </button>
-            </div>
-
             {/* User Info Card */}
             <div className="space-y-3">
               <div className="flex items-center gap-3">
