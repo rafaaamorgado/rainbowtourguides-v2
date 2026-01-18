@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { getCitiesWithMeta } from "@/lib/data-service";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ClientDebug } from "@/components/dev-debug";
+import { getCityImageUrl } from "@/lib/city-images";
 
 export const metadata: Metadata = {
   title: "Explore Cities - Rainbow Tour Guides",
@@ -35,6 +36,8 @@ function CityCard({
     guide_count: number;
   };
 }) {
+  const imageSrc = getCityImageUrl(city.slug, city.image_url);
+
   return (
     <Link
       href={`/cities/${city.slug}`}
@@ -43,7 +46,7 @@ function CityCard({
       {/* City Photo Background */}
       <div className="absolute inset-0">
         <Image
-          src={city.image_url || "/placeholder-city.svg"}
+          src={imageSrc}
           alt={`${city.name}, ${city.country_name}`}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -162,8 +165,7 @@ export default async function CitiesPage() {
       {/* Cities Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cities.map((city) => {
-          const localImage = `/images/cities/${city.slug}.jpg`;
-          const image_url = city.image_url || localImage || "/images/cities/default.jpg";
+          const image_url = getCityImageUrl(city.slug, city.image_url);
           return <CityCard key={city.id} city={{ ...city, image_url }} />;
         })}
       </div>

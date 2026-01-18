@@ -9,6 +9,8 @@ import { FilteredView } from './filtered-view';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ClientDebug } from '@/components/dev-debug';
+import { getMockGuides, getMockCities } from '@/lib/mock-data';
+import { getCityImageUrl } from '@/lib/city-images';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,27 +61,13 @@ export default async function GuidesPage() {
     );
   }
 
-  if (allGuides.length === 0) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <EmptyState
-          title="No guides available"
-          description="We couldn't find any guides yet. Please check back soon."
-          icon="users"
-          variant="default"
-        />
-        {enableClientDebug && (
-          <ClientDebug
-            label="GuidesPageEmpty"
-            payload={{ guidesDebug, citiesDebug }}
-          />
-        )}
-      </div>
-    );
-  }
+  // Use mock data fallback if no guides in database
+  const useMockData = allGuides.length === 0;
+  const guides = useMockData ? getMockGuides() : allGuides;
+  const displayCities = useMockData && cities.length === 0 ? getMockCities() : cities;
 
   // Sort guides by rating for top-rated section
-  const topRatedGuides = [...allGuides]
+  const topRatedGuides = [...guides]
     .sort((a, b) => {
       if (b.rating !== a.rating) return b.rating - a.rating;
       return b.review_count - a.review_count;
@@ -87,22 +75,22 @@ export default async function GuidesPage() {
     .slice(0, 6);
 
   // Get newest guides (mock: use reverse order as "newest")
-  const newGuides = [...allGuides].reverse().slice(0, 6);
+  const newGuides = [...guides].reverse().slice(0, 6);
 
   // Get all unique experience tags
   const allTags = Array.from(
     new Set(
-      allGuides.flatMap((g) => g.experience_tags || g.themes || []),
+      guides.flatMap((g) => g.experience_tags || g.themes || []),
     ),
   ).sort();
 
   // Cities with low guide count (new destinations)
-  const newDestinations = cities
+  const newDestinations = displayCities
     .filter((city) => city.guide_count <= 2 && city.guide_count > 0)
     .slice(0, 3);
 
   // Popular destinations (high guide count)
-  const popularDestinations = [...cities]
+  const popularDestinations = [...displayCities]
     .sort((a, b) => b.guide_count - a.guide_count)
     .slice(0, 8);
 
@@ -122,14 +110,14 @@ export default async function GuidesPage() {
           </div>
 
           {/* Search Bar */}
-          <GuidesSearchBar cities={cities} />
+          <GuidesSearchBar cities={displayCities} />
         </div>
       </section>
 
       {/* Main Content - Curated Sections */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         {/* Client-side Filtering */}
-        <FilteredView allGuides={allGuides} allTags={allTags} />
+        <FilteredView allGuides={guides} allTags={allTags} />
 
         {/* Top-Rated Guides */}
         <section className="space-y-6">
@@ -179,7 +167,7 @@ export default async function GuidesPage() {
 
             <div className="space-y-8">
               {newDestinations.map((city) => {
-                const cityGuides = allGuides.filter(
+                const cityGuides = guides.filter(
                   (g) => g.city_id === city.id,
                 );
 
@@ -190,7 +178,7 @@ export default async function GuidesPage() {
                       <div className="flex items-center gap-3">
                         <div className="relative w-16 h-16 rounded-xl overflow-hidden">
                           <Image
-                            src={city.image_url || "/placeholder-city.svg"}
+                            src={getCityImageUrl(city.slug, city.image_url)}
                             alt={city.name}
                             fill
                             className="object-cover"
@@ -253,7 +241,7 @@ export default async function GuidesPage() {
                   {/* City Photo */}
                   <div className="absolute inset-0">
                     <Image
-                      src={city.image_url || "/placeholder-city.svg"}
+                      src={getCityImageUrl(city.slug, city.image_url)}
                       alt={city.name}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -296,8 +284,9 @@ export default async function GuidesPage() {
         <ClientDebug
           label="GuidesPageDebug"
           payload={{
-            guides: allGuides.length,
-            cities: cities.length,
+            guides: guides.length,
+            cities: displayCities.length,
+            useMockData,
             guidesDebug,
             citiesDebug,
           }}

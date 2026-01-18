@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import type { City } from "@/lib/mock-data";
+import { getCityImageSrc } from "@/lib/city-images";
 
 interface ExploreCitiesSectionProps {
   cities: City[];
@@ -47,11 +48,11 @@ export function ExploreCitiesSection({ cities }: ExploreCitiesSectionProps) {
               <Link
                 key={city.id}
                 href={`/cities/${city.slug}`}
-                className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-slate-900 shadow-lg transition-transform duration-300 hover:-translate-y-1"
+                className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-slate-900 shadow-lg transition-transform duration-300 hover:-translate-y-1 aspect-[16/9]"
               >
                 <div className="absolute inset-0">
                   <Image
-                    src={city.image_url || "/placeholder-city.svg"}
+                    src={getCityImageSrc(city.slug, city.image_url)}
                     alt={city.name}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"

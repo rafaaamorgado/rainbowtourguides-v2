@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import { getCityImageSrc } from "@/lib/city-images";
 
 type CityCardProps = {
   city: {
@@ -14,13 +15,15 @@ type CityCardProps = {
 };
 
 export function CityCard({ city }: CityCardProps) {
+  const imageSrc = getCityImageSrc(city.slug, city.image_url);
+
   return (
     <Link
       href={`/cities/${city.slug}`}
       className="group block relative overflow-hidden rounded-3xl aspect-[3/4] shadow-lg cursor-pointer"
     >
       <Image
-        src={city.image_url || "/placeholder-city.svg"}
+        src={imageSrc}
         alt={city.name}
         fill
         className="object-cover transition-transform duration-1000 group-hover:scale-110"
