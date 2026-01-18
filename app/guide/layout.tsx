@@ -1,93 +1,81 @@
-'use client';
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { GuideSidebar } from "./sidebar";
+import type { Database } from "@/types/database";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  CalendarDays,
-  User,
-  MessageSquare,
-  Settings,
-  LogOut,
-  MapPin
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type Guide = Database["public"]["Tables"]["guides"]["Row"];
 
-const sidebarNavItems = [
-  {
-    title: "Overview",
-    href: "/guide/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Bookings",
-    href: "/guide/bookings",
-    icon: CalendarDays,
-  },
-  {
-    title: "Availability",
-    href: "/guide/availability",
-    icon: MapPin, // Or Calendar, choosing MapPin for variety or CalendarClock
-  },
-  {
-    title: "Profile & Listing",
-    href: "/guide/profile",
-    icon: User,
-  },
-  {
-    title: "Messages",
-    href: "/guide/messages",
-    icon: MessageSquare,
-  },
-  {
-    title: "Settings",
-    href: "/guide/settings",
-    icon: Settings,
-  },
-];
+export default async function GuideLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = await createSupabaseServerClient();
 
-export default function GuideLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  // Check authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Don't show sidebar on onboarding
-  if (pathname.startsWith("/guide/onboarding")) {
-    return <>{children}</>;
+  if (!user) {
+    redirect("/auth/sign-in?redirect=/guide/dashboard");
   }
 
+  // Get user profile with role
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  const profile = profileData as Profile | null;
+
+  // Check if profile exists
+  if (!profile || profileError) {
+    redirect("/auth/sign-in");
+  }
+
+  // Redirect traveler to their dashboard
+  if (profile.role === "traveler") {
+    redirect("/traveler/dashboard");
+  }
+
+  // Only allow guides and admins
+  if (profile.role !== "guide" && profile.role !== "admin") {
+    redirect("/");
+  }
+
+  // Get guide record and pending bookings count
+  const { data: guideData } = await supabase
+    .from("guides")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  const guide = guideData as Guide | null;
+
+  // Count pending bookings (if needed)
+  const { count: pendingBookingsCount } = await supabase
+    .from("bookings")
+    .select("*", { count: "exact", head: true })
+    .eq("guide_id", user.id)
+    .eq("status", "pending");
+
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="w-full md:w-64 border-r bg-muted/10">
-        <div className="flex flex-col h-full py-4">
-          <div className="px-6 py-2">
-            <h2 className="text-lg font-semibold tracking-tight">Guide Portal</h2>
-          </div>
-          <nav className="flex-1 space-y-1 px-3 py-4">
-            {sidebarNavItems.map((item) => (
-              <Button
-                key={item.href}
-                variant={pathname === item.href ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full justify-start",
-                  pathname === item.href && "bg-muted"
-                )}
-                asChild
-              >
-                <Link href={item.href}>
-                  <item.icon className="mr-2 h-4 w-4" />
-                  {item.title}
-                </Link>
-              </Button>
-            ))}
-          </nav>
-          <div className="px-3 py-2">
-            {/* Bottom actions if any */}
-          </div>
-        </div>
-      </aside>
-      <main className="flex-1 p-6 md:p-8">
-        {children}
-      </main>
+    <div className="min-h-screen bg-slate-50">
+      <GuideSidebar
+        profile={profile}
+        guide={guide}
+        pendingBookingsCount={pendingBookingsCount || 0}
+      />
+
+      {/* Main Content */}
+      <div className="lg:pl-64">
+        <main className="p-8">
+          <div className="max-w-7xl mx-auto">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

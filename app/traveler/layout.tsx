@@ -30,33 +30,20 @@ export default async function TravelerLayout({
 
   let profile = data as Profile | null;
 
-  // UNLOCKED FOR DEV: Mock profile if not found
+  // Check if profile exists
   if (!profile || error) {
-    // redirect("/auth/sign-in");
-    // Mock profile for dev
-    profile = {
-      id: "mock-traveler",
-      full_name: "Dev Traveler",
-      avatar_url: null,
-      role: "traveler",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      email: "dev@example.com",
-    } as any;
+    redirect("/auth/sign-in");
   }
 
-  // Ensure profile is not null for following code
-  if (!profile) {
-    return null; // Should be unreachable in dev mode
+  // Redirect guide to their dashboard
+  if (profile.role === "guide") {
+    redirect("/guide/dashboard");
   }
-  // if (profile.role === "guide") {
-  //   redirect("/guide/dashboard");
-  // }
 
   // Only allow travelers and admins
-  // if (profile.role !== "traveler" && profile.role !== "admin") {
-  //   redirect("/");
-  // }
+  if (profile.role !== "traveler" && profile.role !== "admin") {
+    redirect("/");
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
