@@ -64,11 +64,6 @@ export const metadata = {
 export default function BecomeAGuidePage() {
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* Demo banner */}
-      <div className="w-full bg-red-500 text-white text-center text-sm py-2">
-        Demo Build — No real accounts or payments. All data is for demonstration purposes only.
-      </div>
-
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         {/* Hero */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
@@ -96,17 +91,16 @@ export default function BecomeAGuidePage() {
             </div>
           </div>
 
-          <div className="relative w-full h-[320px] sm:h-[400px] lg:h-[420px]">
-            <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-2xl ring-1 ring-black/5">
-              <Image
-                src="/images/become-a-guide/hero.svg"
-                alt="Community guiding travelers"
-                fill
-                priority
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </div>
+          <div className="relative w-full overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5 aspect-[16/10]">
+            <Image
+              src="/images/guide-hero.png"
+              alt="Rainbow Tour Guides — Become a Guide"
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
           </div>
         </section>
 

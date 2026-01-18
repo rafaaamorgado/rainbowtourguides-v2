@@ -1,32 +1,21 @@
-<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="960" height="640" viewBox="0 0 960 640" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="cityGradient" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0f172a"/>
-      <stop offset="40%" stop-color="#1e293b"/>
-      <stop offset="100%" stop-color="#0b1020"/>
+    <linearGradient id="default-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827" />
+      <stop offset="50%" stop-color="#1f2937" />
+      <stop offset="100%" stop-color="#0f172a" />
     </linearGradient>
-    <linearGradient id="accentGradient" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#f472b6" stop-opacity="0.8"/>
-      <stop offset="50%" stop-color="#8b5cf6" stop-opacity="0.8"/>
-      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.8"/>
+    <linearGradient id="default-accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.28" />
+      <stop offset="50%" stop-color="#22d3ee" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#f472b6" stop-opacity="0.28" />
     </linearGradient>
-    <radialGradient id="glow" cx="0.35" cy="0.3" r="0.6">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="softBlur">
-      <feGaussianBlur stdDeviation="72" result="blur"/>
-    </filter>
   </defs>
-  <rect width="1600" height="900" fill="url(#cityGradient)"/>
-  <circle cx="260" cy="200" r="260" fill="url(#glow)" filter="url(#softBlur)"/>
-  <circle cx="1320" cy="220" r="240" fill="url(#glow)" filter="url(#softBlur)"/>
-  <circle cx="1180" cy="720" r="300" fill="url(#glow)" filter="url(#softBlur)"/>
-  <path d="M0 620C220 590 440 630 720 720C1000 810 1320 840 1600 780V980H0V620Z" fill="url(#accentGradient)" opacity="0.8"/>
-  <path d="M0 520C260 560 520 520 760 600C1000 680 1260 700 1600 640V980H0V520Z" fill="white" fill-opacity="0.05"/>
-  <rect x="180" y="260" width="480" height="220" rx="26" fill="white" fill-opacity="0.06" stroke="white" stroke-opacity="0.12" stroke-width="2"/>
-  <rect x="880" y="300" width="380" height="200" rx="24" fill="white" fill-opacity="0.06" stroke="white" stroke-opacity="0.12" stroke-width="2"/>
-  <rect x="720" y="540" width="520" height="230" rx="32" fill="white" fill-opacity="0.04" stroke="white" stroke-opacity="0.1" stroke-width="2"/>
-  <rect x="1160" y="460" width="220" height="120" rx="18" fill="white" fill-opacity="0.05" stroke="white" stroke-opacity="0.08" stroke-width="1.5"/>
-  <rect x="1140" y="660" width="200" height="110" rx="18" fill="white" fill-opacity="0.05" stroke="white" stroke-opacity="0.08" stroke-width="1.5"/>
+  <rect width="960" height="640" fill="url(#default-bg)"/>
+  <rect x="80" y="120" width="800" height="400" rx="36" fill="url(#default-accent)" opacity="0.9"/>
+  <g opacity="0.18" stroke="#ffffff" stroke-width="6" stroke-linecap="round">
+    <path d="M140 420 L180 300 L230 360 L270 250 L330 370 L380 290 L430 410 L470 260 L530 360 L570 310 L630 430 L680 280 L740 360 L790 300" />
+    <path d="M150 440 H820" stroke-width="4" opacity="0.5"/>
+  </g>
+  <text x="50%" y="74%" text-anchor="middle" fill="#ffffff" fill-opacity="0.22" font-size="78" font-family="Inter, system-ui, -apple-system, sans-serif" font-weight="700" letter-spacing="6">CITYSCAPE</text>
 </svg>

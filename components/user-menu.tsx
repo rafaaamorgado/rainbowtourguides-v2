@@ -20,7 +20,9 @@ import {
     LogOut,
     MessageSquare,
     Settings,
+    Shield,
     User2,
+    Users,
 } from 'lucide-react';
 import {
     createSupabaseBrowserClient,
@@ -112,8 +114,9 @@ export function UserMenu() {
         router.refresh();
     };
 
-    const resolvedRole = profile?.role === 'guide' ? 'guide' : 'traveler'; // TODO: handle admin shell when it exists
-    const basePath = resolvedRole === 'guide' ? '/guide' : '/traveler';
+    const resolvedRole = profile?.role || 'traveler';
+    const isAdmin = resolvedRole === 'admin';
+    const basePath = isAdmin ? '/admin' : resolvedRole === 'guide' ? '/guide' : '/traveler';
 
     const displayName =
         profile?.full_name ||
@@ -196,36 +199,67 @@ export function UserMenu() {
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                    <Link href={`${basePath}/dashboard`} className="flex w-full items-center gap-2">
-                        <LayoutDashboard className="h-4 w-4" />
-                        <span>Dashboard</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`${basePath}/messages`} className="flex w-full items-center gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>Messages</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`${basePath}/bookings`} className="flex w-full items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>Bookings</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`${basePath}/settings`} className="flex w-full items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        <span>Settings</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`${basePath}/profile`} className="flex w-full items-center gap-2">
-                        <User2 className="h-4 w-4" />
-                        <span>Profile</span>
-                    </Link>
-                </DropdownMenuItem>
+                {isAdmin ? (
+                    <>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin" className="flex w-full items-center gap-2">
+                                <LayoutDashboard className="h-4 w-4" />
+                                <span>Admin Dashboard</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/users" className="flex w-full items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                <span>Manage Users</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/guides" className="flex w-full items-center gap-2">
+                                <Shield className="h-4 w-4" />
+                                <span>Manage Guides</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/settings" className="flex w-full items-center gap-2">
+                                <Settings className="h-4 w-4" />
+                                <span>Settings</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    </>
+                ) : (
+                    <>
+                        <DropdownMenuItem asChild>
+                            <Link href={`${basePath}/dashboard`} className="flex w-full items-center gap-2">
+                                <LayoutDashboard className="h-4 w-4" />
+                                <span>Dashboard</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href={`${basePath}/messages`} className="flex w-full items-center gap-2">
+                                <MessageSquare className="h-4 w-4" />
+                                <span>Messages</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href={`${basePath}/bookings`} className="flex w-full items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                <span>Bookings</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href={`${basePath}/settings`} className="flex w-full items-center gap-2">
+                                <Settings className="h-4 w-4" />
+                                <span>Settings</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href={`${basePath}/profile`} className="flex w-full items-center gap-2">
+                                <User2 className="h-4 w-4" />
+                                <span>Profile</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                     onClick={handleSignOut}
