@@ -257,6 +257,8 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
 
           <div className="lg:col-span-1">
             <BookingCard
+              guideId={guide.id}
+              cityId={guide.city_id}
               basePrices={{
                 4: guide.price_4h ? Number(guide.price_4h) : undefined,
                 6: guide.price_6h ? Number(guide.price_6h) : undefined,

@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Calendar, Clock, Users, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type Duration = 4 | 6 | 8;
 
 interface BookingCardProps {
+  guideId: string;
+  cityId: string;
   basePrices: Partial<Record<Duration, number>>;
   currency?: string | null;
 }
 
-export function BookingCard({ basePrices, currency = "USD" }: BookingCardProps) {
+export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: BookingCardProps) {
+  const router = useRouter();
   const [duration, setDuration] = useState<Duration>(4);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -22,7 +27,7 @@ export function BookingCard({ basePrices, currency = "USD" }: BookingCardProps) 
   const [location, setLocation] = useState("default");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const price = basePrices[duration] ?? 120;
   const serviceFee = price * 0.08;
@@ -33,10 +38,70 @@ export function BookingCard({ basePrices, currency = "USD" }: BookingCardProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
+    
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setSubmitted(true);
-    setLoading(false);
+    setError("");
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) {
+        setError("Unable to connect to database");
+        setLoading(false);
+        return;
+      }
+
+      // Check authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        // Redirect to sign-in with return URL
+        router.push(`/auth/sign-in?returnUrl=${encodeURIComponent(window.location.pathname)}`);
+        return;
+      }
+
+      // Validate date is in the future
+      const startDateTime = new Date(`${date}T${time}`);
+      if (startDateTime <= new Date()) {
+        setError("Please select a future date and time");
+        setLoading(false);
+        return;
+      }
+
+      // Create booking via API
+      const response = await fetch("/api/bookings/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          guideId,
+          cityId,
+          duration,
+          date,
+          time,
+          travelers,
+          location,
+          notes,
+          price: total,
+          currency: currency || "USD",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to create booking request");
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to traveler bookings page
+      router.push("/traveler/bookings?success=booking_created");
+    } catch (err) {
+      console.error("Error creating booking:", err);
+      setError("An unexpected error occurred. Please try again.");
+      setLoading(false);
+    }
   };
 
   const durationOptions: Duration[] = [4, 6, 8];
@@ -181,21 +246,28 @@ export function BookingCard({ basePrices, currency = "USD" }: BookingCardProps) 
       </div>
 
       <div className="space-y-2">
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+            {error}
+          </div>
+        )}
         <Button
           className="w-full h-12 text-base font-semibold"
           disabled={!canSubmit || loading}
           onClick={handleSubmit}
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Request to Book"}
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Creating request...
+            </>
+          ) : (
+            "Request to Book"
+          )}
         </Button>
         <p className="text-xs text-center text-ink-soft">
           You won&apos;t be charged yet. The guide will confirm availability first.
         </p>
-        {submitted && (
-          <p className="text-xs text-emerald-600 text-center">
-            Request sent (demo). We&apos;ll notify the guide.
-          </p>
-        )}
       </div>
     </aside>
   );

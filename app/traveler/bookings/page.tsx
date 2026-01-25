@@ -45,6 +45,7 @@ export default function TravelerBookingsPage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
   const [isCreatingDemo, setIsCreatingDemo] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const fetchBookings = useCallback(async (uid: string) => {
     const supabase = createSupabaseBrowserClient();
@@ -54,13 +55,16 @@ export default function TravelerBookingsPage() {
       .from("bookings")
       .select(`
         *,
-        guide:profiles!bookings_guide_id_fkey(full_name),
+        guide:guides!bookings_guide_id_fkey(
+          profile:profiles!guides_id_fkey(full_name)
+        ),
         city:cities!bookings_city_id_fkey(name)
       `)
       .eq("traveler_id", uid)
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error("[TravelerBookings] Error fetching bookings:", error);
       return;
     }
 
@@ -70,13 +74,13 @@ export default function TravelerBookingsPage() {
       traveler_id: b.traveler_id,
       guide_id: b.guide_id,
       city_id: b.city_id,
-      guide_name: b.guide?.full_name || "Guide",
+      guide_name: b.guide?.profile?.full_name || "Guide",
       city_name: b.city?.name || "City",
-      date: b.starts_at,
+      date: b.start_at,
       duration: b.duration_hours || 4,
       status: b.status,
       price_total: parseFloat(b.price_total || "0"),
-      notes: b.special_requests || b.notes || "",
+      notes: b.traveler_note || "",
     }));
 
     setBookings(adapted);
@@ -99,6 +103,16 @@ export default function TravelerBookingsPage() {
       setUserId(user.id);
       await fetchBookings(user.id);
       setIsLoading(false);
+
+      // Check for success message
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("success") === "booking_created") {
+        setShowSuccessMessage(true);
+        // Clear the query param
+        router.replace("/traveler/bookings", { scroll: false });
+        // Hide message after 5 seconds
+        setTimeout(() => setShowSuccessMessage(false), 5000);
+      }
     }
 
     init();
@@ -115,11 +129,11 @@ export default function TravelerBookingsPage() {
 
     try {
       // Get a random approved guide
-      let availableGuides: { id: string; city_id: string; base_price_4h: string | null }[] = [];
+      let availableGuides: { id: string; city_id: string; price_4h: string | null }[] = [];
 
       const { data: approvedGuides } = await supabase
         .from("guides")
-        .select("id, city_id, base_price_4h")
+        .select("id, city_id, price_4h")
         .eq("status", "approved")
         .limit(5);
 
@@ -129,7 +143,7 @@ export default function TravelerBookingsPage() {
         // Try without status filter
         const { data: allGuides } = await supabase
           .from("guides")
-          .select("id, city_id, base_price_4h")
+          .select("id, city_id, price_4h")
           .limit(5);
 
         if (!allGuides || allGuides.length === 0) {
@@ -160,13 +174,13 @@ export default function TravelerBookingsPage() {
           traveler_id: userId,
           guide_id: randomGuide.id,
           city_id: randomGuide.city_id,
-          starts_at: startDate.toISOString(),
-          ends_at: endDate.toISOString(),
+          start_at: startDate.toISOString(),
           duration_hours: 4,
-          price_total: randomGuide.base_price_4h || "120",
+          party_size: 2,
+          price_total: randomGuide.price_4h || "120",
           currency: "USD",
           status: randomStatus,
-          special_requests: "Demo booking created for testing",
+          traveler_note: "Demo booking created for testing",
         });
 
       if (insertError) {
@@ -245,6 +259,19 @@ export default function TravelerBookingsPage() {
 
   return (
     <div className="space-y-8">
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white flex-shrink-0">
+            ✓
+          </div>
+          <div>
+            <p className="font-semibold text-emerald-900">Booking request sent!</p>
+            <p className="text-sm text-emerald-700">The guide will review your request and respond within 24 hours.</p>
+          </div>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex items-start justify-between">
         <div>
