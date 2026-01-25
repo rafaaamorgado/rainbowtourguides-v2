@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { sendBookingRequestEmail } from "@/lib/email";
-import { getBaseUrl } from "@/lib/url-helpers";
+import { NextRequest, NextResponse } from 'next/server';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { sendBookingRequestEmail } from '@/lib/email';
+import { getBaseUrl } from '@/lib/url-helpers';
+import type { BookingInsert } from '@/lib/db-types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,8 +23,8 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!guideId || !cityId || !duration || !date || !time) {
       return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
+        { error: 'Missing required fields' },
+        { status: 400 },
       );
     }
 
@@ -35,10 +36,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Calculate start and end timestamps
@@ -49,34 +47,39 @@ export async function POST(request: NextRequest) {
     // Validate date is in the future
     if (startDateTime <= new Date()) {
       return NextResponse.json(
-        { error: "Date must be in the future" },
-        { status: 400 }
+        { error: 'Date must be in the future' },
+        { status: 400 },
       );
     }
 
     // Create booking
-    const { data: booking, error: bookingError } = await supabase
-      .from("bookings")
-      .insert({
-        traveler_id: user.id,
-        guide_id: guideId,
-        city_id: cityId,
-        status: "pending",
-        price_total: price.toString(),
-        currency: currency || "USD",
-        start_at: startDateTime.toISOString(),
-        duration_hours: duration,
-        party_size: travelers || 2,
-        traveler_note: notes ? `Meeting location: ${location}\n${notes}` : `Meeting location: ${location}`,
-      })
+    const bookingData: BookingInsert = {
+      traveler_id: user.id,
+      guide_id: guideId,
+      city_id: cityId,
+      status: 'pending' as any,
+      price_total: price.toString(),
+      currency: currency || 'USD',
+      start_at: startDateTime.toISOString(),
+      duration_hours: duration,
+      party_size: travelers || 2,
+      traveler_note: notes
+        ? `Meeting location: ${location}\n${notes}`
+        : `Meeting location: ${location}`,
+    };
+
+    const { data: booking, error: bookingError } = await (
+      supabase.from('bookings') as any
+    )
+      .insert(bookingData)
       .select()
       .single();
 
     if (bookingError) {
-      console.error("Booking creation error:", bookingError);
+      console.error('Booking creation error:', bookingError);
       return NextResponse.json(
-        { error: "Failed to create booking" },
-        { status: 500 }
+        { error: 'Failed to create booking' },
+        { status: 500 },
       );
     }
 
@@ -84,33 +87,30 @@ export async function POST(request: NextRequest) {
     try {
       const [guideResult, travelerResult, cityResult] = await Promise.all([
         supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", guideId)
+          .from('profiles')
+          .select('full_name')
+          .eq('id', guideId)
           .single(),
         supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", user.id)
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
           .single(),
-        supabase
-          .from("cities")
-          .select("name")
-          .eq("id", cityId)
-          .single(),
+        supabase.from('cities').select('name').eq('id', cityId).single(),
       ]);
 
-      const guideName = guideResult.data?.full_name || "Guide";
-      const travelerName = travelerResult.data?.full_name || "Traveler";
-      const cityName = cityResult.data?.name || "the city";
+      const guideName = (guideResult.data as any)?.full_name || 'Guide';
+      const travelerName =
+        (travelerResult.data as any)?.full_name || 'Traveler';
+      const cityName = (cityResult.data as any)?.name || 'the city';
 
-      const formattedDate = startDateTime.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
+      const formattedDate = startDateTime.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
       });
 
       const baseUrl = getBaseUrl();
@@ -124,11 +124,11 @@ export async function POST(request: NextRequest) {
         date: formattedDate,
         link: `${baseUrl}/guide/bookings/${booking.id}`,
       }).catch((err) => {
-        console.error("Failed to send email:", err);
+        console.error('Failed to send email:', err);
         // Don't fail the booking if email fails
       });
     } catch (emailError) {
-      console.error("Error preparing email:", emailError);
+      console.error('Error preparing email:', emailError);
       // Don't fail the booking if email fails
     }
 
@@ -137,10 +137,10 @@ export async function POST(request: NextRequest) {
       bookingId: booking.id,
     });
   } catch (error) {
-    console.error("Unexpected error:", error);
+    console.error('Unexpected error:', error);
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+      { error: 'Internal server error' },
+      { status: 500 },
     );
   }
 }
