@@ -49,9 +49,11 @@ type SupabaseServerClient = Awaited<
   ReturnType<typeof createSupabaseServerClient>
 >;
 
-async function getSupabaseClientWithDebug(
-  caller: string,
-): Promise<{ client?: SupabaseServerClient; debug: DebugMeta; error?: string }> {
+async function getSupabaseClientWithDebug(caller: string): Promise<{
+  client?: SupabaseServerClient;
+  debug: DebugMeta;
+  error?: string;
+}> {
   const debug = {
     hasUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
     hasAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
@@ -71,9 +73,7 @@ async function getSupabaseClientWithDebug(
     return {
       debug,
       error:
-        err instanceof Error
-          ? err.message
-          : 'Failed to create Supabase client',
+        err instanceof Error ? err.message : 'Failed to create Supabase client',
     };
   }
 }
@@ -139,8 +139,11 @@ export async function getCities(): Promise<City[]> {
 }
 
 export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
-  const { client: supabase, debug, error: clientError } =
-    await getSupabaseClientWithDebug('getCities');
+  const {
+    client: supabase,
+    debug,
+    error: clientError,
+  } = await getSupabaseClientWithDebug('getCities');
 
   if (!supabase) {
     return { data: [], error: clientError, debug };
@@ -150,7 +153,11 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
 
   logQuery('SELECT', 'cities', { is_active: true });
 
-  const { data: cities, error: citiesError, status: citiesStatus } = await supabase
+  const {
+    data: cities,
+    error: citiesError,
+    status: citiesStatus,
+  } = await supabase
     .from('cities')
     .select(
       `
@@ -191,8 +198,8 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
   const citiesWithCounts = (cities || []).map((city: any) => {
     const allGuides = city.guides || [];
     // Support both status field (enum) and approved field (boolean)
-    const approvedGuides = allGuides.filter((g: any) => 
-      g.status === 'approved' || g.approved === true
+    const approvedGuides = allGuides.filter(
+      (g: any) => g.status === 'approved' || g.approved === true,
     );
 
     // Database data: guides fetched from DB
@@ -211,9 +218,14 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
   });
 
   // Filter out cities with no guides (as per requirement)
-  const citiesWithGuides = citiesWithCounts.filter(city => city.guide_count > 0);
+  const citiesWithGuides = citiesWithCounts.filter(
+    (city) => city.guide_count > 0,
+  );
 
-  return { data: citiesWithGuides, debug: { ...debug, rows: citiesWithGuides.length } };
+  return {
+    data: citiesWithGuides,
+    debug: { ...debug, rows: citiesWithGuides.length },
+  };
 }
 
 /**
@@ -331,8 +343,11 @@ export async function getGuidesWithMeta(
   citySlug?: string,
   filters?: GuideFilters,
 ): Promise<FetchResult<Guide>> {
-  const { client: supabase, debug, error: clientError } =
-    await getSupabaseClientWithDebug('getGuides');
+  const {
+    client: supabase,
+    debug,
+    error: clientError,
+  } = await getSupabaseClientWithDebug('getGuides');
 
   if (!supabase) {
     return { data: [], error: clientError, debug };
@@ -356,10 +371,8 @@ export async function getGuidesWithMeta(
   // Build query
   // NOTE: Removed profile JOIN to avoid RLS infinite recursion error
   // Profile data will need to be fetched separately if needed
-  let query = supabase
-    .from('guides')
-    .select(
-      `
+  let query = supabase.from('guides').select(
+    `
       id,
       slug,
       city_id,
@@ -383,11 +396,15 @@ export async function getGuidesWithMeta(
           name,
           iso_code
         )
+      ),
+      profile:profiles!guides_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        languages
       )
     `,
-    )
-    // Support both status field and approved field
-    .or('status.eq.approved,approved.eq.true');
+  );
 
   if (cityId) {
     query = query.eq('city_id', cityId);
@@ -436,32 +453,52 @@ export async function getGuidesWithMeta(
     guides, // Log actual data
   );
 
-  // Get ratings and review counts for each guide
-  const guidesWithStats =
-    guides?.map((guide: any) => {
-      const ratings =
-        guide.reviews?.map((r: { rating: number }) => r.rating) || [];
-      const rating =
-        ratings.length > 0
-          ? ratings.reduce((sum: number, r: number) => sum + r, 0) /
-            ratings.length
-          : 0;
-      const reviewCount = ratings.length;
+  // Fetch reviews for each guide to calculate ratings and review counts
+  const guideIds = guides.map((guide: any) => guide.id);
+  const { data: reviews, error: reviewsError } = await supabase
+    .from('reviews')
+    .select('subject_id, rating')
+    .in('subject_id', guideIds);
 
-      return adaptGuideFromDB(
-        guide,
-        null, // profile removed to avoid RLS recursion
-        guide.city as any, // city already contains nested country
-        rating,
-        reviewCount,
-      );
-    }) ?? [];
+  if (reviewsError) {
+    logError('SELECT', 'reviews', reviewsError);
+    return { data: [], error: reviewsError.message, debug };
+  }
 
-  // NOTE: Profile data fetch disabled due to RLS infinite recursion
-  // Guide names are extracted from slug as temporary workaround
-  // TODO: Fix RLS policies in Supabase for profiles table
+  console.log('Guide IDs:', guideIds);
+  console.log('Fetched Reviews:', reviews);
 
-  return { data: guidesWithStats, debug: { ...debug, rows: guidesWithStats.length } };
+  const reviewsByGuide = reviews.reduce((acc: any, review: any) => {
+    if (!acc[review.subject_id]) {
+      acc[review.subject_id] = [];
+    }
+    acc[review.subject_id].push(review.rating);
+    return acc;
+  }, {});
+
+  // Calculate ratings and review counts
+  const guidesWithStats = guides.map((guide: any) => {
+    const ratings = reviewsByGuide[guide.id] || [];
+    const rating =
+      ratings.length > 0
+        ? ratings.reduce((sum: number, r: number) => sum + r, 0) /
+          ratings.length
+        : 0;
+    const reviewCount = ratings.length;
+
+    return adaptGuideFromDB(
+      guide,
+      null, // profile removed to avoid RLS recursion
+      guide.city as any, // city already contains nested country
+      rating,
+      reviewCount,
+    );
+  });
+
+  return {
+    data: guidesWithStats,
+    debug: { ...debug, rows: guidesWithStats.length },
+  };
 }
 
 /**
