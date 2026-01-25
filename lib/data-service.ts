@@ -1,3 +1,5 @@
+'use server';
+
 /**
  * Data Service Layer - Abstraction over data sources
  *
