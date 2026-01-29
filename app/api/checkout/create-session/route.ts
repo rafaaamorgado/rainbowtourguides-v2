@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { requireUser } from "@/lib/auth-helpers";
+import { getStripe } from "@/lib/stripe";
 import { getBaseUrl } from "@/lib/url-helpers";
 import type { Database } from "@/types/database";
 
@@ -95,17 +95,13 @@ export async function POST(request: NextRequest) {
     const guideName = (guideProfile as any)?.full_name || "Guide";
 
     // Initialize Stripe
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    if (!stripeSecretKey) {
+    const stripe = getStripe();
+    if (!stripe) {
       return NextResponse.json(
         { error: "Stripe is not configured" },
         { status: 500 }
       );
     }
-
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: "2025-02-24.acacia",
-    });
 
     // Get base URL
     const baseUrl = getBaseUrl();

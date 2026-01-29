@@ -177,7 +177,7 @@ export async function sendBookingStatusEmail({
 }
 
 /**
- * Send email to both traveler and guide when booking is paid
+ * Send email to both traveler and guide when booking is confirmed (payment successful)
  * If emails are not provided, attempts to fetch them from userIds
  */
 export async function sendBookingPaidEmail({

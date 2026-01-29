@@ -631,46 +631,55 @@ export async function searchGuides(query: string): Promise<Guide[]> {
     const langMatch = profile?.languages?.some((lang: string) =>
       lang.toLowerCase().includes(query.toLowerCase()),
     );
-    return nameMatch || langMatch || true; // Already filtered by guide fields above
+    return nameMatch || langMatch;
   });
 
-  // Get ratings and review counts
-  const guidesWithStats = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    filteredGuides.map(async (guide: any) => {
-      const reviewStartTime = Date.now();
-      const { data: reviews } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('guide_id', guide.id);
+  // Batch fetch all reviews for filtered guides (avoid N+1)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const guideIds = filteredGuides.map((g: any) => g.id);
+  const reviewStartTime = Date.now();
+  const { data: allReviews } = await supabase
+    .from('reviews')
+    .select('guide_id, rating')
+    .in('guide_id', guideIds);
 
-      logQuery(
-        'SELECT',
-        'reviews',
-        { guide_id: guide.id },
-        Date.now() - reviewStartTime,
-        reviews, // Log reviews data
-      );
-
-      const rating =
-        reviews && reviews.length > 0
-          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
-            reviews.length
-          : 0;
-      const reviewCount = reviews?.length || 0;
-
-      return adaptGuideFromDB(
-        guide,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        guide.profile as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        guide.city as any, // city already contains nested country
-        rating,
-        reviewCount,
-      );
-    }),
+  logQuery(
+    'SELECT',
+    'reviews',
+    { guide_ids: guideIds.length },
+    Date.now() - reviewStartTime,
+    allReviews,
   );
+
+  // Group reviews by guide_id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reviewsByGuide = (allReviews || []).reduce((acc: Record<string, any[]>, r: any) => {
+    if (!acc[r.guide_id]) acc[r.guide_id] = [];
+    acc[r.guide_id].push(r);
+    return acc;
+  }, {});
+
+  // Map guides with their stats
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const guidesWithStats = filteredGuides.map((guide: any) => {
+    const reviews = reviewsByGuide[guide.id] || [];
+    const rating =
+      reviews.length > 0
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+        : 0;
+    const reviewCount = reviews.length;
+
+    return adaptGuideFromDB(
+      guide,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      guide.profile as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      guide.city as any, // city already contains nested country
+      rating,
+      reviewCount,
+    );
+  });
 
   return guidesWithStats;
 }
@@ -710,39 +719,48 @@ export async function getTopGuides(limit: number = 10): Promise<Guide[]> {
 
   logQuery('SELECT', 'guides', { status: 'approved' }, undefined, guides); // Log guides data
 
-  // Get ratings and review counts, then sort
-  const guidesWithStats = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (guides || []).map(async (guide: any) => {
-      const reviewStartTime = Date.now();
-      const { data: reviews } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('guide_id', guide.id);
+  // Batch fetch all reviews for guides (avoid N+1)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const guideIds = (guides || []).map((g: any) => g.id);
+  const reviewStartTime = Date.now();
+  const { data: allReviews } = await supabase
+    .from('reviews')
+    .select('guide_id, rating')
+    .in('guide_id', guideIds);
 
-      logQuery(
-        'SELECT',
-        'reviews',
-        { guide_id: guide.id },
-        Date.now() - reviewStartTime,
-        reviews, // Log reviews data
-      );
-
-      const rating =
-        reviews && reviews.length > 0
-          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
-            reviews.length
-          : 0;
-      const reviewCount = reviews?.length || 0;
-
-      return {
-        guide,
-        rating,
-        reviewCount,
-      };
-    }),
+  logQuery(
+    'SELECT',
+    'reviews',
+    { guide_ids: guideIds.length },
+    Date.now() - reviewStartTime,
+    allReviews,
   );
+
+  // Group reviews by guide_id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reviewsByGuide = (allReviews || []).reduce((acc: Record<string, any[]>, r: any) => {
+    if (!acc[r.guide_id]) acc[r.guide_id] = [];
+    acc[r.guide_id].push(r);
+    return acc;
+  }, {});
+
+  // Map guides with their stats
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const guidesWithStats = (guides || []).map((guide: any) => {
+    const reviews = reviewsByGuide[guide.id] || [];
+    const rating =
+      reviews.length > 0
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+        : 0;
+    const reviewCount = reviews.length;
+
+    return {
+      guide,
+      rating,
+      reviewCount,
+    };
+  });
 
   // Sort by rating desc, then review count desc
   guidesWithStats.sort((a, b) => {
@@ -920,7 +938,7 @@ export async function updateBookingStatus(
     cancelled: 'cancelled_by_traveler', // Default to traveler cancellation
     accepted: 'accepted',
     declined: 'declined',
-    paid: 'awaiting_payment', // Closest match
+    paid: 'confirmed', // Legacy: 'paid' is deprecated, map to 'confirmed'
   };
 
   const newStatus = statusMap[status] || status;

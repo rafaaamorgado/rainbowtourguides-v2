@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { Badge } from '@/components/ui/badge';
+import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -29,6 +30,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import Link from 'next/link';
+import { isMessagingEnabled } from '@/lib/messaging-rules';
 
 type Booking = {
   id: string;
@@ -237,16 +239,6 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
   const cityName = booking.city?.name || 'Unknown City';
   const isPending = booking.status === 'pending';
 
-  const statusColors = {
-    pending: 'bg-amber-100 text-amber-700 border-amber-200',
-    accepted: 'bg-blue-100 text-blue-700 border-blue-200',
-    paid: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-    confirmed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-    completed: 'bg-slate-100 text-slate-700 border-slate-200',
-    cancelled: 'bg-red-100 text-red-700 border-red-200',
-    declined: 'bg-red-100 text-red-700 border-red-200',
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -263,14 +255,7 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
             <p className="text-ink-soft">Request from {travelerName}</p>
           </div>
         </div>
-        <Badge
-          className={
-            statusColors[booking.status as keyof typeof statusColors] ||
-            'bg-slate-100 text-slate-700'
-          }
-        >
-          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-        </Badge>
+        <BookingStatusBadge status={booking.status} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -440,14 +425,14 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
                     Decline
                   </Button>
                 </>
-              ) : (
+              ) : isMessagingEnabled(booking.status) ? (
                 <Button asChild variant="outline" className="w-full" size="lg">
                   <Link href={`/guide/messages?booking=${booking.id}`}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Message Traveler
                   </Link>
                 </Button>
-              )}
+              ) : null}
 
               <div className="pt-4 border-t border-slate-200 text-sm text-ink-soft space-y-2">
                 <div className="flex justify-between">

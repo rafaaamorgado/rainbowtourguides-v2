@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { getStripe } from '@/lib/stripe';
 import { sendBookingPaidEmail } from '@/lib/email';
 import { getBaseUrl } from '@/lib/url-helpers';
 import type { Database } from '@/types/database';
@@ -18,17 +18,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Initialize Stripe
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    if (!stripeSecretKey) {
+    const stripe = getStripe();
+    if (!stripe) {
       return NextResponse.json(
         { ok: false, error: 'Stripe is not configured' },
         { status: 500 },
       );
     }
-
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2025-02-24.acacia',
-    });
 
     // Retrieve checkout session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -69,9 +65,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Update booking status to 'paid' after successful payment
+    // Update booking status to 'confirmed' after successful payment (DOC-02: accepted → confirmed)
     const bookingUpdate: Database['public']['Tables']['bookings']['Update'] = {
-      status: 'paid',
+      status: 'confirmed',
     };
 
     // Type assertion needed for Supabase update operation

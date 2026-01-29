@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import { Calendar, Clock, MapPin, Check, X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -152,7 +152,7 @@ export default function GuideBookingsPage() {
   const pendingBookings = bookings.filter((b) => b.status === "pending");
   const upcomingBookings = bookings.filter(
     (b) =>
-      (b.status === "accepted" || b.status === "paid" || b.status === "confirmed") &&
+      (b.status === "accepted" || b.status === "confirmed") &&
       new Date(b.start_at) >= new Date()
   );
   const pastBookings = bookings.filter(
@@ -328,16 +328,6 @@ function BookingCard({ booking, onAccept, onDecline, actionLoading }: BookingCar
   const isPending = booking.status === "pending";
   const isLoading = actionLoading === booking.id;
 
-  const statusColors = {
-    pending: "bg-amber-100 text-amber-700 border-amber-200",
-    accepted: "bg-blue-100 text-blue-700 border-blue-200",
-    paid: "bg-emerald-100 text-emerald-700 border-emerald-200",
-    confirmed: "bg-emerald-100 text-emerald-700 border-emerald-200",
-    completed: "bg-slate-100 text-slate-700 border-slate-200",
-    cancelled: "bg-red-100 text-red-700 border-red-200",
-    declined: "bg-red-100 text-red-700 border-red-200",
-  };
-
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-4">
@@ -376,14 +366,7 @@ function BookingCard({ booking, onAccept, onDecline, actionLoading }: BookingCar
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge
-              className={
-                statusColors[booking.status as keyof typeof statusColors] ||
-                "bg-slate-100 text-slate-700"
-              }
-            >
-              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-            </Badge>
+            <BookingStatusBadge status={booking.status} />
             <span className="text-lg font-bold text-ink">
               {booking.currency === "EUR" ? "€" : "$"}
               {parseFloat(booking.price_total).toFixed(0)}
