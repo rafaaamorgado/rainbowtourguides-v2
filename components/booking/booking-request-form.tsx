@@ -113,7 +113,7 @@ export function BookingRequestForm({ guideId, cityId, priceRates }: BookingReque
                 status: 'pending',
                 price_total: estimatedPrice,
                 currency: priceRates.currency,
-                starts_at: startAt.toISOString(),
+                start_at: startAt.toISOString(),
                 ends_at: endAt.toISOString(),
                 duration_hours: parseInt(data.duration),
                 notes: data.notes

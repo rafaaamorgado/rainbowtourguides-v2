@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
+import { isMessagingEnabled } from '@/lib/messaging-rules';
 
 interface Message {
   id: string;
@@ -64,11 +65,8 @@ export default function MessageInbox({
 
   useEffect(() => {
     fetchBookings(currentUserId, userRole).then((data) => {
-      const filteredBookings = data.filter(
-        (b) =>
-          b.status === 'confirmed' ||
-          b.status === 'accepted' ||
-          b.status === 'completed',
+      const filteredBookings = data.filter((b) =>
+        isMessagingEnabled(b.status),
       );
       setBookings(filteredBookings);
       setIsLoading(false);

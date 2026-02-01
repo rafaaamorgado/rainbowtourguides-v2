@@ -26,7 +26,7 @@ export default async function CitiesPage() {
   // Fetch cities from data service
   const { data: cities, error, debug } = await getCitiesWithMeta();
   const showDebugText = process.env.NODE_ENV !== "production";
-  const enableClientDebug = true;
+  const enableClientDebug = process.env.NODE_ENV !== 'production';
 
   if (error) {
     return (

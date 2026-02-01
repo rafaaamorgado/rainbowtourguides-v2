@@ -33,7 +33,7 @@ export default async function GuidesPage() {
   ] = await Promise.all([getGuidesWithMeta(), getCitiesWithMeta()]);
 
   const showDebugText = process.env.NODE_ENV !== 'production';
-  const enableClientDebug = true;
+  const enableClientDebug = process.env.NODE_ENV !== 'production';
 
   if (guidesError || citiesError) {
     const primaryError = guidesError || citiesError;

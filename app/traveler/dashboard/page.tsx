@@ -24,7 +24,7 @@ export default async function TravelerDashboardPage() {
         .select(`
       id,
       status,
-      starts_at,
+      start_at,
       duration_hours,
       price_total,
       currency,
@@ -61,7 +61,7 @@ export default async function TravelerDashboardPage() {
                                     </CardTitle>
                                     <div className="flex items-center text-sm text-muted-foreground gap-1">
                                         <CalendarClock className="h-4 w-4" />
-                                        {format(new Date(booking.starts_at), 'PPP')} • {booking.duration_hours}h
+                                        {format(new Date(booking.start_at), 'PPP')} • {booking.duration_hours}h
                                     </div>
                                 </div>
                                 <Badge variant={

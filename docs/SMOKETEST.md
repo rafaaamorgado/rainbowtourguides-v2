@@ -79,7 +79,7 @@ Run this checklist before deploying to production to verify end-to-end functiona
   - [ ] Use Stripe test card: `4242 4242 4242 4242`
   - [ ] Complete payment
   - [ ] Verify redirect back to `/traveler/bookings?session=...`
-  - [ ] Verify booking status updates to `paid`
+  - [ ] Verify booking status updates to `confirmed`
   - [ ] Check Resend dashboard for emails to both traveler and guide
 
 ## Page Navigation

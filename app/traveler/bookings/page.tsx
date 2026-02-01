@@ -13,9 +13,10 @@ import {
   Plus,
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { isMessagingEnabled } from "@/lib/messaging-rules";
 import type { Booking } from "@/lib/mock-data";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Badge } from "@/components/ui/badge";
+import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import { Button } from "@/components/ui/button";
 import {
   Tabs,
@@ -33,7 +34,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -501,23 +501,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge
-              className={cn(
-                "text-xs font-medium border-0",
-                booking.status === "pending" &&
-                  "bg-amber-100 text-amber-700",
-                booking.status === "accepted" &&
-                  "bg-blue-100 text-blue-700",
-                booking.status === "confirmed" &&
-                  "bg-emerald-100 text-emerald-700",
-                booking.status === "completed" &&
-                  "bg-slate-100 text-slate-700",
-                booking.status === "cancelled" &&
-                  "bg-red-100 text-red-700"
-              )}
-            >
-              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-            </Badge>
+            <BookingStatusBadge status={booking.status} />
 
             <span className="text-2xl font-bold text-ink">
               ${booking.price_total}
@@ -533,15 +517,17 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
             </Link>
           </Button>
 
-          <Button asChild variant="outline" size="sm" className="w-full">
-            <Link
-              href={`/traveler/messages?booking=${booking.id}`}
-              className="flex items-center gap-2"
-            >
-              <MessageSquare className="h-4 w-4" />
-              Message
-            </Link>
-          </Button>
+          {isMessagingEnabled(booking.status) && (
+            <Button asChild variant="outline" size="sm" className="w-full">
+              <Link
+                href={`/traveler/messages?booking=${booking.id}`}
+                className="flex items-center gap-2"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Message
+              </Link>
+            </Button>
+          )}
 
           {(isPending || isUpcoming) && !isCancelled && (
             <Button
