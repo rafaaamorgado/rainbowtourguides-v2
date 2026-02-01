@@ -1,0 +1,133 @@
+---
+description: Separation of UI and Logic
+globs: []
+alwaysApply: true
+---
+
+# Separation of UI and Logic
+
+## Principles
+
+- **UI (layout)** and **logic** (business logic, state, side effects) must be strictly separated.
+- Components must be максимально **declarative** and contain **only JSX/TSX markup**.
+- **All logic must be extracted into hooks**.
+
+---
+
+## Hooks
+
+- Hooks are created in the `lib/` folder next to the component, or in `shared/lib/` if reused.
+- Naming convention: `use[Feature][Action]`  
+  Examples: `useVideoPlayer`, `useShareDialog`, `useFormValidation`
+- **One hook = one responsibility** (Single Responsibility Principle)
+
+---
+
+## Component structure
+
+```tsx
+// ❌ Bad — everything in one file
+export default function Component() {
+  const [state, setState] = useState();
+  const handleClick = () => {
+    /* complex logic */
+  };
+  useEffect(() => {
+    /* side effects */
+  }, []);
+
+  return <div onClick={handleClick}>...</div>;
+}
+
+// ✅ Good — separation of concerns
+export default function Component() {
+  const { state, handleClick } = useComponentLogic();
+
+  return <div onClick={handleClick}>...</div>;
+}
+```
+
+## Hook extraction rules
+
+Extract into hooks:
+
+- Any usage of useState, useEffect, useCallback, useMemo
+- Event handlers (onClick, onChange, etc.)
+- Any business logic
+- API interactions
+- Data calculations and transformations
+
+Keep inside components:
+
+- JSX markup
+- className, style, and other props
+- Imports of UI components and styles
+- Simple display-only constants
+
+## Examples
+
+### Hook
+
+```tsx
+// lib/useVideoPlayer.ts
+export function useVideoPlayer(videoRef: RefObject<HTMLVideoElement>) {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handlePlayPause = useCallback(() => {
+    if (!videoRef.current) return;
+
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play();
+    }
+  }, [isPlaying]);
+
+  return {
+    isPlaying,
+    handlePlayPause,
+    handlePlay: () => setIsPlaying(true),
+    handlePause: () => setIsPlaying(false),
+  };
+}
+```
+
+### Component
+
+```tsx
+// ui/VideoPlayer.tsx
+export function VideoPlayer() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { isPlaying, handlePlayPause } = useVideoPlayer(videoRef);
+
+  return (
+    <div className={styles.player} onClick={handlePlayPause}>
+      <video ref={videoRef} />
+      {!isPlaying && <PlayIcon />}
+    </div>
+  );
+}
+```
+
+## File structure
+
+```
+feature/
+├── ui/
+│   ├── Component.tsx          # UI only
+│   └── Component.module.scss
+├── lib/
+│   ├── useComponentLogic.ts   # Main logic
+│   ├── useFeatureA.ts         # Additional logic
+│   └── helpers.ts             # Helper functions
+└── model/
+    ├── types.ts
+    └── constants.ts
+```
+
+## Benefits
+
+- **Reusability** - hooks can be reused across components
+- **Testability** - logic can be tested independently from UI
+- **Readability** - components focus only on rendering
+- **Maintainability** - logic and UI evolve independently

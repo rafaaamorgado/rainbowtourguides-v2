@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Calendar,
   Clock,
@@ -11,19 +11,14 @@ import {
   Star,
   AlertTriangle,
   Plus,
-} from "lucide-react";
-import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { isMessagingEnabled } from "@/lib/messaging-rules";
-import type { Booking } from "@/lib/mock-data";
-import { EmptyState } from "@/components/ui/empty-state";
-import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
-import { Button } from "@/components/ui/button";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+} from 'lucide-react';
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { isMessagingEnabled } from '@/lib/messaging-rules';
+import type { Booking } from '@/lib/mock-data';
+import { EmptyState } from '@/components/ui/empty-state';
+import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -33,9 +28,9 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === 'development';
 
 export default function TravelerBookingsPage() {
   const router = useRouter();
@@ -52,19 +47,21 @@ export default function TravelerBookingsPage() {
     if (!supabase) return;
 
     const { data, error } = await supabase
-      .from("bookings")
-      .select(`
+      .from('bookings')
+      .select(
+        `
         *,
         guide:guides!bookings_guide_id_fkey(
           profile:profiles!guides_id_fkey(full_name)
         ),
         city:cities!bookings_city_id_fkey(name)
-      `)
-      .eq("traveler_id", uid)
-      .order("created_at", { ascending: false });
+      `,
+      )
+      .eq('traveler_id', uid)
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error("[TravelerBookings] Error fetching bookings:", error);
+      console.error('[TravelerBookings] Error fetching bookings:', error);
       return;
     }
 
@@ -74,13 +71,13 @@ export default function TravelerBookingsPage() {
       traveler_id: b.traveler_id,
       guide_id: b.guide_id,
       city_id: b.city_id,
-      guide_name: b.guide?.profile?.full_name || "Guide",
-      city_name: b.city?.name || "City",
+      guide_name: b.guide?.profile?.full_name || 'Guide',
+      city_name: b.city?.name || 'City',
       date: b.start_at,
       duration: b.duration_hours || 4,
       status: b.status,
-      price_total: parseFloat(b.price_total || "0"),
-      notes: b.traveler_note || "",
+      price_total: parseFloat(b.price_total || '0'),
+      notes: b.traveler_note || '',
     }));
 
     setBookings(adapted);
@@ -94,9 +91,11 @@ export default function TravelerBookingsPage() {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
-        router.replace("/auth/sign-in?redirect=/traveler/bookings");
+        router.replace('/auth/sign-in?redirect=/traveler/bookings');
         return;
       }
 
@@ -106,10 +105,10 @@ export default function TravelerBookingsPage() {
 
       // Check for success message
       const params = new URLSearchParams(window.location.search);
-      if (params.get("success") === "booking_created") {
+      if (params.get('success') === 'booking_created') {
         setShowSuccessMessage(true);
         // Clear the query param
-        router.replace("/traveler/bookings", { scroll: false });
+        router.replace('/traveler/bookings', { scroll: false });
         // Hide message after 5 seconds
         setTimeout(() => setShowSuccessMessage(false), 5000);
       }
@@ -117,6 +116,86 @@ export default function TravelerBookingsPage() {
 
     init();
   }, [router, fetchBookings]);
+
+  // Set up realtime subscription for booking updates
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase || !userId) return;
+
+    console.log(
+      '[Realtime] Setting up bookings subscription for traveler:',
+      userId,
+    );
+
+    const channel = supabase
+      .channel(`traveler_bookings:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings',
+          filter: `traveler_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Booking updated:', {
+            bookingId: payload.new.id,
+            oldStatus: (payload.old as any)?.status,
+            newStatus: (payload.new as any).status,
+            timestamp: new Date().toISOString(),
+          });
+
+          setBookings((prev) =>
+            prev.map((b) => {
+              if (b.id === (payload.new as any).id) {
+                console.log('[Realtime] Updating booking in UI:', b.id);
+                return {
+                  ...b,
+                  status: (payload.new as any).status,
+                  accepted_at: (payload.new as any).accepted_at,
+                  confirmed_at: (payload.new as any).confirmed_at,
+                  cancelled_at: (payload.new as any).cancelled_at,
+                  completed_at: (payload.new as any).completed_at,
+                };
+              }
+              return b;
+            }),
+          );
+
+          // Show success message if status changed to accepted or confirmed
+          const newStatus = (payload.new as any).status;
+          if (newStatus === 'accepted' || newStatus === 'confirmed') {
+            setShowSuccessMessage(true);
+            setTimeout(() => setShowSuccessMessage(false), 5000);
+          }
+        },
+      )
+      .subscribe((status) => {
+        console.log('[Realtime] Bookings subscription status:', {
+          channel: `traveler_bookings:${userId}`,
+          status,
+          timestamp: new Date().toISOString(),
+        });
+
+        if (status === 'SUBSCRIBED') {
+          console.log(
+            '[Realtime] ✅ Successfully subscribed to booking updates',
+          );
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[Realtime] ❌ Channel error - check RLS policies');
+        } else if (status === 'CLOSED') {
+          console.log('[Realtime] 🔌 Channel closed');
+        }
+      });
+
+    return () => {
+      console.log(
+        '[Realtime] Cleaning up bookings subscription for traveler:',
+        userId,
+      );
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   // DEV ONLY: Create a demo booking
   const handleCreateDemoBooking = async () => {
@@ -129,12 +208,16 @@ export default function TravelerBookingsPage() {
 
     try {
       // Get a random approved guide
-      let availableGuides: { id: string; city_id: string; price_4h: string | null }[] = [];
+      let availableGuides: {
+        id: string;
+        city_id: string;
+        price_4h: string | null;
+      }[] = [];
 
       const { data: approvedGuides } = await supabase
-        .from("guides")
-        .select("id, city_id, price_4h")
-        .eq("status", "approved")
+        .from('guides')
+        .select('id, city_id, price_4h')
+        .eq('status', 'approved')
         .limit(5);
 
       if (approvedGuides && approvedGuides.length > 0) {
@@ -142,12 +225,12 @@ export default function TravelerBookingsPage() {
       } else {
         // Try without status filter
         const { data: allGuides } = await supabase
-          .from("guides")
-          .select("id, city_id, price_4h")
+          .from('guides')
+          .select('id, city_id, price_4h')
           .limit(5);
 
         if (!allGuides || allGuides.length === 0) {
-          alert("No guides found. Seed some guide data first.");
+          alert('No guides found. Seed some guide data first.');
           setIsCreatingDemo(false);
           return;
         }
@@ -155,21 +238,25 @@ export default function TravelerBookingsPage() {
         availableGuides = allGuides;
       }
 
-      const randomGuide = availableGuides[Math.floor(Math.random() * availableGuides.length)];
+      const randomGuide =
+        availableGuides[Math.floor(Math.random() * availableGuides.length)];
 
       // Create a demo booking
       const startDate = new Date();
-      startDate.setDate(startDate.getDate() + Math.floor(Math.random() * 14) + 1); // 1-14 days from now
+      startDate.setDate(
+        startDate.getDate() + Math.floor(Math.random() * 14) + 1,
+      ); // 1-14 days from now
       startDate.setHours(10, 0, 0, 0);
 
       const endDate = new Date(startDate);
       endDate.setHours(endDate.getHours() + 4);
 
-      const statuses = ["pending", "confirmed", "accepted"];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      const statuses = ['pending', 'confirmed', 'accepted'];
+      const randomStatus =
+        statuses[Math.floor(Math.random() * statuses.length)];
 
       const { error: insertError } = await (supabase as any)
-        .from("bookings")
+        .from('bookings')
         .insert({
           traveler_id: userId,
           guide_id: randomGuide.id,
@@ -177,10 +264,10 @@ export default function TravelerBookingsPage() {
           start_at: startDate.toISOString(),
           duration_hours: 4,
           party_size: 2,
-          price_total: randomGuide.price_4h || "120",
-          currency: "USD",
+          price_total: randomGuide.price_4h || '120',
+          currency: 'USD',
           status: randomStatus,
-          traveler_note: "Demo booking created for testing",
+          traveler_note: 'Demo booking created for testing',
         });
 
       if (insertError) {
@@ -201,16 +288,18 @@ export default function TravelerBookingsPage() {
   // Filter bookings by status
   const upcomingBookings = bookings.filter(
     (b) =>
-      (b.status === "confirmed" || b.status === "accepted") &&
-      new Date(b.date) >= new Date()
+      (b.status === 'confirmed' || b.status === 'accepted') &&
+      new Date(b.date) >= new Date(),
   );
 
-  const pendingBookings = bookings.filter((b) => b.status === "pending");
+  const pendingBookings = bookings.filter((b) => b.status === 'pending');
 
   const pastBookings = bookings.filter(
     (b) =>
-      (b.status === "completed" || b.status === "cancelled") &&
-      new Date(b.date) < new Date()
+      (b.status === 'completed' ||
+        b.status === 'cancelled_by_traveler' ||
+        b.status === 'cancelled_by_guide') &&
+      new Date(b.date) < new Date(),
   );
 
   const handleCancelClick = (bookingId: string) => {
@@ -226,10 +315,10 @@ export default function TravelerBookingsPage() {
 
     // Update booking status
     const { error } = await (supabase as any)
-      .from("bookings")
-      .update({ status: "cancelled" })
-      .eq("id", bookingToCancel)
-      .eq("traveler_id", userId); // Ensure user owns the booking
+      .from('bookings')
+      .update({ status: 'cancelled_by_traveler' })
+      .eq('id', bookingToCancel)
+      .eq('traveler_id', userId); // Ensure user owns the booking
 
     if (error) {
       // Silent error
@@ -237,8 +326,10 @@ export default function TravelerBookingsPage() {
       // Update local state
       setBookings((prev) =>
         prev.map((b) =>
-          b.id === bookingToCancel ? { ...b, status: "cancelled" } : b
-        )
+          b.id === bookingToCancel
+            ? { ...b, status: 'cancelled_by_traveler' }
+            : b,
+        ),
       );
     }
 
@@ -266,8 +357,12 @@ export default function TravelerBookingsPage() {
             ✓
           </div>
           <div>
-            <p className="font-semibold text-emerald-900">Booking request sent!</p>
-            <p className="text-sm text-emerald-700">The guide will review your request and respond within 24 hours.</p>
+            <p className="font-semibold text-emerald-900">
+              Booking request sent!
+            </p>
+            <p className="text-sm text-emerald-700">
+              The guide will review your request and respond within 24 hours.
+            </p>
           </div>
         </div>
       )}
@@ -276,7 +371,9 @@ export default function TravelerBookingsPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-ink mb-2">My Bookings</h1>
-          <p className="text-ink-soft">Manage your tour bookings and requests</p>
+          <p className="text-ink-soft">
+            Manage your tour bookings and requests
+          </p>
         </div>
 
         {/* DEV ONLY: Demo booking button */}
@@ -289,7 +386,7 @@ export default function TravelerBookingsPage() {
             className="border-dashed border-amber-500 text-amber-700 hover:bg-amber-50"
           >
             <Plus className="h-4 w-4 mr-2" />
-            {isCreatingDemo ? "Creating..." : "DEV: Add Demo Booking"}
+            {isCreatingDemo ? 'Creating...' : 'DEV: Add Demo Booking'}
           </Button>
         )}
       </div>
@@ -297,18 +394,14 @@ export default function TravelerBookingsPage() {
       {/* Tabs */}
       <Tabs defaultValue="all">
         <TabsList>
-          <TabsTrigger value="all">
-            All ({bookings.length})
-          </TabsTrigger>
+          <TabsTrigger value="all">All ({bookings.length})</TabsTrigger>
           <TabsTrigger value="upcoming">
             Upcoming ({upcomingBookings.length})
           </TabsTrigger>
           <TabsTrigger value="pending">
             Pending ({pendingBookings.length})
           </TabsTrigger>
-          <TabsTrigger value="past">
-            Past ({pastBookings.length})
-          </TabsTrigger>
+          <TabsTrigger value="past">Past ({pastBookings.length})</TabsTrigger>
         </TabsList>
 
         {/* All Tab */}
@@ -450,12 +543,14 @@ interface BookingCardProps {
 }
 
 function BookingCard({ booking, onCancel }: BookingCardProps) {
-  const isPending = booking.status === "pending";
+  const isPending = booking.status === 'pending';
   const isUpcoming =
-    (booking.status === "confirmed" || booking.status === "accepted") &&
+    (booking.status === 'confirmed' || booking.status === 'accepted') &&
     new Date(booking.date) >= new Date();
-  const isCompleted = booking.status === "completed";
-  const isCancelled = booking.status === "cancelled";
+  const isCompleted = booking.status === 'completed';
+  const isCancelled =
+    booking.status === 'cancelled_by_traveler' ||
+    booking.status === 'cancelled_by_guide';
 
   // Mock: Check if reviewed (in production, check reviews table)
   const hasReview = false;
@@ -487,11 +582,11 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
           <div className="flex flex-wrap items-center gap-4 text-sm text-ink-soft">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {new Date(booking.date).toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                year: "numeric",
+              {new Date(booking.date).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
               })}
             </div>
             <div className="flex items-center gap-1">
@@ -512,9 +607,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
         {/* Actions */}
         <div className="flex flex-col gap-2 lg:min-w-[160px]">
           <Button asChild variant="outline" size="sm" className="w-full">
-            <Link href={`/traveler/bookings/${booking.id}`}>
-              View Details
-            </Link>
+            <Link href={`/traveler/bookings/${booking.id}`}>View Details</Link>
           </Button>
 
           {isMessagingEnabled(booking.status) && (
@@ -536,7 +629,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
               onClick={() => onCancel(booking.id)}
               className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
             >
-              Cancel {isPending ? "Request" : "Booking"}
+              Cancel {isPending ? 'Request' : 'Booking'}
             </Button>
           )}
 

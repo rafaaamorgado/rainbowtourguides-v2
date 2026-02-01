@@ -1,0 +1,44 @@
+# Documentation Rule
+
+## Documentation Location
+
+**All project documentation files created by the AI must be saved in the `.cursor/` folder.**
+
+### What counts as documentation:
+
+- Project structure guides
+- Setup instructions
+- Architecture overviews
+- Feature documentation
+- API documentation
+- Style guides
+- Development notes
+- Any README files (unless specifically requested in another location)
+- Markdown files explaining project concepts
+
+### Examples:
+
+✅ **Correct locations:**
+
+- `.cursor/PROJECT_STRUCTURE.md`
+- `.cursor/SETUP.md`
+- `.cursor/FEATURES.md`
+- `.cursor/API_GUIDE.md`
+- `.cursor/ARCHITECTURE.md`
+
+❌ **Incorrect locations:**
+
+- `PROJECT_STRUCTURE.md` (root)
+- `docs/setup.md` (unless explicitly requested)
+- `README.md` (root - unless explicitly requested)
+
+### Exception:
+
+The only exception is when the user **explicitly requests** documentation in a specific location (e.g., "create a README.md in the root folder").
+
+### Rationale:
+
+- Keeps project root clean
+- Organizes all AI-generated documentation in one place
+- Easy to find and maintain
+- Doesn't interfere with source code structure

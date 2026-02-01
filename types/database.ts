@@ -1,6 +1,15 @@
-export type ProfileRole = "traveler" | "guide" | "admin";
-export type GuideStatus = "draft" | "pending" | "approved" | "rejected";
-export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled" | "accepted" | "declined" | "paid";
+export type ProfileRole = 'traveler' | 'guide' | 'admin';
+export type GuideStatus = 'draft' | 'pending' | 'approved' | 'rejected';
+export type BookingStatus =
+  | 'draft'
+  | 'pending'
+  | 'accepted'
+  | 'awaiting_payment'
+  | 'confirmed'
+  | 'declined'
+  | 'cancelled_by_traveler'
+  | 'cancelled_by_guide'
+  | 'completed';
 
 type CountriesTable = {
   Row: {
@@ -17,7 +26,7 @@ type CountriesTable = {
     created_at?: string;
     updated_at?: string;
   };
-  Update: Partial<CountriesTable["Row"]>;
+  Update: Partial<CountriesTable['Row']>;
 };
 
 type CitiesTable = {
@@ -47,7 +56,7 @@ type CitiesTable = {
     created_at?: string;
     updated_at?: string;
   };
-  Update: Partial<CitiesTable["Row"]>;
+  Update: Partial<CitiesTable['Row']>;
 };
 
 type ProfilesTable = {
@@ -79,7 +88,7 @@ type ProfilesTable = {
     created_at?: string;
     updated_at?: string;
   };
-  Update: Partial<ProfilesTable["Row"]>;
+  Update: Partial<ProfilesTable['Row']>;
 };
 
 type TravelersTable = {
@@ -101,7 +110,7 @@ type TravelersTable = {
     created_at?: string;
     updated_at?: string;
   };
-  Update: Partial<TravelersTable["Row"]>;
+  Update: Partial<TravelersTable['Row']>;
 };
 
 type GuidesTable = {
@@ -157,7 +166,7 @@ type GuidesTable = {
     created_at?: string;
     updated_at?: string;
   };
-  Update: Partial<GuidesTable["Row"]>;
+  Update: Partial<GuidesTable['Row']>;
 };
 
 type BookingsTable = {
@@ -203,7 +212,7 @@ type BookingsTable = {
     created_at?: string;
     updated_at?: string;
   };
-  Update: Partial<BookingsTable["Row"]>;
+  Update: Partial<BookingsTable['Row']>;
 };
 
 type MessagesTable = {
@@ -211,17 +220,37 @@ type MessagesTable = {
     id: string;
     booking_id: string;
     sender_id: string;
-    text: string;
+    body: string;
     created_at: string;
   };
   Insert: {
     id?: string;
     booking_id: string;
     sender_id: string;
-    text: string;
+    body: string;
     created_at?: string;
   };
-  Update: Partial<MessagesTable["Row"]>;
+  Update: Partial<MessagesTable['Row']>;
+};
+
+type BookingReadsTable = {
+  Row: {
+    booking_id: string;
+    user_id: string;
+    last_read_message_id: string | null;
+    last_read_at: string;
+    created_at: string;
+    updated_at: string;
+  };
+  Insert: {
+    booking_id: string;
+    user_id: string;
+    last_read_message_id?: string | null;
+    last_read_at?: string;
+    created_at?: string;
+    updated_at?: string;
+  };
+  Update: Partial<BookingReadsTable['Row']>;
 };
 
 type ReviewsTable = {
@@ -243,7 +272,7 @@ type ReviewsTable = {
     comment?: string | null;
     created_at?: string;
   };
-  Update: Partial<ReviewsTable["Row"]>;
+  Update: Partial<ReviewsTable['Row']>;
 };
 
 type AdminEventsTable = {
@@ -261,7 +290,7 @@ type AdminEventsTable = {
     payload?: Record<string, unknown>;
     created_at?: string;
   };
-  Update: Partial<AdminEventsTable["Row"]>;
+  Update: Partial<AdminEventsTable['Row']>;
 };
 
 type ExperiencesTable = {
@@ -289,7 +318,7 @@ type ExperiencesTable = {
     created_at?: string;
     updated_at?: string;
   };
-  Update: Partial<ExperiencesTable["Row"]>;
+  Update: Partial<ExperiencesTable['Row']>;
 };
 
 type AvailabilitySlotsTable = {
@@ -311,7 +340,7 @@ type AvailabilitySlotsTable = {
     created_at?: string;
     updated_at?: string;
   };
-  Update: Partial<AvailabilitySlotsTable["Row"]>;
+  Update: Partial<AvailabilitySlotsTable['Row']>;
 };
 
 export interface Database {
@@ -324,6 +353,7 @@ export interface Database {
       guides: GuidesTable;
       bookings: BookingsTable;
       messages: MessagesTable;
+      booking_reads: BookingReadsTable;
       reviews: ReviewsTable;
       admin_events: AdminEventsTable;
       experiences: ExperiencesTable;

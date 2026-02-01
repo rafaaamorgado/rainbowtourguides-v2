@@ -1,5 +1,5 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import {
   Table,
   TableBody,
@@ -7,11 +7,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { AdminGuideAction } from "@/components/admin/guide-action-buttons";
-import { ApproveAllGuidesButton } from "@/components/admin/approve-all-guides-button";
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { AdminGuideAction } from '@/components/admin/guide-action-buttons';
+import { ApproveAllGuidesButton } from '@/components/admin/approve-all-guides-button';
 
 export default async function AdminGuidesPage() {
   const cookieStore = await cookies();
@@ -20,20 +20,22 @@ export default async function AdminGuidesPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} },
-    }
+    },
   );
 
   const { data: guides, error } = await supabase
     .from('guides')
-    .select(`
+    .select(
+      `
       *,
-      profile:profiles(full_name, email)
-    `)
+      profile:profiles!guides_id_fkey(full_name, email)
+    `,
+    )
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
-    
+
   return (
-      <div className="space-y-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Guide Verification Queue</h1>
         {guides && guides.length > 0 && (
@@ -54,38 +56,47 @@ export default async function AdminGuidesPage() {
           </TableHeader>
           <TableBody>
             {!guides || guides.length === 0 ? (
-                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                        No pending applications.
-                    </TableCell>
-                 </TableRow>
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  No pending applications.
+                </TableCell>
+              </TableRow>
             ) : (
-                guides.map((guide: any) => (
-                  <TableRow key={guide.id}>
-                    <TableCell className="font-medium">
-                       <div>
-                        <p>{guide.profile?.full_name}</p>
-                         <p className="text-xs text-muted-foreground">ID: {guide.id.slice(0,6)}</p>
-                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {guide.city_id} 
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {guide.themes?.slice(0,2).map((t: string) => (
-                            <Badge key={t} variant="outline" className="text-[10px]">{t}</Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(guide.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <AdminGuideAction guideId={guide.id} />
-                    </TableCell>
-                  </TableRow>
-                ))
+              guides.map((guide: any) => (
+                <TableRow key={guide.id}>
+                  <TableCell className="font-medium">
+                    <div>
+                      <p>{guide.profile?.full_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        ID: {guide.id.slice(0, 6)}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>{guide.city_id}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {guide.themes?.slice(0, 2).map((t: string) => (
+                        <Badge
+                          key={t}
+                          variant="outline"
+                          className="text-[10px]"
+                        >
+                          {t}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(guide.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <AdminGuideAction guideId={guide.id} />
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>

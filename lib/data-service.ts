@@ -653,11 +653,14 @@ export async function searchGuides(query: string): Promise<Guide[]> {
 
   // Group reviews by guide_id
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const reviewsByGuide = (allReviews || []).reduce((acc: Record<string, any[]>, r: any) => {
-    if (!acc[r.guide_id]) acc[r.guide_id] = [];
-    acc[r.guide_id].push(r);
-    return acc;
-  }, {});
+  const reviewsByGuide = (allReviews || []).reduce(
+    (acc: Record<string, any[]>, r: any) => {
+      if (!acc[r.guide_id]) acc[r.guide_id] = [];
+      acc[r.guide_id].push(r);
+      return acc;
+    },
+    {},
+  );
 
   // Map guides with their stats
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -666,7 +669,8 @@ export async function searchGuides(query: string): Promise<Guide[]> {
     const rating =
       reviews.length > 0
         ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+          reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+          reviews.length
         : 0;
     const reviewCount = reviews.length;
 
@@ -738,11 +742,14 @@ export async function getTopGuides(limit: number = 10): Promise<Guide[]> {
 
   // Group reviews by guide_id
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const reviewsByGuide = (allReviews || []).reduce((acc: Record<string, any[]>, r: any) => {
-    if (!acc[r.guide_id]) acc[r.guide_id] = [];
-    acc[r.guide_id].push(r);
-    return acc;
-  }, {});
+  const reviewsByGuide = (allReviews || []).reduce(
+    (acc: Record<string, any[]>, r: any) => {
+      if (!acc[r.guide_id]) acc[r.guide_id] = [];
+      acc[r.guide_id].push(r);
+      return acc;
+    },
+    {},
+  );
 
   // Map guides with their stats
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -751,7 +758,8 @@ export async function getTopGuides(limit: number = 10): Promise<Guide[]> {
     const rating =
       reviews.length > 0
         ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+          reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+          reviews.length
         : 0;
     const reviewCount = reviews.length;
 
@@ -802,8 +810,9 @@ export async function getBookings(
       *,
       guide:guides!bookings_guide_id_fkey(
         id,
-        profile:profiles(full_name)
+        profile:profiles!guides_id_fkey(full_name, avatar_url)
       ),
+      traveler:profiles!bookings_traveler_id_fkey(full_name, avatar_url),
       city:cities!bookings_city_id_fkey(name)
     `,
     )
@@ -832,6 +841,8 @@ export async function getBookings(
       booking.guide?.profile as any,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       booking.city as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      booking.traveler as any,
     ),
   );
 }
@@ -849,8 +860,9 @@ export async function getBooking(id: string): Promise<Booking | undefined> {
       *,
       guide:guides!bookings_guide_id_fkey(
         id,
-        profile:profiles(full_name)
+        profile:profiles!guides_id_fkey(full_name, avatar_url)
       ),
+      traveler:profiles!bookings_traveler_id_fkey(full_name, avatar_url),
       city:cities!bookings_city_id_fkey(name)
     `,
     )
@@ -872,6 +884,8 @@ export async function getBooking(id: string): Promise<Booking | undefined> {
     bookingData.guide?.profile as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     bookingData.city as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    bookingData.traveler as any,
   );
 }
 
@@ -907,8 +921,9 @@ export async function createBooking(
       *,
       guide:guides!bookings_guide_id_fkey(
         id,
-        profile:profiles(full_name)
+        profile:profiles!guides_id_fkey(full_name, avatar_url)
       ),
+      traveler:profiles!bookings_traveler_id_fkey(full_name, avatar_url),
       city:cities!bookings_city_id_fkey(name)
     `,
     )
@@ -918,7 +933,12 @@ export async function createBooking(
     throw new Error(error?.message || 'Failed to create booking');
   }
 
-  return adaptBookingFromDB(booking, booking.guide?.profile, booking.city);
+  return adaptBookingFromDB(
+    booking,
+    booking.guide?.profile,
+    booking.city,
+    booking.traveler,
+  );
 }
 
 /**
@@ -973,8 +993,9 @@ export async function updateBookingStatus(
       *,
       guide:guides!bookings_guide_id_fkey(
         id,
-        profile:profiles(full_name)
+        profile:profiles!guides_id_fkey(full_name, avatar_url)
       ),
+      traveler:profiles!bookings_traveler_id_fkey(full_name, avatar_url),
       city:cities!bookings_city_id_fkey(name)
     `,
     )
@@ -984,7 +1005,12 @@ export async function updateBookingStatus(
     throw new Error(error?.message || 'Booking not found');
   }
 
-  return adaptBookingFromDB(booking, booking.guide?.profile, booking.city);
+  return adaptBookingFromDB(
+    booking,
+    booking.guide?.profile,
+    booking.city,
+    booking.traveler,
+  );
 }
 
 // ============================================================================

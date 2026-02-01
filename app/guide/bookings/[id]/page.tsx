@@ -122,6 +122,80 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
     fetchBooking();
   }, [bookingId, router]);
 
+  // Set up realtime subscription for this specific booking
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase || !bookingId) return;
+
+    console.log(
+      '[Realtime] Setting up booking detail subscription for:',
+      bookingId,
+    );
+
+    const channel = supabase
+      .channel(`booking_detail:${bookingId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings',
+          filter: `id=eq.${bookingId}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Booking status changed:', {
+            bookingId: payload.new.id,
+            oldStatus: (payload.old as any)?.status,
+            newStatus: (payload.new as any).status,
+            timestamp: new Date().toISOString(),
+          });
+
+          setBooking((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status: (payload.new as any).status,
+                  accepted_at: (payload.new as any).accepted_at,
+                  confirmed_at: (payload.new as any).confirmed_at,
+                  cancelled_at: (payload.new as any).cancelled_at,
+                  completed_at: (payload.new as any).completed_at,
+                }
+              : null,
+          );
+
+          // Log when chat becomes available
+          if (isMessagingEnabled((payload.new as any).status)) {
+            console.log('[Realtime] 💬 Chat is now enabled for this booking!');
+          }
+        },
+      )
+      .subscribe((status) => {
+        console.log('[Realtime] Booking detail subscription status:', {
+          channel: `booking_detail:${bookingId}`,
+          status,
+          timestamp: new Date().toISOString(),
+        });
+
+        if (status === 'SUBSCRIBED') {
+          console.log(
+            '[Realtime] ✅ Successfully subscribed to booking updates',
+          );
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[Realtime] ❌ Channel error - check RLS policies');
+        } else if (status === 'CLOSED') {
+          console.log('[Realtime] 🔌 Channel closed');
+        }
+      });
+
+    return () => {
+      console.log(
+        '[Realtime] Cleaning up booking detail subscription for:',
+        bookingId,
+      );
+      supabase.removeChannel(channel);
+    };
+  }, [bookingId]);
+
   const handleAccept = async () => {
     if (!booking) return;
 

@@ -120,6 +120,7 @@ export function adaptBookingFromDB(
   bookingRow: BookingRow,
   guideProfile: ProfileRow | null,
   cityRow: CityRow | null,
+  travelerProfile?: ProfileRow | null,
 ): Booking {
   // Calculate end time from start_at + duration_hours
   const startAt = new Date(bookingRow.start_at);
@@ -132,12 +133,17 @@ export function adaptBookingFromDB(
     id: bookingRow.id,
     traveler_id: bookingRow.traveler_id,
     guide_id: bookingRow.guide_id,
+    city_id: bookingRow.city_id,
     guide_name: guideProfile?.full_name || 'Unknown',
+    traveler_name: travelerProfile?.full_name || 'Unknown',
     city_name: cityRow?.name || 'Unknown',
     date: bookingRow.start_at, // ISO string
     duration: bookingRow.duration_hours || 0, // Handle null case
+    notes: bookingRow.traveler_note || '',
     status: bookingRow.status, // BookingStatus enum matches
     price_total: parseFloat(bookingRow.price_total.toString()),
+    guide_avatar: guideProfile?.avatar_url,
+    traveler_avatar: travelerProfile?.avatar_url,
   };
 }
 
@@ -171,7 +177,7 @@ export function adaptMessageFromDB(
     booking_id: messageRow.booking_id,
     sender_id: messageRow.sender_id,
     sender_name: senderProfile?.full_name || 'Unknown',
-    content: messageRow.text, // ⚠️ text, not body
+    content: messageRow.body, // Database column is 'body'
     timestamp: messageRow.created_at,
   };
 }

@@ -1,13 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
-import { Calendar, Clock, MapPin, Check, X, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState, useCallback } from 'react';
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge';
+import { Calendar, Clock, MapPin, Check, X, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,8 +23,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/alert-dialog';
+import { useRouter } from 'next/navigation';
 
 type Booking = {
   id: string;
@@ -49,6 +55,7 @@ export default function GuideBookingsPage() {
   const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
   const [bookingToDecline, setBookingToDecline] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [guideId, setGuideId] = useState<string | null>(null);
 
   const fetchBookings = useCallback(async () => {
     const supabase = createSupabaseBrowserClient();
@@ -58,21 +65,21 @@ export default function GuideBookingsPage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      router.push("/auth/sign-in");
+      router.push('/auth/sign-in');
       return;
     }
 
     const { data } = await supabase
-      .from("bookings")
+      .from('bookings')
       .select(
         `
         *,
         traveler:profiles!bookings_traveler_id_fkey(full_name, avatar_url),
         city:cities!bookings_city_id_fkey(name)
-      `
+      `,
       )
-      .eq("guide_id", user.id)
-      .order("created_at", { ascending: false });
+      .eq('guide_id', user.id)
+      .order('created_at', { ascending: false });
 
     setBookings((data || []) as Booking[]);
     setIsLoading(false);
@@ -82,24 +89,97 @@ export default function GuideBookingsPage() {
     fetchBookings();
   }, [fetchBookings]);
 
+  // Set up realtime subscription for booking updates
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase || !guideId) return;
+
+    console.log(
+      '[Realtime] Setting up bookings subscription for guide:',
+      guideId,
+    );
+
+    const channel = supabase
+      .channel(`guide_bookings:${guideId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings',
+          filter: `guide_id=eq.${guideId}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Booking updated:', {
+            bookingId: payload.new.id,
+            oldStatus: (payload.old as any)?.status,
+            newStatus: (payload.new as any).status,
+            timestamp: new Date().toISOString(),
+          });
+
+          setBookings((prev) =>
+            prev.map((b) => {
+              if (b.id === (payload.new as any).id) {
+                console.log('[Realtime] Updating booking in UI:', b.id);
+                return {
+                  ...b,
+                  status: (payload.new as any).status,
+                  accepted_at: (payload.new as any).accepted_at,
+                  confirmed_at: (payload.new as any).confirmed_at,
+                  cancelled_at: (payload.new as any).cancelled_at,
+                  completed_at: (payload.new as any).completed_at,
+                };
+              }
+              return b;
+            }),
+          );
+        },
+      )
+      .subscribe((status) => {
+        console.log('[Realtime] Bookings subscription status:', {
+          channel: `guide_bookings:${guideId}`,
+          status,
+          timestamp: new Date().toISOString(),
+        });
+
+        if (status === 'SUBSCRIBED') {
+          console.log(
+            '[Realtime] ✅ Successfully subscribed to booking updates',
+          );
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[Realtime] ❌ Channel error - check RLS policies');
+        } else if (status === 'CLOSED') {
+          console.log('[Realtime] 🔌 Channel closed');
+        }
+      });
+
+    return () => {
+      console.log(
+        '[Realtime] Cleaning up bookings subscription for guide:',
+        guideId,
+      );
+      supabase.removeChannel(channel);
+    };
+  }, [guideId]);
+
   const handleAccept = async (bookingId: string) => {
     setActionLoading(bookingId);
     try {
       const response = await fetch(`/api/bookings/${bookingId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "accepted" }),
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'accepted' }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to accept booking");
+        throw new Error('Failed to accept booking');
       }
 
       // Refresh bookings
       await fetchBookings();
     } catch (error) {
-      console.error("Error accepting booking:", error);
-      alert("Failed to accept booking. Please try again.");
+      console.error('Error accepting booking:', error);
+      alert('Failed to accept booking. Please try again.');
     } finally {
       setActionLoading(null);
     }
@@ -116,20 +196,20 @@ export default function GuideBookingsPage() {
     setActionLoading(bookingToDecline);
     try {
       const response = await fetch(`/api/bookings/${bookingToDecline}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "declined" }),
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'declined' }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to decline booking");
+        throw new Error('Failed to decline booking');
       }
 
       // Refresh bookings
       await fetchBookings();
     } catch (error) {
-      console.error("Error declining booking:", error);
-      alert("Failed to decline booking. Please try again.");
+      console.error('Error declining booking:', error);
+      alert('Failed to decline booking. Please try again.');
     } finally {
       setActionLoading(null);
       setDeclineDialogOpen(false);
@@ -149,17 +229,20 @@ export default function GuideBookingsPage() {
   }
 
   // Filter bookings by status
-  const pendingBookings = bookings.filter((b) => b.status === "pending");
+  const pendingBookings = bookings.filter((b) => b.status === 'pending');
   const upcomingBookings = bookings.filter(
     (b) =>
-      (b.status === "accepted" || b.status === "confirmed") &&
-      new Date(b.start_at) >= new Date()
+      (b.status === 'accepted' || b.status === 'confirmed') &&
+      new Date(b.start_at) >= new Date(),
   );
   const pastBookings = bookings.filter(
-    (b) => b.status === "completed" || new Date(b.start_at) < new Date()
+    (b) => b.status === 'completed' || new Date(b.start_at) < new Date(),
   );
   const cancelledBookings = bookings.filter(
-    (b) => b.status === "cancelled" || b.status === "declined"
+    (b) =>
+      b.status === 'cancelled_by_traveler' ||
+      b.status === 'cancelled_by_guide' ||
+      b.status === 'declined',
   );
 
   return (
@@ -174,10 +257,12 @@ export default function GuideBookingsPage() {
       <Tabs defaultValue="requests" className="w-full">
         <TabsList>
           <TabsTrigger value="requests">
-            Requests {pendingBookings.length > 0 && `(${pendingBookings.length})`}
+            Requests{' '}
+            {pendingBookings.length > 0 && `(${pendingBookings.length})`}
           </TabsTrigger>
           <TabsTrigger value="upcoming">
-            Upcoming {upcomingBookings.length > 0 && `(${upcomingBookings.length})`}
+            Upcoming{' '}
+            {upcomingBookings.length > 0 && `(${upcomingBookings.length})`}
           </TabsTrigger>
           <TabsTrigger value="past">Past</TabsTrigger>
           <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
@@ -295,8 +380,8 @@ export default function GuideBookingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Decline Booking Request?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will notify the traveler that you cannot accommodate this booking.
-              This action cannot be undone.
+              This will notify the traveler that you cannot accommodate this
+              booking. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -321,11 +406,16 @@ interface BookingCardProps {
   actionLoading?: string | null;
 }
 
-function BookingCard({ booking, onAccept, onDecline, actionLoading }: BookingCardProps) {
+function BookingCard({
+  booking,
+  onAccept,
+  onDecline,
+  actionLoading,
+}: BookingCardProps) {
   const startDate = new Date(booking.start_at);
-  const travelerName = booking.traveler?.full_name || "Unknown Traveler";
-  const cityName = booking.city?.name || "Unknown City";
-  const isPending = booking.status === "pending";
+  const travelerName = booking.traveler?.full_name || 'Unknown Traveler';
+  const cityName = booking.city?.name || 'Unknown City';
+  const isPending = booking.status === 'pending';
   const isLoading = actionLoading === booking.id;
 
   return (
@@ -348,19 +438,19 @@ function BookingCard({ booking, onAccept, onDecline, actionLoading }: BookingCar
           <div className="flex flex-wrap items-center gap-4 text-sm text-ink-soft">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {startDate.toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                year: "numeric",
+              {startDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
               })}
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              {startDate.toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              })}{" "}
+              {startDate.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+              })}{' '}
               ({booking.duration_hours || 4}h)
             </div>
           </div>
@@ -368,7 +458,7 @@ function BookingCard({ booking, onAccept, onDecline, actionLoading }: BookingCar
           <div className="flex items-center gap-2">
             <BookingStatusBadge status={booking.status} />
             <span className="text-lg font-bold text-ink">
-              {booking.currency === "EUR" ? "€" : "$"}
+              {booking.currency === 'EUR' ? '€' : '$'}
               {parseFloat(booking.price_total).toFixed(0)}
             </span>
           </div>
