@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Search } from "lucide-react";
-import { getCityImageUrl } from "@/lib/city-images";
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Search } from 'lucide-react';
+import { Input } from '@heroui/react';
+import { getCityImageUrl } from '@/lib/city-images';
 
 type City = {
   id: string;
@@ -47,7 +48,7 @@ function CityCard({ city }: { city: City }) {
         </h3>
         <p className="text-sm text-white/80 mb-2">{city.country_name}</p>
         <p className="text-sm text-white/90">
-          {city.guide_count} {city.guide_count === 1 ? "guide" : "guides"}{" "}
+          {city.guide_count} {city.guide_count === 1 ? 'guide' : 'guides'}{' '}
           available
         </p>
       </div>
@@ -73,21 +74,21 @@ function SearchBar({
   totalCount: number;
 }) {
   return (
-    <div className="relative max-w-2xl mx-auto">
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-ink-soft pointer-events-none" />
-        <input
-          type="text"
-          placeholder="Search cities..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 rounded-full border border-slate-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all text-ink placeholder:text-ink-soft"
-        />
-      </div>
+    <div className="relative max-w-2xl mx-auto space-y-2">
+      <Input
+        type="text"
+        placeholder="Search cities..."
+        value={searchQuery}
+        onValueChange={onSearchChange}
+        startContent={<Search className="h-5 w-5 text-ink-soft" />}
+        variant="bordered"
+        radius="full"
+        size="lg"
+      />
       {searchQuery && (
-        <p className="text-xs text-ink-soft text-center mt-2">
-          Found {resultCount} of {totalCount}{" "}
-          {resultCount === 1 ? "city" : "cities"}
+        <p className="text-xs text-ink-soft text-center">
+          Found {resultCount} of {totalCount}{' '}
+          {resultCount === 1 ? 'city' : 'cities'}
         </p>
       )}
     </div>
@@ -98,7 +99,7 @@ function SearchBar({
  * CitiesContent - Client component with search functionality
  */
 export function CitiesContent({ cities }: { cities: City[] }) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Filter cities based on search query
   const filteredCities = useMemo(() => {
@@ -110,7 +111,7 @@ export function CitiesContent({ cities }: { cities: City[] }) {
     return cities.filter(
       (city) =>
         city.name.toLowerCase().includes(query) ||
-        city.country_name.toLowerCase().includes(query)
+        city.country_name.toLowerCase().includes(query),
     );
   }, [cities, searchQuery]);
 
@@ -149,7 +150,7 @@ export function CitiesContent({ cities }: { cities: City[] }) {
             No cities found matching "{searchQuery}"
           </p>
           <button
-            onClick={() => setSearchQuery("")}
+            onClick={() => setSearchQuery('')}
             className="mt-4 text-brand hover:text-brand-dark underline"
           >
             Clear search

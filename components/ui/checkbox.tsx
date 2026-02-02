@@ -1,30 +1,60 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { Check } from "lucide-react"
+import * as React from 'react';
+import {
+  Checkbox as HeroCheckbox,
+  CheckboxProps as HeroCheckboxProps,
+} from '@heroui/react';
+import { cn } from '@/lib/utils';
 
-import { cn } from "@/lib/utils"
+export interface CheckboxProps extends Omit<
+  HeroCheckboxProps,
+  'isSelected' | 'onValueChange'
+> {
+  // Support Radix-style checked prop for backward compatibility
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  // Also support HeroUI props
+  isSelected?: boolean;
+  onValueChange?: (isSelected: boolean) => void;
+}
 
-const Checkbox = React.forwardRef<
-  React.ElementRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <CheckboxPrimitive.Root
-    ref={ref}
-    className={cn(
-      "grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      className
-    )}
-    {...props}
-  >
-    <CheckboxPrimitive.Indicator
-      className={cn("grid place-content-center text-current")}
-    >
-      <Check className="h-4 w-4" />
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
-))
-Checkbox.displayName = CheckboxPrimitive.Root.displayName
+/**
+ * Checkbox component - HeroUI wrapper with project defaults
+ *
+ * Migration notes:
+ * - Supports both Radix API (checked/onCheckedChange) and HeroUI API (isSelected/onValueChange)
+ * - Radix props are transformed to HeroUI props internally
+ */
+const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
+  (
+    {
+      className,
+      checked,
+      onCheckedChange,
+      isSelected,
+      onValueChange,
+      ...props
+    },
+    ref,
+  ) => {
+    // Support both APIs
+    const selected = isSelected ?? checked;
+    const handleChange = onValueChange || onCheckedChange;
 
-export { Checkbox }
+    return (
+      <HeroCheckbox
+        ref={ref}
+        isSelected={selected}
+        onValueChange={handleChange}
+        radius="sm"
+        className={cn(className)}
+        {...props}
+      />
+    );
+  },
+);
+
+Checkbox.displayName = 'Checkbox';
+
+export { Checkbox };

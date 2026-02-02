@@ -1,33 +1,33 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { GuideCard } from "@/components/cards/GuideCard";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
+import { useState, useMemo } from 'react';
+import { Search, SlidersHorizontal } from 'lucide-react';
+import { GuideCard } from '@/components/cards/GuideCard';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import type { Guide } from "@/lib/mock-data";
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import type { Guide } from '@/lib/mock-data';
 
 interface GuidesSectionProps {
   guides: Guide[];
   cityName: string;
 }
 
-type SortOption = "recommended" | "price_low" | "price_high" | "rating";
+type SortOption = 'recommended' | 'price_low' | 'price_high' | 'rating';
 
 export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
-  const [query, setQuery] = useState("");
-  const [theme, setTheme] = useState("all");
-  const [duration, setDuration] = useState("any");
-  const [sortBy, setSortBy] = useState<SortOption>("recommended");
+  const [query, setQuery] = useState('');
+  const [theme, setTheme] = useState('all');
+  const [duration, setDuration] = useState('any');
+  const [sortBy, setSortBy] = useState<SortOption>('recommended');
 
   // Filter and sort guides
   const filteredGuides = useMemo(() => {
@@ -41,26 +41,28 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
           guide.name.toLowerCase().includes(searchLower) ||
           guide.tagline.toLowerCase().includes(searchLower) ||
           guide.experience_tags.some((tag) =>
-            tag.toLowerCase().includes(searchLower)
-          )
+            tag.toLowerCase().includes(searchLower),
+          ),
       );
     }
 
     // Theme filter
-    if (theme !== "all") {
+    if (theme !== 'all') {
       result = result.filter((guide) =>
         guide.experience_tags.some(
-          (tag) => tag.toLowerCase() === theme.toLowerCase()
-        )
+          (tag) => tag.toLowerCase() === theme.toLowerCase(),
+        ),
       );
     }
 
     // Duration filter (based on available prices)
-    if (duration !== "any") {
-      const durationMap: { [key: string]: keyof Pick<Guide, "price_4h" | "price_6h" | "price_8h"> } = {
-        "4": "price_4h",
-        "6": "price_6h",
-        "8": "price_8h",
+    if (duration !== 'any') {
+      const durationMap: {
+        [key: string]: keyof Pick<Guide, 'price_4h' | 'price_6h' | 'price_8h'>;
+      } = {
+        '4': 'price_4h',
+        '6': 'price_6h',
+        '8': 'price_8h',
       };
       const priceKey = durationMap[duration];
       if (priceKey) {
@@ -70,16 +72,16 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
 
     // Sort
     switch (sortBy) {
-      case "price_low":
+      case 'price_low':
         result.sort((a, b) => a.price_4h - b.price_4h);
         break;
-      case "price_high":
+      case 'price_high':
         result.sort((a, b) => b.price_4h - a.price_4h);
         break;
-      case "rating":
+      case 'rating':
         result.sort((a, b) => b.rating - a.rating);
         break;
-      case "recommended":
+      case 'recommended':
       default:
         // Default sort: verified first, then by rating
         result.sort((a, b) => {
@@ -92,13 +94,14 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
   }, [guides, query, theme, duration, sortBy]);
 
   const clearFilters = () => {
-    setQuery("");
-    setTheme("all");
-    setDuration("any");
-    setSortBy("recommended");
+    setQuery('');
+    setTheme('all');
+    setDuration('any');
+    setSortBy('recommended');
   };
 
-  const hasActiveFilters = query || theme !== "all" || duration !== "any" || sortBy !== "recommended";
+  const hasActiveFilters =
+    query || theme !== 'all' || duration !== 'any' || sortBy !== 'recommended';
 
   return (
     <section className="space-y-8">
@@ -126,21 +129,18 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
               </label>
               <Select
                 value={theme}
-                onValueChange={setTheme}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Themes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Themes</SelectItem>
-                  <SelectItem value="nightlife">Nightlife</SelectItem>
-                  <SelectItem value="daytime culture">Daytime Culture</SelectItem>
-                  <SelectItem value="food & drink">Food & Drink</SelectItem>
-                  <SelectItem value="queer history">Queer History</SelectItem>
-                  <SelectItem value="art scene">Art Scene</SelectItem>
-                  <SelectItem value="hidden gems">Hidden Gems</SelectItem>
-                </SelectContent>
-              </Select>
+                onChange={setTheme}
+                options={[
+                  { value: 'all', label: 'All Themes' },
+                  { value: 'nightlife', label: 'Nightlife' },
+                  { value: 'daytime culture', label: 'Daytime Culture' },
+                  { value: 'food & drink', label: 'Food & Drink' },
+                  { value: 'queer history', label: 'Queer History' },
+                  { value: 'art scene', label: 'Art Scene' },
+                  { value: 'hidden gems', label: 'Hidden Gems' },
+                ]}
+                placeholder="All Themes"
+              />
             </div>
 
             {/* Duration Filter */}
@@ -150,18 +150,15 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
               </label>
               <Select
                 value={duration}
-                onValueChange={setDuration}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Any Duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any Duration</SelectItem>
-                  <SelectItem value="4">4 Hours</SelectItem>
-                  <SelectItem value="6">6 Hours</SelectItem>
-                  <SelectItem value="8">8 Hours</SelectItem>
-                </SelectContent>
-              </Select>
+                onChange={setDuration}
+                options={[
+                  { value: 'any', label: 'Any Duration' },
+                  { value: '4', label: '4 Hours' },
+                  { value: '6', label: '6 Hours' },
+                  { value: '8', label: '8 Hours' },
+                ]}
+                placeholder="Any Duration"
+              />
             </div>
 
             {/* Sort Filter */}
@@ -171,18 +168,15 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
               </label>
               <Select
                 value={sortBy}
-                onValueChange={(value) => setSortBy(value as SortOption)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Recommended" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recommended">Recommended</SelectItem>
-                  <SelectItem value="price_low">Price: Low to High</SelectItem>
-                  <SelectItem value="price_high">Price: High to Low</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                </SelectContent>
-              </Select>
+                onChange={(value) => setSortBy(value as SortOption)}
+                options={[
+                  { value: 'recommended', label: 'Recommended' },
+                  { value: 'price_low', label: 'Price: Low to High' },
+                  { value: 'price_high', label: 'Price: High to Low' },
+                  { value: 'rating', label: 'Highest Rated' },
+                ]}
+                placeholder="Recommended"
+              />
             </div>
 
             {/* Clear Filters Button */}
@@ -204,8 +198,10 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
       {/* Results Count */}
       <div className="flex items-center justify-between">
         <p className="text-ink-soft">
-          <span className="font-semibold text-ink">{filteredGuides.length}</span>{" "}
-          {filteredGuides.length === 1 ? "guide" : "guides"} in {cityName}
+          <span className="font-semibold text-ink">
+            {filteredGuides.length}
+          </span>{' '}
+          {filteredGuides.length === 1 ? 'guide' : 'guides'} in {cityName}
         </p>
         {hasActiveFilters && (
           <button
@@ -239,4 +235,3 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
     </section>
   );
 }
-

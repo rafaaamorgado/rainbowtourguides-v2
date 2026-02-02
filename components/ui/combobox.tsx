@@ -1,9 +1,8 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { Autocomplete, AutocompleteItem } from '@heroui/react';
+import { cn } from '@/lib/utils';
 
 export interface ComboboxOption {
   value: string;
@@ -17,116 +16,66 @@ export interface ComboboxProps {
   placeholder?: string;
   icon?: React.ReactNode;
   className?: string;
+  label?: string;
   ariaLabel?: string;
   ariaLabelledby?: string;
 }
 
+/**
+ * Combobox component - HeroUI Autocomplete wrapper with search functionality
+ *
+ * Provides a searchable dropdown with filtering
+ */
 export function Combobox({
-  options,
+  options = [],
   value,
   onChange,
-  placeholder = "Select...",
+  placeholder = 'Select...',
   icon,
   className,
+  label,
   ariaLabel,
   ariaLabelledby,
 }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false);
-  const [search, setSearch] = React.useState("");
-
-  const filteredOptions = React.useMemo(() => {
-    if (!search) return options;
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [options, search]);
-
-  const selectedOption = options.find((option) => option.value === value);
+  const handleSelectionChange = (key: React.Key | null) => {
+    if (key) {
+      onChange(key as string);
+    }
+  };
 
   return (
-    <div className={cn("relative", className)}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className={cn(
-          "flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm",
-          "focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent",
-          "transition-all",
-          !value && "text-ink-soft"
-        )}
-        role="combobox"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledby}
-      >
-        <div className="flex items-center gap-2">
-          {icon && <span className="text-ink-soft">{icon}</span>}
-          <span>{selectedOption ? selectedOption.label : placeholder}</span>
-        </div>
-        <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-      </button>
-
-      {open && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setOpen(false)}
-          />
-
-          {/* Dropdown */}
-          <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 bg-white shadow-lg">
-            {/* Search Input */}
-            <div className="p-2 border-b border-slate-200">
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
-                autoFocus
-              />
-            </div>
-
-            {/* Options List */}
-            <div className="max-h-60 overflow-y-auto p-2">
-              {filteredOptions.length === 0 ? (
-                <div className="py-6 text-center text-sm text-ink-soft">
-                  No results found.
-                </div>
-              ) : (
-                filteredOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => {
-                      onChange(option.value);
-                      setOpen(false);
-                      setSearch("");
-                    }}
-                    className={cn(
-                      "relative flex w-full cursor-pointer select-none items-center rounded-lg px-3 py-2 text-sm outline-none",
-                      "transition-colors",
-                      value === option.value
-                        ? "bg-brand/10 text-brand font-medium"
-                        : "hover:bg-slate-100"
-                    )}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === option.value ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {option.label}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+    <Autocomplete
+      selectedKey={value || null}
+      onSelectionChange={handleSelectionChange}
+      placeholder={placeholder}
+      startContent={icon}
+      label={label}
+      aria-label={ariaLabel || label || placeholder}
+      aria-labelledby={ariaLabelledby}
+      variant="bordered"
+      classNames={{
+        base: cn(className),
+        selectorButton: 'h-12 bg-white border-slate-200 rounded-xl',
+        popoverContent: 'rounded-xl',
+        listbox: 'max-h-60',
+      }}
+      inputProps={{
+        classNames: {
+          input: 'text-sm',
+          inputWrapper: cn(
+            'h-12 border-slate-200 bg-white rounded-xl shadow-sm',
+            'data-[hover=true]:bg-white',
+            'group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-brand group-data-[focus=true]:border-transparent',
+          ),
+        },
+      }}
+      listboxProps={{
+        emptyContent: 'No results found.',
+      }}
+    >
+      {options.map((option) => (
+        <AutocompleteItem key={option.value}>{option.label}</AutocompleteItem>
+      ))}
+    </Autocomplete>
   );
 }

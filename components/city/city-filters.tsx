@@ -1,14 +1,20 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { GuideCard } from "./guide-card";
-import { EmptyState } from "@/components/ui/empty-state";
-import type { Guide } from "@/lib/mock-data";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { GuideCard } from './guide-card';
+import { EmptyState } from '@/components/ui/empty-state';
+import type { Guide } from '@/lib/mock-data';
+import Link from 'next/link';
 
 interface CityFiltersProps {
   guides: Guide[];
@@ -17,11 +23,16 @@ interface CityFiltersProps {
   fetchError?: string;
 }
 
-export function CityFilters({ guides, cityName, country, fetchError }: CityFiltersProps) {
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [theme, setTheme] = useState("all");
-  const [duration, setDuration] = useState("any");
+export function CityFilters({
+  guides,
+  cityName,
+  country,
+  fetchError,
+}: CityFiltersProps) {
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [theme, setTheme] = useState('all');
+  const [duration, setDuration] = useState('any');
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query), 200);
@@ -41,29 +52,31 @@ export function CityFilters({ guides, cityName, country, fetchError }: CityFilte
       const matchesQuery =
         !debouncedQuery ||
         guide.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-        (guide.tagline || "").toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+        (guide.tagline || '')
+          .toLowerCase()
+          .includes(debouncedQuery.toLowerCase()) ||
         (guide.experience_tags || []).some((tag) =>
           tag.toLowerCase().includes(debouncedQuery.toLowerCase()),
         );
 
       const matchesTheme =
-        theme === "all" ||
+        theme === 'all' ||
         (guide.experience_tags || []).some(
           (tag) => tag.toLowerCase() === theme.toLowerCase(),
         );
 
       const matchesDuration =
-        duration === "any" ||
-        (duration === "4" && (guide.price_4h || 0) > 0) ||
-        (duration === "6" && (guide.price_6h || 0) > 0) ||
-        (duration === "8" && (guide.price_8h || 0) > 0);
+        duration === 'any' ||
+        (duration === '4' && (guide.price_4h || 0) > 0) ||
+        (duration === '6' && (guide.price_6h || 0) > 0) ||
+        (duration === '8' && (guide.price_8h || 0) > 0);
 
       return matchesQuery && matchesTheme && matchesDuration;
     });
   }, [guides, debouncedQuery, theme, duration]);
 
   const hasActiveFilters =
-    debouncedQuery.length > 0 || theme !== "all" || duration !== "any";
+    debouncedQuery.length > 0 || theme !== 'all' || duration !== 'any';
 
   return (
     <section className="space-y-8">
@@ -71,7 +84,8 @@ export function CityFilters({ guides, cityName, country, fetchError }: CityFilte
       <div className="rounded-2xl border border-slate-200 bg-white shadow-md p-4 sm:p-6 space-y-4">
         {fetchError && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            We had trouble reaching our guides database. Showing any cached or fallback data. ({fetchError})
+            We had trouble reaching our guides database. Showing any cached or
+            fallback data. ({fetchError})
           </div>
         )}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
@@ -94,19 +108,19 @@ export function CityFilters({ guides, cityName, country, fetchError }: CityFilte
             <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-1 block">
               Theme
             </label>
-            <Select value={theme} onValueChange={setTheme}>
-              <SelectTrigger className="h-11 rounded-xl">
-                <SelectValue placeholder="All themes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All themes</SelectItem>
-                {themeOptions.map((tag) => (
-                  <SelectItem key={tag} value={tag}>
-                    {tag.replace(/-/g, " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Select
+              value={theme}
+              onChange={setTheme}
+              options={[
+                { value: 'all', label: 'All themes' },
+                ...themeOptions.map((tag) => ({
+                  value: tag,
+                  label: tag.replace(/-/g, ' '),
+                })),
+              ]}
+              placeholder="All themes"
+              className="h-11"
+            />
           </div>
 
           <div>
@@ -136,9 +150,9 @@ export function CityFilters({ guides, cityName, country, fetchError }: CityFilte
               variant="ghost"
               size="sm"
               onClick={() => {
-                setQuery("");
-                setTheme("all");
-                setDuration("any");
+                setQuery('');
+                setTheme('all');
+                setDuration('any');
               }}
               className="text-brand hover:text-brand"
             >
@@ -154,8 +168,9 @@ export function CityFilters({ guides, cityName, country, fetchError }: CityFilte
           <div>
             <h2 className="text-2xl font-bold text-ink">Available Guides</h2>
             <p className="text-sm text-ink-soft">
-              {filtered.length} guide{filtered.length === 1 ? "" : "s"} in {cityName}
-              {country ? `, ${country}` : ""}
+              {filtered.length} guide{filtered.length === 1 ? '' : 's'} in{' '}
+              {cityName}
+              {country ? `, ${country}` : ''}
             </p>
           </div>
         </div>
@@ -186,11 +201,15 @@ export function CityFilters({ guides, cityName, country, fetchError }: CityFilte
               variant="default"
             />
             <div className="mt-4">
-              <Button variant="outline" size="sm" onClick={() => {
-                setQuery("");
-                setTheme("all");
-                setDuration("any");
-              }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setQuery('');
+                  setTheme('all');
+                  setDuration('any');
+                }}
+              >
                 Clear filters
               </Button>
             </div>

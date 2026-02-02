@@ -1,13 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState } from 'react';
+import Link from 'next/link';
+import { parseDate, type CalendarDate } from '@internationalized/date';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
 
 type BookingFormProps = {
-  onSubmit: (formData: FormData) => Promise<{ success: boolean; error?: string; guideName?: string }>;
+  onSubmit: (
+    formData: FormData,
+  ) => Promise<{ success: boolean; error?: string; guideName?: string }>;
   guideName: string;
 };
 
@@ -15,14 +19,21 @@ export function BookingForm({ onSubmit, guideName }: BookingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [date, setDate] = useState<CalendarDate | null>(null);
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
 
+    const formData = new FormData(e.currentTarget);
+    if (date) {
+      formData.set('date', date.toString());
+    }
+
     const result = await onSubmit(formData);
-    
+
     setIsSubmitting(false);
 
     if (result.success) {
@@ -40,7 +51,8 @@ export function BookingForm({ onSubmit, guideName }: BookingFormProps) {
             Booking request sent!
           </h3>
           <p className="text-sm text-green-800 dark:text-green-200">
-            Your request has been sent to {guideName}. You&apos;ll hear back soon.
+            Your request has been sent to {guideName}. You&apos;ll hear back
+            soon.
           </p>
         </div>
         <Button
@@ -55,15 +67,19 @@ export function BookingForm({ onSubmit, guideName }: BookingFormProps) {
   }
 
   return (
-    <form
-      action={handleSubmit}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <label htmlFor="date" className="text-sm font-medium">
           Date
         </label>
-        <Input id="date" name="date" type="date" required />
+        <DatePicker
+          id="date"
+          value={date}
+          onChange={setDate}
+          minValue={parseDate(new Date().toISOString().split('T')[0])}
+          placeholderValue={parseDate(new Date().toISOString().split('T')[0])}
+          isRequired
+        />
       </div>
 
       <div className="space-y-2">
@@ -108,16 +124,17 @@ export function BookingForm({ onSubmit, guideName }: BookingFormProps) {
       )}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Sending..." : "Send booking request"}
+        {isSubmitting ? 'Sending...' : 'Send booking request'}
       </Button>
 
       <p className="text-xs text-muted-foreground">
-        Your request will be sent to the guide for approval. You&apos;ll be notified once they respond.
+        Your request will be sent to the guide for approval. You&apos;ll be
+        notified once they respond.
       </p>
       <p className="text-xs text-muted-foreground italic mt-2">
-        Please follow all local laws and platform rules. Rainbow Tour Guides is a marketplace connecting travelers with guides.
+        Please follow all local laws and platform rules. Rainbow Tour Guides is
+        a marketplace connecting travelers with guides.
       </p>
     </form>
   );
 }
-

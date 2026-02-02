@@ -1,23 +1,56 @@
-import * as React from "react";
+'use client';
 
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import {
+  Input as HeroInput,
+  InputProps as HeroInputProps,
+} from '@heroui/react';
+import { cn } from '@/lib/utils';
 
-export type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
+export interface InputProps extends Omit<HeroInputProps, 'size' | 'value'> {
+  size?: 'sm' | 'md' | 'lg';
+  // Support both string and number values for backward compatibility
+  value?: string | number;
+  // Support onChange for compatibility
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type = "text", ...props }, ref) => {
-  return (
-    <input
-      type={type}
-      className={cn(
-        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
-  );
-});
-Input.displayName = "Input";
+/**
+ * Input component - HeroUI wrapper with project defaults
+ *
+ * Migration notes:
+ * - Replaces native HTML input with HeroUI Input
+ * - Maintains similar API for backward compatibility
+ * - Uses HeroUI's built-in validation and styling
+ * - Handles number values by converting to string
+ */
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  (
+    { className, size = 'md', type = 'text', value, classNames, ...props },
+    ref,
+  ) => {
+    // Convert number values to strings for HeroUI compatibility
+    const stringValue = value !== undefined ? String(value) : undefined;
+
+    return (
+      <HeroInput
+        ref={ref}
+        type={type}
+        size={size}
+        value={stringValue}
+        variant="bordered"
+        radius="sm"
+        classNames={{
+          input: cn('bg-background', className),
+          inputWrapper: 'border-input hover:border-ring',
+          ...classNames,
+        }}
+        {...props}
+      />
+    );
+  },
+);
+
+Input.displayName = 'Input';
 
 export { Input };
-
