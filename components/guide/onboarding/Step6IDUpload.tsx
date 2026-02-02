@@ -1,14 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Upload,
-  X,
-  Shield,
-  FileText,
-  CheckCircle,
-  Loader2,
-} from 'lucide-react';
+import { Shield } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -17,6 +10,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
+import { PhotoUpload } from '@/components/ui/photo-upload';
 import { getCurrentUserId, uploadFile } from '@/lib/storage-helpers';
 
 export type Step6Data = {
@@ -37,43 +31,16 @@ const ID_TYPES = [
 ];
 
 export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    setUploadError(null);
-
-    try {
-      // Get current user ID for folder path
-      const userId = await getCurrentUserId();
-      if (!userId) {
-        setUploadError('You must be logged in to upload documents');
-        setIsUploading(false);
-        return;
-      }
-
-      // Upload to Supabase Storage (private bucket)
-      const result = await uploadFile(
-        file,
-        'guide-documents',
-        userId,
-        'id-document',
-      );
-
-      if (result.success && result.url) {
-        onChange({ idDocumentUrl: result.url });
-      } else {
-        setUploadError(result.error || 'Failed to upload document');
-      }
-    } catch (error) {
-      setUploadError('An unexpected error occurred');
-    } finally {
-      setIsUploading(false);
+  const handleDocumentUpload = async (file: File) => {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return {
+        success: false,
+        error: 'You must be logged in to upload documents',
+      };
     }
+
+    return uploadFile(file, 'guide-documents', userId, 'id-document');
   };
 
   return (
@@ -104,112 +71,22 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
         </div>
 
         {/* File Upload */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700">
             Upload ID Document <span className="text-destructive">*</span>
           </label>
-
-          {isUploading ? (
-            <div className="flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-brand rounded-2xl bg-brand/5">
-              <Loader2 size={48} className="text-brand animate-spin mb-4" />
-              <p className="text-sm font-medium text-slate-700">
-                Uploading document securely...
-              </p>
-              <p className="text-xs text-slate-500 mt-2">
-                This may take a moment
-              </p>
-            </div>
-          ) : data.idDocumentUrl ? (
-            <div className="space-y-3">
-              {/* Success State */}
-              <div className="p-6 bg-green-50 rounded-2xl border-2 border-green-200">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <CheckCircle size={24} className="text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-green-900 mb-1">
-                      ID Document Uploaded
-                    </h4>
-                    <p className="text-sm text-green-700 leading-relaxed">
-                      Your ID has been uploaded successfully. Our team will
-                      review it during the approval process.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onChange({ idDocumentUrl: null })}
-                    className="p-2 bg-white rounded-full shadow-sm hover:bg-slate-50 transition-colors"
-                    disabled={isUploading}
-                  >
-                    <X size={16} className="text-slate-600" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Preview (blurred for privacy) */}
-              <div className="relative w-full h-48 rounded-2xl overflow-hidden border-2 border-slate-200">
-                <img
-                  src={data.idDocumentUrl}
-                  alt="ID Document"
-                  className="w-full h-full object-cover blur-sm"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                  <div className="text-center text-white">
-                    <FileText size={40} className="mx-auto mb-2" />
-                    <p className="text-sm font-medium">Document Uploaded</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <label
-              htmlFor="idUpload"
-              className={`flex flex-col items-center justify-center w-full h-56 border-2 border-dashed rounded-2xl transition-all ${
-                uploadError
-                  ? 'border-red-300 bg-red-50'
-                  : 'border-slate-300 cursor-pointer hover:border-brand hover:bg-slate-50'
-              }`}
-            >
-              <div className="flex flex-col items-center space-y-3 px-6">
-                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center">
-                  <Upload size={32} className="text-slate-400" />
-                </div>
-                <div className="text-center space-y-1">
-                  <p className="text-sm font-semibold text-slate-700">
-                    Click to upload your ID
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    PNG, JPG, or PDF up to 10MB
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-slate-500">
-                  <Shield size={14} />
-                  <span>Encrypted and secure</span>
-                </div>
-              </div>
-              <input
-                id="idUpload"
-                type="file"
-                className="hidden"
-                accept="image/*,application/pdf"
-                onChange={handleFileChange}
-                disabled={isUploading}
-              />
-            </label>
-          )}
-
-          {uploadError && (
-            <p className="text-xs text-red-600 font-medium">{uploadError}</p>
-          )}
-
-          {!uploadError && (
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Make sure your full name and photo are clearly visible. Sensitive
-              information will be handled securely and used only for
-              verification.
-            </p>
-          )}
+          <PhotoUpload
+            variant="document"
+            size="xl"
+            value={data.idDocumentUrl}
+            onChange={(url) =>
+              onChange({ idDocumentUrl: typeof url === 'string' ? url : null })
+            }
+            onUpload={handleDocumentUpload}
+            accept="image/*,application/pdf"
+            maxSizeMB={10}
+            helperText="PNG, JPG, or PDF up to 10MB. Make sure your full name and photo are clearly visible."
+          />
         </div>
 
         {/* Security Info */}

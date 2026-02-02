@@ -1,39 +1,41 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useState, useCallback } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AvatarUpload } from "@/components/ui/avatar-upload";
-import { uploadAvatar } from "@/lib/storage-helpers";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PhotoUpload } from '@/components/ui/photo-upload';
+import { uploadAvatar } from '@/lib/storage-helpers';
 import {
   GUIDE_SPECIALTIES,
   LANGUAGE_OPTIONS,
   CURRENCY_OPTIONS,
-} from "@/lib/constants/profile-options";
-import { Loader2, ExternalLink } from "lucide-react";
-import type { Database } from "@/types/database";
+} from '@/lib/constants/profile-options';
+import { Loader2, ExternalLink } from 'lucide-react';
+import type { Database } from '@/types/database';
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Guide = Database["public"]["Tables"]["guides"]["Row"];
-type City = Database["public"]["Tables"]["cities"]["Row"];
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Guide = Database['public']['Tables']['guides']['Row'];
+type City = Database['public']['Tables']['cities']['Row'];
 
 interface GuideProfileFormProps {
   profile: Profile;
   guide: Guide;
   cities: City[];
-  onSubmit: (data: GuideProfileFormData) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    data: GuideProfileFormData,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface GuideProfileFormData {
@@ -61,18 +63,18 @@ export function GuideProfileForm({
   onSubmit,
 }: GuideProfileFormProps) {
   const [formData, setFormData] = useState<GuideProfileFormData>({
-    display_name: profile.full_name || "",
+    display_name: profile.full_name || '',
     avatar_url: profile.avatar_url,
-    bio: guide.bio || "",
-    city_id: guide.city_id || "",
-    tagline: guide.tagline || "",
-    about: guide.about || "",
+    bio: guide.bio || '',
+    city_id: guide.city_id || '',
+    tagline: guide.tagline || '',
+    about: guide.about || '',
     themes: guide.experience_tags || [],
     languages: guide.languages || [],
-    base_price_4h: guide.price_4h || "",
-    base_price_6h: guide.price_6h || "",
-    base_price_8h: guide.price_8h || "",
-    currency: guide.currency || "EUR",
+    base_price_4h: guide.price_4h || '',
+    base_price_6h: guide.price_6h || '',
+    base_price_8h: guide.price_8h || '',
+    currency: guide.currency || 'EUR',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,23 +85,26 @@ export function GuideProfileForm({
     async (file: File) => {
       return uploadAvatar(profile.id, file);
     },
-    [profile.id]
+    [profile.id],
   );
 
-  const handleAvatarChange = (url: string | null) => {
-    setFormData((prev) => ({ ...prev, avatar_url: url }));
+  const handleAvatarChange = (url: string | string[] | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      avatar_url: typeof url === 'string' ? url : null,
+    }));
   };
 
   const handleChange = (
     field: keyof GuideProfileFormData,
-    value: string | string[] | null
+    value: string | string[] | null,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
     setSuccess(false);
   };
 
-  const handleArrayToggle = (field: "themes" | "languages", item: string) => {
+  const handleArrayToggle = (field: 'themes' | 'languages', item: string) => {
     setFormData((prev) => {
       const currentItems = prev[field] || [];
       const newItems = currentItems.includes(item)
@@ -122,10 +127,12 @@ export function GuideProfileForm({
         // Dispatch event to update header
         window.dispatchEvent(new Event('profile-updated'));
       } else {
-        setError(result.error || "Failed to update profile");
+        setError(result.error || 'Failed to update profile');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +140,7 @@ export function GuideProfileForm({
 
   const getCurrencySymbol = (code: string) => {
     const currency = CURRENCY_OPTIONS.find((c) => c.value === code);
-    return currency?.symbol || "$";
+    return currency?.symbol || '$';
   };
 
   return (
@@ -141,7 +148,9 @@ export function GuideProfileForm({
       {/* Header with View Public Profile */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Profile & Listing</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            Profile & Listing
+          </h2>
           <p className="text-muted-foreground">
             Update how you appear to travelers.
           </p>
@@ -184,11 +193,14 @@ export function GuideProfileForm({
                 This is your main photo that travelers will see.
               </p>
             </div>
-            <AvatarUpload
+            <PhotoUpload
+              variant="avatar"
+              size="lg"
               value={formData.avatar_url}
               onChange={handleAvatarChange}
               onUpload={handleAvatarUpload}
-              size="lg"
+              placeholder={formData.display_name}
+              helperText="JPG, PNG, WebP or GIF. Max 2MB."
             />
           </div>
 
@@ -198,7 +210,7 @@ export function GuideProfileForm({
               <Input
                 id="display_name"
                 value={formData.display_name}
-                onChange={(e) => handleChange("display_name", e.target.value)}
+                onChange={(e) => handleChange('display_name', e.target.value)}
                 placeholder="Your name"
                 required
               />
@@ -208,33 +220,27 @@ export function GuideProfileForm({
               <Label htmlFor="city_id">City</Label>
               <Select
                 value={formData.city_id}
-                onValueChange={(value) => handleChange("city_id", value)}
-              >
-                <SelectTrigger id="city_id">
-                  <SelectValue placeholder="Select your city" />
-                </SelectTrigger>
-                <SelectContent>
-                  {cities.map((city) => (
-                    <SelectItem key={city.id} value={city.id}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value) => handleChange('city_id', value)}
+                options={cities.map((city) => ({
+                  value: city.id,
+                  label: city.name,
+                }))}
+                placeholder="Select your city"
+              />
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="bio">Bio</Label>
               <Textarea
                 id="bio"
-                value={formData.bio || ""}
-                onChange={(e) => handleChange("bio", e.target.value)}
+                value={formData.bio || ''}
+                onChange={(e) => handleChange('bio', e.target.value)}
                 placeholder="Tell travelers about yourself, your background, and what makes you a great guide..."
                 className="min-h-[150px]"
                 maxLength={1000}
               />
               <p className="text-xs text-muted-foreground text-right">
-                {(formData.bio || "").length}/1000 characters
+                {(formData.bio || '').length}/1000 characters
               </p>
             </div>
           </div>
@@ -247,8 +253,8 @@ export function GuideProfileForm({
               <Label htmlFor="tagline">Tagline</Label>
               <Input
                 id="tagline"
-                value={formData.tagline || ""}
-                onChange={(e) => handleChange("tagline", e.target.value)}
+                value={formData.tagline || ''}
+                onChange={(e) => handleChange('tagline', e.target.value)}
                 placeholder="A catchy one-liner about your tours"
                 maxLength={100}
               />
@@ -261,14 +267,14 @@ export function GuideProfileForm({
               <Label htmlFor="about">About the Tour</Label>
               <Textarea
                 id="about"
-                value={formData.about || ""}
-                onChange={(e) => handleChange("about", e.target.value)}
+                value={formData.about || ''}
+                onChange={(e) => handleChange('about', e.target.value)}
                 placeholder="Describe what travelers will experience on your tour. What will you show them? What makes your tour special?"
                 className="min-h-[150px]"
                 maxLength={2000}
               />
               <p className="text-xs text-muted-foreground text-right">
-                {(formData.about || "").length}/2000 characters
+                {(formData.about || '').length}/2000 characters
               </p>
             </div>
           </div>
@@ -288,7 +294,9 @@ export function GuideProfileForm({
                 >
                   <Checkbox
                     checked={(formData.themes || []).includes(specialty)}
-                    onCheckedChange={() => handleArrayToggle("themes", specialty)}
+                    onCheckedChange={() =>
+                      handleArrayToggle('themes', specialty)
+                    }
                   />
                   <span className="text-sm font-medium">{specialty}</span>
                 </label>
@@ -311,7 +319,9 @@ export function GuideProfileForm({
                 >
                   <Checkbox
                     checked={(formData.languages || []).includes(language)}
-                    onCheckedChange={() => handleArrayToggle("languages", language)}
+                    onCheckedChange={() =>
+                      handleArrayToggle('languages', language)
+                    }
                   />
                   <span className="text-sm font-medium">{language}</span>
                 </label>
@@ -327,19 +337,10 @@ export function GuideProfileForm({
               <Label htmlFor="currency">Currency</Label>
               <Select
                 value={formData.currency}
-                onValueChange={(value) => handleChange("currency", value)}
-              >
-                <SelectTrigger id="currency">
-                  <SelectValue placeholder="Select currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCY_OPTIONS.map((currency) => (
-                    <SelectItem key={currency.value} value={currency.value}>
-                      {currency.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value) => handleChange('currency', value)}
+                options={[...CURRENCY_OPTIONS]}
+                placeholder="Select currency"
+              />
             </div>
           </div>
 
@@ -355,7 +356,9 @@ export function GuideProfileForm({
               <div className="p-4 rounded-lg border space-y-3">
                 <div className="text-center">
                   <div className="text-2xl font-bold">4 Hours</div>
-                  <div className="text-sm text-muted-foreground">Half-day tour</div>
+                  <div className="text-sm text-muted-foreground">
+                    Half-day tour
+                  </div>
                 </div>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -365,8 +368,10 @@ export function GuideProfileForm({
                     type="number"
                     min="0"
                     step="1"
-                    value={formData.base_price_4h || ""}
-                    onChange={(e) => handleChange("base_price_4h", e.target.value)}
+                    value={formData.base_price_4h || ''}
+                    onChange={(e) =>
+                      handleChange('base_price_4h', e.target.value)
+                    }
                     className="pl-8"
                     placeholder="0"
                   />
@@ -382,7 +387,9 @@ export function GuideProfileForm({
               <div className="p-4 rounded-lg border space-y-3">
                 <div className="text-center">
                   <div className="text-2xl font-bold">6 Hours</div>
-                  <div className="text-sm text-muted-foreground">Full-day tour</div>
+                  <div className="text-sm text-muted-foreground">
+                    Full-day tour
+                  </div>
                 </div>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -392,8 +399,10 @@ export function GuideProfileForm({
                     type="number"
                     min="0"
                     step="1"
-                    value={formData.base_price_6h || ""}
-                    onChange={(e) => handleChange("base_price_6h", e.target.value)}
+                    value={formData.base_price_6h || ''}
+                    onChange={(e) =>
+                      handleChange('base_price_6h', e.target.value)
+                    }
                     className="pl-8"
                     placeholder="0"
                   />
@@ -409,7 +418,9 @@ export function GuideProfileForm({
               <div className="p-4 rounded-lg border space-y-3">
                 <div className="text-center">
                   <div className="text-2xl font-bold">8 Hours</div>
-                  <div className="text-sm text-muted-foreground">Extended tour</div>
+                  <div className="text-sm text-muted-foreground">
+                    Extended tour
+                  </div>
                 </div>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -419,8 +430,10 @@ export function GuideProfileForm({
                     type="number"
                     min="0"
                     step="1"
-                    value={formData.base_price_8h || ""}
-                    onChange={(e) => handleChange("base_price_8h", e.target.value)}
+                    value={formData.base_price_8h || ''}
+                    onChange={(e) =>
+                      handleChange('base_price_8h', e.target.value)
+                    }
                     className="pl-8"
                     placeholder="0"
                   />
@@ -446,7 +459,7 @@ export function GuideProfileForm({
               Saving...
             </>
           ) : (
-            "Save Changes"
+            'Save Changes'
           )}
         </Button>
       </div>

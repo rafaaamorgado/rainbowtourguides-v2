@@ -39,27 +39,6 @@ const SelectContext = React.createContext<{
   defaultValue?: string;
 }>({});
 
-/**
- * Select component - HeroUI wrapper with project defaults
- * Supports both composition API (shadcn-style) and simplified API
- *
- * Simplified usage:
- * <Select
- *   options={[{ value: '1', label: 'Option 1' }]}
- *   value={selectedValue}
- *   onChange={setSelectedValue}
- * />
- *
- * Composition usage (for compatibility):
- * <Select value={value} onValueChange={setValue}>
- *   <SelectTrigger>
- *     <SelectValue placeholder="Select..." />
- *   </SelectTrigger>
- *   <SelectContent>
- *     <SelectItem value="1">Option 1</SelectItem>
- *   </SelectContent>
- * </Select>
- */
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   (
     {
@@ -101,12 +80,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           aria-labelledby={ariaLabelledby}
           variant="bordered"
           classNames={{
-            trigger: cn(
-              'h-12 bg-transparent border-input shadow-sm',
-              'data-[hover=true]:bg-accent/50',
-              'data-[focus=true]:ring-1 data-[focus=true]:ring-ring',
-              className,
-            ),
+            trigger: cn(className),
             value: 'text-sm',
             popoverContent: 'rounded-md',
           }}

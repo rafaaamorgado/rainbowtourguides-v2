@@ -3,8 +3,16 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, Send, ArrowLeft, Lock, Check, CheckCheck } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import {
+  Avatar,
+  Button,
+  Input,
+  Chip,
+  Spinner,
+  ScrollShadow,
+  Tooltip,
+  Skeleton,
+} from '@heroui/react';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import { isMessagingEnabled } from '@/lib/messaging-rules';
@@ -478,7 +486,18 @@ export default function MessageInbox({
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-ink mb-2">Messages</h1>
-          <p className="text-ink-soft">Loading conversations...</p>
+          <div className="space-y-4 mt-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-start gap-3 p-4">
+                <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32 rounded-lg" />
+                  <Skeleton className="h-3 w-24 rounded-lg" />
+                  <Skeleton className="h-3 w-full rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -496,18 +515,18 @@ export default function MessageInbox({
           >
             <div className="p-4 border-b border-slate-200 space-y-4 flex-shrink-0">
               <h2 className="text-xl font-bold text-ink">Messages</h2>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft" />
-                <Input
-                  type="text"
-                  placeholder="Search conversations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+              <Input
+                type="text"
+                placeholder="Search conversations..."
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+                startContent={<Search className="h-4 w-4 text-ink-soft" />}
+                classNames={{
+                  inputWrapper: 'bg-default-100',
+                }}
+              />
             </div>
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400 scrollbar-track-transparent min-h-0">
+            <ScrollShadow className="flex-1 min-h-0" size={20}>
               {filteredBookings.length === 0 ? (
                 <EmptyState
                   title="No conversations yet"
@@ -540,19 +559,13 @@ export default function MessageInbox({
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
                         <div className="flex-shrink-0">
-                          <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
-                            {avatar ? (
-                              <img
-                                src={avatar}
-                                alt={displayName}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-500 font-semibold">
-                                {displayName.charAt(0).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
+                          <Avatar
+                            src={avatar || undefined}
+                            name={displayName}
+                            showFallback
+                            size="lg"
+                            className="flex-shrink-0"
+                          />
                         </div>
 
                         {/* Content */}
@@ -600,9 +613,17 @@ export default function MessageInbox({
                                 </span>
                               )}
                               {isUnread && (
-                                <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-blue-500 text-white text-xs font-bold">
+                                <Chip
+                                  color="primary"
+                                  size="sm"
+                                  variant="solid"
+                                  classNames={{
+                                    base: 'min-w-[20px] h-5',
+                                    content: 'text-xs font-bold px-1',
+                                  }}
+                                >
                                   {unreadCount}
-                                </div>
+                                </Chip>
                               )}
                             </div>
                           </div>
@@ -612,7 +633,7 @@ export default function MessageInbox({
                   );
                 })
               )}
-            </div>
+            </ScrollShadow>
           </aside>
 
           {/* Main Chat Area */}
@@ -623,56 +644,49 @@ export default function MessageInbox({
                 <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white/95 backdrop-blur-sm flex-shrink-0 z-10">
                   <div className="flex items-center gap-4">
                     <Button
-                      variant="ghost"
-                      size="icon"
+                      variant="light"
+                      isIconOnly
                       className="lg:hidden"
-                      onClick={handleBackToList}
+                      onPress={handleBackToList}
                     >
                       <ArrowLeft className="h-4 w-4" />
                     </Button>
 
                     {/* Avatar */}
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-md">
-                        {userRole === 'traveler' ? (
-                          selectedBooking.guide_avatar ? (
-                            <img
-                              src={selectedBooking.guide_avatar}
-                              alt={selectedBooking.guide_name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-500 font-semibold text-lg">
-                              {selectedBooking.guide_name
-                                .charAt(0)
-                                .toUpperCase()}
-                            </div>
-                          )
-                        ) : selectedBooking.traveler_avatar ? (
-                          <img
-                            src={selectedBooking.traveler_avatar}
-                            alt={selectedBooking.traveler_name || 'Traveler'}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-500 font-semibold text-lg">
-                            {(selectedBooking.traveler_name || 'T')
-                              .charAt(0)
-                              .toUpperCase()}
-                          </div>
-                        )}
+                    <Tooltip
+                      content={isUserOnline() ? 'Active' : 'Offline'}
+                      placement="bottom"
+                    >
+                      <div className="relative">
+                        <Avatar
+                          src={
+                            (userRole === 'traveler'
+                              ? selectedBooking.guide_avatar
+                              : selectedBooking.traveler_avatar) || undefined
+                          }
+                          name={
+                            userRole === 'traveler'
+                              ? selectedBooking.guide_name
+                              : selectedBooking.traveler_name || 'Traveler'
+                          }
+                          showFallback
+                          isBordered
+                          size="lg"
+                          classNames={{
+                            base: 'shadow-md',
+                          }}
+                        />
+                        {/* Online indicator */}
+                        <div
+                          className={cn(
+                            'absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full transition-colors',
+                            isUserOnline()
+                              ? 'bg-green-500'
+                              : 'bg-slate-400 opacity-50',
+                          )}
+                        ></div>
                       </div>
-                      {/* Online indicator - conditional based on activity */}
-                      <div
-                        className={cn(
-                          'absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full transition-colors',
-                          isUserOnline()
-                            ? 'bg-green-500'
-                            : 'bg-slate-400 opacity-50',
-                        )}
-                        title={isUserOnline() ? 'Active' : 'Offline'}
-                      ></div>
-                    </div>
+                    </Tooltip>
 
                     {/* Name and Role */}
                     <div>
@@ -691,18 +705,14 @@ export default function MessageInbox({
                   </div>
                 </div>
 
-                <div
+                <ScrollShadow
                   ref={scrollContainerRef}
-                  className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400 scrollbar-track-transparent min-h-0"
+                  className="flex-1 p-4 space-y-4 min-h-0"
+                  size={40}
                 >
                   {isLoadingMessages ? (
                     <div className="flex items-center justify-center h-full">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                        <p className="text-sm text-ink-soft">
-                          Loading messages...
-                        </p>
-                      </div>
+                      <Spinner size="lg" label="Loading messages..." />
                     </div>
                   ) : (
                     Object.entries(messageGroups).map(([date, msgs]) => (
@@ -729,19 +739,13 @@ export default function MessageInbox({
                               )}
                             >
                               {/* Avatar */}
-                              <div className="shrink-0 w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
-                                {avatar ? (
-                                  <img
-                                    src={avatar}
-                                    alt={msg.sender_name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-slate-500 font-semibold text-sm">
-                                    {msg.sender_name.charAt(0).toUpperCase()}
-                                  </div>
-                                )}
-                              </div>
+                              <Avatar
+                                src={avatar || undefined}
+                                name={msg.sender_name}
+                                showFallback
+                                size="md"
+                                className="shrink-0"
+                              />
 
                               {/* Message bubble */}
                               <div className="flex flex-col gap-1 max-w-[70%]">
@@ -801,7 +805,7 @@ export default function MessageInbox({
                       </div>
                     ))
                   )}
-                </div>
+                </ScrollShadow>
 
                 <div className="p-4 border-t border-slate-200 flex-shrink-0">
                   {!isMessagingEnabled(selectedBooking.status) ? (
@@ -823,18 +827,24 @@ export default function MessageInbox({
                           type="text"
                           placeholder="Type your message..."
                           value={messageInput}
-                          onChange={(e) => setMessageInput(e.target.value)}
+                          onValueChange={setMessageInput}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                               e.preventDefault();
                               handleSendMessage();
                             }
                           }}
-                          disabled={isSending}
+                          isDisabled={isSending}
+                          classNames={{
+                            inputWrapper: 'bg-default-100',
+                          }}
                         />
                         <Button
-                          onClick={handleSendMessage}
-                          disabled={isSending || !messageInput.trim()}
+                          color="primary"
+                          isIconOnly
+                          onPress={handleSendMessage}
+                          isDisabled={isSending || !messageInput.trim()}
+                          isLoading={isSending}
                         >
                           <Send className="h-4 w-4" />
                         </Button>
