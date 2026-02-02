@@ -70,6 +70,8 @@ type ProfilesTable = {
     country_of_origin: string | null;
     bio: string | null;
     languages: string[] | null;
+    is_public?: boolean | null;
+    email_notifications?: boolean | null;
     is_suspended: boolean;
     created_at: string;
     updated_at: string;
@@ -84,6 +86,8 @@ type ProfilesTable = {
     country_of_origin?: string | null;
     bio?: string | null;
     languages?: string[] | null;
+    is_public?: boolean | null;
+    email_notifications?: boolean | null;
     is_suspended?: boolean;
     created_at?: string;
     updated_at?: string;
@@ -127,6 +131,7 @@ type GuidesTable = {
     available_days: string[] | null;
     typical_start_time: string | null;
     typical_end_time: string | null;
+    availability_pattern?: Record<string, any> | null;
     lgbtq_alignment: Record<string, any> | null;
     is_verified: boolean;
     approved: boolean;
@@ -153,6 +158,7 @@ type GuidesTable = {
     available_days?: string[] | null;
     typical_start_time?: string | null;
     typical_end_time?: string | null;
+    availability_pattern?: Record<string, any> | null;
     lgbtq_alignment?: Record<string, any> | null;
     is_verified?: boolean;
     approved?: boolean;
@@ -343,6 +349,26 @@ type AvailabilitySlotsTable = {
   Update: Partial<AvailabilitySlotsTable['Row']>;
 };
 
+type GuideUnavailableDatesTable = {
+  Row: {
+    id: string;
+    guide_id: string;
+    start_date: string;
+    end_date: string;
+    created_at: string;
+    updated_at: string;
+  };
+  Insert: {
+    id?: string;
+    guide_id: string;
+    start_date: string;
+    end_date: string;
+    created_at?: string;
+    updated_at?: string;
+  };
+  Update: Partial<GuideUnavailableDatesTable['Row']>;
+};
+
 export interface Database {
   public: {
     Tables: {
@@ -358,6 +384,7 @@ export interface Database {
       admin_events: AdminEventsTable;
       experiences: ExperiencesTable;
       availability_slots: AvailabilitySlotsTable;
+      guide_unavailable_dates: GuideUnavailableDatesTable;
     };
     Functions: Record<string, never>;
     Enums: {

@@ -79,7 +79,8 @@ const navigationLinks = [
   { name: "Dashboard", href: "/traveler/dashboard", icon: Home },
   { name: "My Bookings", href: "/traveler/bookings", icon: Calendar },
   { name: "Messages", href: "/traveler/messages", icon: MessageSquare },
-  { name: "Saved Guides", href: "/traveler/saved", icon: User },
+  { name: "Profile", href: "/traveler/profile", icon: User },
+  { name: "Reviews", href: "/traveler/reviews", icon: Star },
   { name: "Settings", href: "/traveler/settings", icon: Settings },
 ];
 ```

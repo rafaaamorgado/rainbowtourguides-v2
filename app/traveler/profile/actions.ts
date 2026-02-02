@@ -53,6 +53,50 @@ export async function updateTravelerProfile(
 
     console.log("✅ [updateTravelerProfile] Profile updated successfully:", updatedProfile);
 
+    // Update travelers table with interests
+    const travelerUpdateData: any = {
+      interests: data.interests && data.interests.length > 0 ? data.interests : null,
+    };
+
+    console.log("🔵 [updateTravelerProfile] Updating travelers with data:", travelerUpdateData);
+
+    // Check if traveler record exists, if not create it
+    const { data: existingTraveler } = await db
+      .from("travelers")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    if (existingTraveler) {
+      // Update existing traveler record
+      const { error: travelerError } = await db
+        .from("travelers")
+        .update(travelerUpdateData)
+        .eq("id", user.id);
+
+      if (travelerError) {
+        console.error("❌ [updateTravelerProfile] Traveler update error:", travelerError);
+        // Don't fail the whole operation if traveler update fails
+      } else {
+        console.log("✅ [updateTravelerProfile] Traveler interests updated successfully");
+      }
+    } else {
+      // Create new traveler record
+      const { error: travelerError } = await db
+        .from("travelers")
+        .insert({
+          id: user.id,
+          ...travelerUpdateData,
+        });
+
+      if (travelerError) {
+        console.error("❌ [updateTravelerProfile] Traveler insert error:", travelerError);
+        // Don't fail the whole operation if traveler insert fails
+      } else {
+        console.log("✅ [updateTravelerProfile] Traveler record created successfully");
+      }
+    }
+
     revalidatePath("/traveler/profile");
     revalidatePath("/traveler/dashboard");
     revalidatePath("/traveler");

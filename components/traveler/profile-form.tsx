@@ -8,8 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { PhotoUpload } from '@/components/ui/photo-upload';
 import { uploadAvatar, uploadTravelerPhoto } from '@/lib/storage-helpers';
+import { TRAVELER_INTERESTS } from '@/lib/constants/profile-options';
 import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -18,6 +20,7 @@ type Country = Database['public']['Tables']['countries']['Row'];
 interface TravelerProfileFormProps {
   profile: Profile;
   countries: Country[];
+  interests: string[];
   onSubmit: (
     data: TravelerProfileFormData,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -30,12 +33,14 @@ export interface TravelerProfileFormData {
   pronouns: string | null;
   country_of_origin: string | null;
   languages: string[];
+  interests: string[];
   photo_urls?: string[];
 }
 
 export function TravelerProfileForm({
   profile,
   countries,
+  interests: initialInterests,
   onSubmit,
 }: TravelerProfileFormProps) {
   const [formData, setFormData] = useState<TravelerProfileFormData>({
@@ -45,6 +50,7 @@ export function TravelerProfileForm({
     pronouns: profile.pronouns || '',
     country_of_origin: profile.country_of_origin || '',
     languages: profile.languages || [],
+    interests: initialInterests || [],
     photo_urls: [], // Empty for now, will be populated from DB later
   });
 
@@ -69,6 +75,31 @@ export function TravelerProfileForm({
         : [...currentLanguages, language];
       return { ...prev, languages: newLanguages };
     });
+  };
+
+  const handleInterestToggle = (interest: string) => {
+    setFormData((prev) => {
+      const currentInterests = prev.interests || [];
+      const newInterests = currentInterests.includes(interest)
+        ? currentInterests.filter((i) => i !== interest)
+        : [...currentInterests, interest];
+      return { ...prev, interests: newInterests };
+    });
+  };
+
+  // Photo management handlers (not connected yet)
+  const handleRemovePhoto = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      photo_urls: (prev.photo_urls || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSetPrimaryPhoto = (url: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      avatar_url: url,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -254,6 +285,37 @@ export function TravelerProfileForm({
               <span className="text-sm font-medium">{language}</span>
             </label>
           ))}
+        </div>
+      </div>
+
+      {/* Interests Section */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-medium">Interests</h3>
+          <p className="text-sm text-muted-foreground">
+            Select your travel interests. This helps guides tailor experiences
+            to your preferences.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {TRAVELER_INTERESTS.map((interest) => {
+            const isSelected = (formData.interests || []).includes(interest);
+            return (
+              <Badge
+                key={interest}
+                variant={isSelected ? 'default' : 'outline'}
+                className={`cursor-pointer transition-colors ${
+                  isSelected
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'hover:bg-accent hover:text-accent-foreground'
+                }`}
+                onClick={() => handleInterestToggle(interest)}
+              >
+                {interest}
+              </Badge>
+            );
+          })}
         </div>
       </div>
 

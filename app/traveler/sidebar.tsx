@@ -46,11 +46,6 @@ const navigationLinks = [
     icon: MessageSquare,
   },
   {
-    name: 'Saved Guides',
-    href: '/traveler/saved',
-    icon: User,
-  },
-  {
     name: 'Profile',
     href: '/traveler/profile',
     icon: User,
