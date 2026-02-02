@@ -66,7 +66,10 @@ type ProfilesTable = {
     full_name: string;
     pronouns: string | null;
     avatar_url: string | null;
+    avatar_public_id: string | null;
     photo_url: string | null;
+    cover_url: string | null;
+    cover_public_id: string | null;
     country_of_origin: string | null;
     bio: string | null;
     languages: string[] | null;
@@ -82,7 +85,10 @@ type ProfilesTable = {
     full_name: string;
     pronouns?: string | null;
     avatar_url?: string | null;
+    avatar_public_id?: string | null;
     photo_url?: string | null;
+    cover_url?: string | null;
+    cover_public_id?: string | null;
     country_of_origin?: string | null;
     bio?: string | null;
     languages?: string[] | null;
@@ -369,6 +375,30 @@ type GuideUnavailableDatesTable = {
   Update: Partial<GuideUnavailableDatesTable['Row']>;
 };
 
+type ProfileImagesTable = {
+  Row: {
+    id: string;
+    user_id: string;
+    public_id: string;
+    url: string;
+    caption: string | null;
+    is_primary: boolean;
+    sort_order: number | null;
+    created_at: string;
+  };
+  Insert: {
+    id?: string;
+    user_id: string;
+    public_id: string;
+    url: string;
+    caption?: string | null;
+    is_primary?: boolean;
+    sort_order?: number | null;
+    created_at?: string;
+  };
+  Update: Partial<ProfileImagesTable['Row']>;
+};
+
 export interface Database {
   public: {
     Tables: {
@@ -385,6 +415,7 @@ export interface Database {
       experiences: ExperiencesTable;
       availability_slots: AvailabilitySlotsTable;
       guide_unavailable_dates: GuideUnavailableDatesTable;
+      profile_images: ProfileImagesTable;
     };
     Functions: Record<string, never>;
     Enums: {
