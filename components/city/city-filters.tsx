@@ -127,17 +127,18 @@ export function CityFilters({
             <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-1 block">
               Duration
             </label>
-            <Select value={duration} onValueChange={setDuration}>
-              <SelectTrigger className="h-11 rounded-xl">
-                <SelectValue placeholder="Any duration" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any duration</SelectItem>
-                <SelectItem value="4">4 hours</SelectItem>
-                <SelectItem value="6">6 hours</SelectItem>
-                <SelectItem value="8">8 hours</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select
+              value={duration}
+              onChange={setDuration}
+              options={[
+                { value: 'any', label: 'Any duration' },
+                { value: '4', label: '4 hours' },
+                { value: '6', label: '6 hours' },
+                { value: '8', label: '8 hours' },
+              ]}
+              placeholder="Any duration"
+              className="h-11"
+            />
             <p className="text-[11px] text-ink-soft mt-1">
               Uses available 4h/6h/8h pricing. Longer trips coming soon.
             </p>
