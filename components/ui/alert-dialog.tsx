@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface AlertDialogProps {
   open: boolean;
@@ -10,7 +10,11 @@ interface AlertDialogProps {
   children: React.ReactNode;
 }
 
-export function AlertDialog({ open, onOpenChange, children }: AlertDialogProps) {
+export function AlertDialog({
+  open,
+  onOpenChange,
+  children,
+}: AlertDialogProps) {
   if (!open) return null;
 
   return (
@@ -37,8 +41,8 @@ export function AlertDialogContent({
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 space-y-4",
-        className
+        'bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 space-y-4',
+        className,
       )}
       {...props}
     >
@@ -53,7 +57,7 @@ export function AlertDialogHeader({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("space-y-2", className)} {...props}>
+    <div className={cn('space-y-2', className)} {...props}>
       {children}
     </div>
   );
@@ -65,10 +69,7 @@ export function AlertDialogTitle({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3
-      className={cn("text-xl font-semibold text-ink", className)}
-      {...props}
-    >
+    <h3 className={cn('text-xl font-semibold text-ink', className)} {...props}>
       {children}
     </h3>
   );
@@ -80,7 +81,7 @@ export function AlertDialogDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-sm text-ink-soft", className)} {...props}>
+    <p className={cn('text-sm text-ink-soft', className)} {...props}>
       {children}
     </p>
   );
@@ -92,7 +93,7 @@ export function AlertDialogFooter({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex gap-3 justify-end", className)} {...props}>
+    <div className={cn('flex gap-3 justify-end', className)} {...props}>
       {children}
     </div>
   );
@@ -100,11 +101,12 @@ export function AlertDialogFooter({
 
 export function AlertDialogCancel({
   onClick,
-  children = "Cancel",
+  children = 'Cancel',
+  className,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <Button variant="outline" onClick={onClick} {...props}>
+    <Button variant="outline" onClick={onClick} className={className}>
       {children}
     </Button>
   );
@@ -113,12 +115,12 @@ export function AlertDialogCancel({
 export function AlertDialogAction({
   onClick,
   children,
+  className,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <Button variant="default" onClick={onClick} {...props}>
+    <Button variant="default" onClick={onClick} className={className}>
       {children}
     </Button>
   );
 }
-

@@ -1,34 +1,43 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import type { Database } from "@/types/database";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select } from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import type { Database } from '@/types/database';
 
-type City = Database["public"]["Tables"]["cities"]["Row"];
-type Guide = Database["public"]["Tables"]["guides"]["Row"];
+type City = Database['public']['Tables']['cities']['Row'];
+type Guide = Database['public']['Tables']['guides']['Row'];
 
 // Available theme options
 const THEME_OPTIONS = [
-  "nightlife",
-  "culture",
-  "food",
-  "history",
-  "art",
-  "lgbtq-scene",
-  "nature",
-  "shopping",
-  "adventure",
-  "wellness",
+  'nightlife',
+  'culture',
+  'food',
+  'history',
+  'art',
+  'lgbtq-scene',
+  'nature',
+  'shopping',
+  'adventure',
+  'wellness',
 ] as const;
 
 type GuideOnboardingFormProps = {
   cities: City[];
   existingGuide: Guide | null;
-  onSubmit: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    formData: FormData,
+  ) => Promise<{ success: boolean; error?: string }>;
 };
 
 export function GuideOnboardingForm({
@@ -42,16 +51,22 @@ export function GuideOnboardingForm({
   const [success, setSuccess] = useState(false);
 
   // Form state with defaults from existing guide
-  const [cityId, setCityId] = useState(existingGuide?.city_id ?? "");
-  const [headline, setHeadline] = useState(existingGuide?.headline ?? "");
-  const [about, setAbout] = useState(existingGuide?.about ?? "");
-  const [languages, setLanguages] = useState(existingGuide?.languages?.join(", ") ?? "");
-  const [selectedThemes, setSelectedThemes] = useState<string[]>(existingGuide?.themes ?? []);
-  const [hourlyRate, setHourlyRate] = useState(existingGuide?.hourly_rate ?? "");
+  const [cityId, setCityId] = useState(existingGuide?.city_id ?? '');
+  const [headline, setHeadline] = useState(existingGuide?.headline ?? '');
+  const [about, setAbout] = useState(existingGuide?.about ?? '');
+  const [languages, setLanguages] = useState(
+    existingGuide?.languages?.join(', ') ?? '',
+  );
+  const [selectedThemes, setSelectedThemes] = useState<string[]>(
+    existingGuide?.themes ?? [],
+  );
+  const [hourlyRate, setHourlyRate] = useState(
+    existingGuide?.hourly_rate ?? '',
+  );
 
   const handleThemeToggle = (theme: string) => {
     setSelectedThemes((prev) =>
-      prev.includes(theme) ? prev.filter((t) => t !== theme) : [...prev, theme]
+      prev.includes(theme) ? prev.filter((t) => t !== theme) : [...prev, theme],
     );
   };
 
@@ -61,12 +76,12 @@ export function GuideOnboardingForm({
     setIsSubmitting(true);
 
     const formData = new FormData();
-    formData.set("city_id", cityId);
-    formData.set("headline", headline);
-    formData.set("about", about);
-    formData.set("languages", languages);
-    formData.set("themes", JSON.stringify(selectedThemes));
-    formData.set("hourly_rate", hourlyRate);
+    formData.set('city_id', cityId);
+    formData.set('headline', headline);
+    formData.set('about', about);
+    formData.set('languages', languages);
+    formData.set('themes', JSON.stringify(selectedThemes));
+    formData.set('hourly_rate', hourlyRate);
 
     const result = await onSubmit(formData);
 
@@ -75,7 +90,7 @@ export function GuideOnboardingForm({
     if (result.success) {
       setSuccess(true);
     } else {
-      setError(result.error ?? "Something went wrong. Please try again.");
+      setError(result.error ?? 'Something went wrong. Please try again.');
     }
   };
 
@@ -85,11 +100,12 @@ export function GuideOnboardingForm({
         <CardHeader>
           <CardTitle className="text-green-600">Profile Submitted!</CardTitle>
           <CardDescription>
-            Your guide profile has been submitted for review. We&apos;ll notify you once it&apos;s approved.
+            Your guide profile has been submitted for review. We&apos;ll notify
+            you once it&apos;s approved.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={() => router.push("/guide/dashboard")}>
+          <Button onClick={() => router.push('/guide/dashboard')}>
             Go to Dashboard
           </Button>
         </CardContent>
@@ -101,13 +117,17 @@ export function GuideOnboardingForm({
     <Card className="max-w-2xl">
       <CardHeader>
         <CardTitle>
-          {existingGuide ? "Edit Your Guide Profile" : "Complete Your Guide Profile"}
+          {existingGuide
+            ? 'Edit Your Guide Profile'
+            : 'Complete Your Guide Profile'}
         </CardTitle>
         <CardDescription>
-          Fill out the details below to {existingGuide ? "update" : "create"} your guide profile.
-          {existingGuide && existingGuide.status !== "pending" && (
+          Fill out the details below to {existingGuide ? 'update' : 'create'}{' '}
+          your guide profile.
+          {existingGuide && existingGuide.status !== 'pending' && (
             <span className="block mt-1 text-amber-600">
-              Note: Editing will set your status back to &quot;pending&quot; for re-review.
+              Note: Editing will set your status back to &quot;pending&quot; for
+              re-review.
             </span>
           )}
         </CardDescription>
@@ -119,20 +139,18 @@ export function GuideOnboardingForm({
             <label htmlFor="city" className="text-sm font-medium">
               City <span className="text-destructive">*</span>
             </label>
-            <select
-              id="city"
+            <Select
               value={cityId}
-              onChange={(e) => setCityId(e.target.value)}
-              required
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">Select a city...</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>
-                  {city.name}, {city.country_name}
-                </option>
-              ))}
-            </select>
+              onChange={setCityId}
+              options={[
+                { value: '', label: 'Select a city...' },
+                ...cities.map((city) => ({
+                  value: city.id,
+                  label: `${city.name}, ${city.country_name}`,
+                })),
+              ]}
+              placeholder="Select a city..."
+            />
           </div>
 
           {/* Headline */}
@@ -193,11 +211,11 @@ export function GuideOnboardingForm({
                   onClick={() => handleThemeToggle(theme)}
                   className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
                     selectedThemes.includes(theme)
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-background border-input hover:bg-accent"
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background border-input hover:bg-accent'
                   }`}
                 >
-                  {theme.replace("-", " ")}
+                  {theme.replace('-', ' ')}
                 </button>
               ))}
             </div>
@@ -229,14 +247,13 @@ export function GuideOnboardingForm({
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting
-              ? "Saving..."
+              ? 'Saving...'
               : existingGuide
-              ? "Update Profile"
-              : "Submit for Review"}
+                ? 'Update Profile'
+                : 'Submit for Review'}
           </Button>
         </form>
       </CardContent>
     </Card>
   );
 }
-

@@ -1,12 +1,14 @@
-"use client";
+'use client';
 
-import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { MapPin, Calendar, Users, Search as SearchIcon } from "lucide-react";
-import { Combobox } from "@/components/ui/combobox";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import type { City } from "@/lib/mock-data";
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { MapPin, Users, Search as SearchIcon } from 'lucide-react';
+import { parseDate, type CalendarDate } from '@internationalized/date';
+import { Combobox } from '@/components/ui/combobox';
+import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Select } from '@/components/ui/select';
+import type { City } from '@/lib/mock-data';
 
 interface HeroSearchProps {
   cities: City[];
@@ -14,11 +16,11 @@ interface HeroSearchProps {
 
 export function HeroSearch({ cities }: HeroSearchProps) {
   const router = useRouter();
-  const [selectedCity, setSelectedCity] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [travelers, setTravelers] = useState("1");
-  const [error, setError] = useState("");
+  const [selectedCity, setSelectedCity] = useState('');
+  const [startDate, setStartDate] = useState<CalendarDate | null>(null);
+  const [endDate, setEndDate] = useState<CalendarDate | null>(null);
+  const [travelers, setTravelers] = useState('1');
+  const [error, setError] = useState('');
 
   const cityOptions = cities.map((city) => ({
     value: city.slug,
@@ -27,23 +29,23 @@ export function HeroSearch({ cities }: HeroSearchProps) {
 
   const handleSearch = (e?: FormEvent) => {
     e?.preventDefault();
-    setError("");
+    setError('');
 
     // Validation: at least city must be selected
     if (!selectedCity) {
-      setError("Please select a destination");
+      setError('Please select a destination');
       return;
     }
 
     // Build query params
     const params = new URLSearchParams();
     if (startDate && endDate) {
-      params.set("dates", `${startDate}_${endDate}`);
+      params.set('dates', `${startDate.toString()}_${endDate.toString()}`);
     }
-    params.set("travelers", travelers);
+    params.set('travelers', travelers);
 
     // Navigate to city page or cities listing
-    const url = `/cities/${selectedCity}${params.toString() ? `?${params.toString()}` : ""}`;
+    const url = `/cities/${selectedCity}${params.toString() ? `?${params.toString()}` : ''}`;
     router.push(url);
   };
 
@@ -53,7 +55,10 @@ export function HeroSearch({ cities }: HeroSearchProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr,1fr,1fr,0.8fr,auto] gap-4 lg:gap-5 items-end">
           {/* City Autocomplete - Where to */}
           <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-            <label htmlFor="city-search" className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
+            <label
+              htmlFor="city-search"
+              className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1"
+            >
               Where to
             </label>
             <Combobox
@@ -67,59 +72,64 @@ export function HeroSearch({ cities }: HeroSearchProps) {
 
           {/* Start Date */}
           <div className="space-y-2">
-            <label htmlFor="start-date" className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
+            <label
+              htmlFor="start-date"
+              className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1"
+            >
               Start date
             </label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input
-                id="start-date"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-                className="h-12 rounded-xl text-sm pl-10 bg-white border-slate-200 focus:border-brand focus:ring-brand"
-              />
-            </div>
+            <DatePicker
+              id="start-date"
+              value={startDate}
+              onChange={setStartDate}
+              minValue={parseDate(new Date().toISOString().split('T')[0])}
+              placeholderValue={parseDate(
+                new Date().toISOString().split('T')[0],
+              )}
+            />
           </div>
 
           {/* End Date */}
           <div className="space-y-2">
-            <label htmlFor="end-date" className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
+            <label
+              htmlFor="end-date"
+              className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1"
+            >
               End date
             </label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input
-                id="end-date"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={startDate || new Date().toISOString().split("T")[0]}
-                className="h-12 rounded-xl text-sm pl-10 bg-white border-slate-200 focus:border-brand focus:ring-brand"
-              />
-            </div>
+            <DatePicker
+              id="end-date"
+              value={endDate}
+              onChange={setEndDate}
+              minValue={
+                startDate || parseDate(new Date().toISOString().split('T')[0])
+              }
+              placeholderValue={parseDate(
+                new Date().toISOString().split('T')[0],
+              )}
+            />
           </div>
 
           {/* Travelers */}
           <div className="space-y-2">
-            <label htmlFor="travelers" className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
+            <label
+              htmlFor="travelers"
+              className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1"
+            >
               Travelers
             </label>
-            <div className="relative">
-              <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none z-10" />
-              <select
-                id="travelers"
-                value={travelers}
-                onChange={(e) => setTravelers(e.target.value)}
-                className="flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 pl-10 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer"
-              >
-                <option value="1">1 Traveler</option>
-                <option value="2">2 Travelers</option>
-                <option value="3">3 Travelers</option>
-                <option value="4">4 Travelers</option>
-              </select>
-            </div>
+            <Select
+              value={travelers}
+              onChange={setTravelers}
+              options={[
+                { value: '1', label: '1 Traveler' },
+                { value: '2', label: '2 Travelers' },
+                { value: '3', label: '3 Travelers' },
+                { value: '4', label: '4 Travelers' },
+              ]}
+              icon={<Users className="h-4 w-4 text-slate-400" />}
+              className="h-12"
+            />
           </div>
 
           {/* Search Button */}
@@ -138,7 +148,8 @@ export function HeroSearch({ cities }: HeroSearchProps) {
 
         {/* Helper Text */}
         <p className="mt-4 text-sm text-slate-500">
-          Flexible dates? Leave them blank and explore guides in your destination.
+          Flexible dates? Leave them blank and explore guides in your
+          destination.
         </p>
 
         {/* Error Message */}
@@ -151,4 +162,3 @@ export function HeroSearch({ cities }: HeroSearchProps) {
     </form>
   );
 }
-

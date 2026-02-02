@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { GuideCard } from "@/components/cards/GuideCard";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Button } from "@/components/ui/button";
-import type { Guide } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
+import { useMemo } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { GuideCard } from '@/components/cards/GuideCard';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
+import { Chip } from '@/components/ui/chip';
+import type { Guide } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
 
 interface FilteredViewProps {
   allGuides: Guide[];
@@ -17,10 +18,10 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const query = searchParams.get("q") || "";
-  const cityFilter = searchParams.get("city") || "";
-  const interestFilter = searchParams.get("interest") || "";
-  const durationFilter = searchParams.get("duration") || "";
+  const query = searchParams.get('q') || '';
+  const cityFilter = searchParams.get('city') || '';
+  const interestFilter = searchParams.get('interest') || '';
+  const durationFilter = searchParams.get('duration') || '';
 
   // Filter guides based on query params
   const filteredGuides = useMemo(() => {
@@ -36,15 +37,15 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
           guide.bio.toLowerCase().includes(searchLower) ||
           guide.tagline.toLowerCase().includes(searchLower) ||
           guide.experience_tags.some((tag) =>
-            tag.toLowerCase().includes(searchLower)
-          )
+            tag.toLowerCase().includes(searchLower),
+          ),
       );
     }
 
     // City filter
     if (cityFilter) {
       result = result.filter((guide) => {
-        const citySlug = guide.city_name.toLowerCase().replace(/\s+/g, "-");
+        const citySlug = guide.city_name.toLowerCase().replace(/\s+/g, '-');
         return citySlug.includes(cityFilter.toLowerCase());
       });
     }
@@ -53,19 +54,19 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
     if (interestFilter) {
       result = result.filter((guide) =>
         guide.experience_tags.some(
-          (tag) => tag.toLowerCase() === interestFilter.toLowerCase()
-        )
+          (tag) => tag.toLowerCase() === interestFilter.toLowerCase(),
+        ),
       );
     }
 
     // Duration filter
     if (durationFilter) {
       const durationMap: {
-        [key: string]: keyof Pick<Guide, "price_4h" | "price_6h" | "price_8h">;
+        [key: string]: keyof Pick<Guide, 'price_4h' | 'price_6h' | 'price_8h'>;
       } = {
-        "4": "price_4h",
-        "6": "price_6h",
-        "8": "price_8h",
+        '4': 'price_4h',
+        '6': 'price_6h',
+        '8': 'price_8h',
       };
       const priceKey = durationMap[durationFilter];
       if (priceKey) {
@@ -81,15 +82,15 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
   const handleInterestClick = (interest: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (interestFilter === interest) {
-      params.delete("interest");
+      params.delete('interest');
     } else {
-      params.set("interest", interest);
+      params.set('interest', interest);
     }
     router.push(`/guides?${params.toString()}`);
   };
 
   const clearFilters = () => {
-    router.push("/guides");
+    router.push('/guides');
   };
 
   return (
@@ -107,18 +108,21 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
 
         <div className="flex flex-wrap justify-center gap-3">
           {allTags.map((tag) => (
-            <button
+            <Chip
               key={tag}
               onClick={() => handleInterestClick(tag)}
+              variant={interestFilter === tag ? 'solid' : 'bordered'}
+              color={interestFilter === tag ? 'primary' : 'default'}
+              size="md"
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                'cursor-pointer transition-all',
                 interestFilter === tag
-                  ? "bg-brand text-white shadow-md"
-                  : "bg-white border border-slate-200 text-ink-soft hover:border-brand hover:text-brand"
+                  ? 'bg-brand text-white shadow-md'
+                  : 'bg-white border-slate-200 text-ink-soft hover:border-brand hover:text-brand',
               )}
             >
               {tag}
-            </button>
+            </Chip>
           ))}
         </div>
       </section>
@@ -132,8 +136,8 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
                 Search Results
               </h2>
               <p className="text-ink-soft">
-                {filteredGuides.length}{" "}
-                {filteredGuides.length === 1 ? "guide" : "guides"} found
+                {filteredGuides.length}{' '}
+                {filteredGuides.length === 1 ? 'guide' : 'guides'} found
               </p>
             </div>
             <Button onClick={clearFilters} variant="outline">
@@ -163,4 +167,3 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
     </>
   );
 }
-

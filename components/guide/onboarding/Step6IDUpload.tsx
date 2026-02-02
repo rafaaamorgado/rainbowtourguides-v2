@@ -16,6 +16,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
 import { getCurrentUserId, uploadFile } from '@/lib/storage-helpers';
 
 export type Step6Data = {
@@ -93,20 +94,13 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
           >
             ID Document Type <span className="text-destructive">*</span>
           </label>
-          <select
-            id="idType"
+          <Select
             value={data.idDocumentType}
-            onChange={(e) => onChange({ idDocumentType: e.target.value })}
-            required
-            className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-          >
-            <option value="">Select ID type...</option>
-            {ID_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => onChange({ idDocumentType: val })}
+            options={[{ value: '', label: 'Select ID type...' }, ...ID_TYPES]}
+            placeholder="Select ID type..."
+            className="h-11"
+          />
         </div>
 
         {/* File Upload */}

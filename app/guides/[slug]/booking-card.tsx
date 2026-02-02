@@ -1,12 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Calendar, Clock, Users, MapPin, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Clock, Users, MapPin, FileText } from 'lucide-react';
+import { parseDate, type CalendarDate } from '@internationalized/date';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Select } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface BookingCardProps {
   guide: {
@@ -23,33 +26,38 @@ interface BookingCardProps {
 export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
   const router = useRouter();
   const [duration, setDuration] = useState<4 | 6 | 8>(4);
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [date, setDate] = useState<CalendarDate | null>(null);
+  const [time, setTime] = useState('');
   const [travelers, setTravelers] = useState(1);
-  const [meetingLocation, setMeetingLocation] = useState("default");
-  const [specialRequests, setSpecialRequests] = useState("");
+  const [meetingLocation, setMeetingLocation] = useState('default');
+  const [specialRequests, setSpecialRequests] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Price calculation
-  const basePrice = duration === 4 ? guide.price_4h : duration === 6 ? guide.price_6h : guide.price_8h;
+  const basePrice =
+    duration === 4
+      ? guide.price_4h
+      : duration === 6
+        ? guide.price_6h
+        : guide.price_8h;
   const serviceFee = Math.round(basePrice * 0.1);
   const total = basePrice + serviceFee;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     // Validation
     if (!date || !time) {
-      setError("Please select a date and time");
+      setError('Please select a date and time');
       return;
     }
 
     // Check if date is in the future
-    const selectedDate = new Date(date + "T" + time);
+    const selectedDate = new Date(date.toString() + 'T' + time);
     if (selectedDate <= new Date()) {
-      setError("Please select a future date and time");
+      setError('Please select a future date and time');
       return;
     }
 
@@ -65,12 +73,12 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
     try {
       // TODO: Create booking via data-service
       // For now, simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Navigate to bookings page
-      router.push("/traveler/bookings");
+      router.push('/traveler/bookings');
     } catch (err) {
-      setError("Failed to create booking request. Please try again.");
+      setError('Failed to create booking request. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -101,10 +109,10 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
               <label
                 key={option.hours}
                 className={cn(
-                  "flex items-center justify-between p-3 border-2 rounded-xl cursor-pointer transition-all",
+                  'flex items-center justify-between p-3 border-2 rounded-xl cursor-pointer transition-all',
                   duration === option.hours
-                    ? "border-brand bg-brand/5"
-                    : "border-slate-200 hover:border-slate-300"
+                    ? 'border-brand bg-brand/5'
+                    : 'border-slate-200 hover:border-slate-300',
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -129,16 +137,14 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
         {/* Date Picker */}
         <div className="space-y-2">
           <label className="text-sm font-semibold text-ink flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
             Date
           </label>
-          <Input
-            type="date"
+          <DatePicker
             value={date}
-            onChange={(e) => setDate(e.target.value)}
-            min={new Date().toISOString().split("T")[0]}
-            required
-            className="w-full"
+            onChange={setDate}
+            minValue={parseDate(new Date().toISOString().split('T')[0])}
+            placeholderValue={parseDate(new Date().toISOString().split('T')[0])}
+            isRequired
           />
         </div>
 
@@ -163,17 +169,17 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
             <Users className="h-4 w-4" />
             Number of Travelers
           </label>
-          <select
+          <Select
             value={travelers.toString()}
-            onChange={(e) => setTravelers(parseInt(e.target.value))}
-            required
-            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="1">1 person</option>
-            <option value="2">2 people</option>
-            <option value="3">3 people</option>
-            <option value="4">4 people</option>
-          </select>
+            onChange={(val) => setTravelers(parseInt(val))}
+            options={[
+              { value: '1', label: '1 person' },
+              { value: '2', label: '2 people' },
+              { value: '3', label: '3 people' },
+              { value: '4', label: '4 people' },
+            ]}
+            icon={<Users className="h-4 w-4" />}
+          />
           <p className="text-xs text-ink-soft">Max group size: 4 people</p>
         </div>
 
@@ -183,16 +189,16 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
             <MapPin className="h-4 w-4" />
             Meeting Location
           </label>
-          <select
+          <Select
             value={meetingLocation}
-            onChange={(e) => setMeetingLocation(e.target.value)}
-            required
-            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="default">Guide's Default Meetup</option>
-            <option value="hotel">My Hotel</option>
-            <option value="custom">Custom Location</option>
-          </select>
+            onChange={setMeetingLocation}
+            options={[
+              { value: 'default', label: "Guide's Default Meetup" },
+              { value: 'hotel', label: 'My Hotel' },
+              { value: 'custom', label: 'Custom Location' },
+            ]}
+            icon={<MapPin className="h-4 w-4" />}
+          />
         </div>
 
         {/* Special Requests */}
@@ -238,7 +244,7 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
           className="w-full py-4 text-base font-semibold"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Processing..." : "Request to Book"}
+          {isSubmitting ? 'Processing...' : 'Request to Book'}
         </Button>
 
         {/* Note */}
@@ -249,4 +255,3 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
     </div>
   );
 }
-

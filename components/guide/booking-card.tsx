@@ -1,13 +1,16 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Calendar, Clock, Users, MapPin, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Clock, Users, MapPin, Loader2 } from 'lucide-react';
+import { parseDate, type CalendarDate } from '@internationalized/date';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Select } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 
 type Duration = 4 | 6 | 8;
 
@@ -18,16 +21,21 @@ interface BookingCardProps {
   currency?: string | null;
 }
 
-export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: BookingCardProps) {
+export function BookingCard({
+  guideId,
+  cityId,
+  basePrices,
+  currency = 'USD',
+}: BookingCardProps) {
   const router = useRouter();
   const [duration, setDuration] = useState<Duration>(4);
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [date, setDate] = useState<CalendarDate | null>(null);
+  const [time, setTime] = useState('');
   const [travelers, setTravelers] = useState(2);
-  const [location, setLocation] = useState("default");
-  const [notes, setNotes] = useState("");
+  const [location, setLocation] = useState('default');
+  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const price = basePrices[duration] ?? 120;
   const serviceFee = price * 0.08;
@@ -38,68 +46,73 @@ export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: B
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    
+
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       const supabase = createSupabaseBrowserClient();
       if (!supabase) {
-        setError("Unable to connect to database");
+        setError('Unable to connect to database');
         setLoading(false);
         return;
       }
 
       // Check authentication
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
       if (authError || !user) {
         // Redirect to sign-in with return URL
-        router.push(`/auth/sign-in?returnUrl=${encodeURIComponent(window.location.pathname)}`);
+        router.push(
+          `/auth/sign-in?returnUrl=${encodeURIComponent(window.location.pathname)}`,
+        );
         return;
       }
 
       // Validate date is in the future
-      const startDateTime = new Date(`${date}T${time}`);
+      const startDateTime = new Date(`${date.toString()}T${time}`);
       if (startDateTime <= new Date()) {
-        setError("Please select a future date and time");
+        setError('Please select a future date and time');
         setLoading(false);
         return;
       }
 
       // Create booking via API
-      const response = await fetch("/api/bookings/create", {
-        method: "POST",
+      const response = await fetch('/api/bookings/create', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           guideId,
           cityId,
           duration,
-          date,
+          date: date.toString(),
           time,
           travelers,
           location,
           notes,
           price: total,
-          currency: currency || "USD",
+          currency: currency || 'USD',
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to create booking request");
+        setError(data.error || 'Failed to create booking request');
         setLoading(false);
         return;
       }
 
       // Redirect to traveler bookings page
-      router.push("/traveler/bookings?success=booking_created");
+      router.push('/traveler/bookings?success=booking_created');
     } catch (err) {
-      console.error("Error creating booking:", err);
-      setError("An unexpected error occurred. Please try again.");
+      console.error('Error creating booking:', err);
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }
   };
@@ -111,8 +124,9 @@ export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: B
       <div>
         <p className="text-sm text-ink-soft">Starting from</p>
         <p className="text-3xl font-bold text-ink">
-          {currency === "EUR" ? "€" : "$"}
-          {price.toFixed(0)} <span className="text-base font-medium text-ink-soft">per tour</span>
+          {currency === 'EUR' ? '€' : '$'}
+          {price.toFixed(0)}{' '}
+          <span className="text-base font-medium text-ink-soft">per tour</span>
         </p>
       </div>
 
@@ -126,10 +140,10 @@ export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: B
               type="button"
               onClick={() => setDuration(opt)}
               className={cn(
-                "rounded-xl border px-3 py-2 text-sm font-semibold transition-colors",
+                'rounded-xl border px-3 py-2 text-sm font-semibold transition-colors',
                 duration === opt
-                  ? "border-brand bg-brand/10 text-brand"
-                  : "border-slate-200 hover:border-brand/40"
+                  ? 'border-brand bg-brand/10 text-brand'
+                  : 'border-slate-200 hover:border-brand/40',
               )}
             >
               {opt} hrs
@@ -144,15 +158,12 @@ export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: B
           <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
             Date
           </label>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft" />
-            <Input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <DatePicker
+            value={date}
+            onChange={setDate}
+            minValue={parseDate(new Date().toISOString().split('T')[0])}
+            placeholderValue={parseDate(new Date().toISOString().split('T')[0])}
+          />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
@@ -194,15 +205,16 @@ export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: B
         <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
           Meeting location
         </label>
-        <select
+        <Select
           value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-        >
-          <option value="default">Guide's default meetup</option>
-          <option value="hotel">Hotel pickup</option>
-          <option value="custom">Custom location</option>
-        </select>
+          onChange={setLocation}
+          options={[
+            { value: 'default', label: "Guide's default meetup" },
+            { value: 'hotel', label: 'Hotel pickup' },
+            { value: 'custom', label: 'Custom location' },
+          ]}
+          className="h-11"
+        />
       </div>
 
       {/* Notes */}
@@ -224,14 +236,14 @@ export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: B
         <div className="flex justify-between">
           <span>Base tour ({duration} hrs)</span>
           <span>
-            {currency === "EUR" ? "€" : "$"}
+            {currency === 'EUR' ? '€' : '$'}
             {price.toFixed(0)}
           </span>
         </div>
         <div className="flex justify-between">
           <span>Service fee</span>
           <span>
-            {currency === "EUR" ? "€" : "$"}
+            {currency === 'EUR' ? '€' : '$'}
             {serviceFee.toFixed(0)}
           </span>
         </div>
@@ -239,7 +251,7 @@ export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: B
         <div className="flex justify-between font-semibold">
           <span>Total</span>
           <span>
-            {currency === "EUR" ? "€" : "$"}
+            {currency === 'EUR' ? '€' : '$'}
             {total.toFixed(0)}
           </span>
         </div>
@@ -262,11 +274,12 @@ export function BookingCard({ guideId, cityId, basePrices, currency = "USD" }: B
               Creating request...
             </>
           ) : (
-            "Request to Book"
+            'Request to Book'
           )}
         </Button>
         <p className="text-xs text-center text-ink-soft">
-          You won&apos;t be charged yet. The guide will confirm availability first.
+          You won&apos;t be charged yet. The guide will confirm availability
+          first.
         </p>
       </div>
     </aside>

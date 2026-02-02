@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { AvatarUpload } from "@/components/ui/avatar-upload";
-import { cn } from "@/lib/utils";
-import type { City } from "@/lib/mock-data";
+import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select } from '@/components/ui/select';
+import { AvatarUpload } from '@/components/ui/avatar-upload';
+import { cn } from '@/lib/utils';
+import type { City } from '@/lib/mock-data';
 
 // ============================================================================
 // Step 1 - Basic Info
@@ -21,7 +22,9 @@ export function Step1BasicInfo({
   data: any;
   cities: City[];
   onChange: (field: string, value: any) => void;
-  onPhotoUpload?: (file: File) => Promise<{ success: boolean; url?: string; error?: string }>;
+  onPhotoUpload?: (
+    file: File,
+  ) => Promise<{ success: boolean; url?: string; error?: string }>;
   errors: any;
 }) {
   return (
@@ -42,7 +45,7 @@ export function Step1BasicInfo({
           {onPhotoUpload ? (
             <AvatarUpload
               value={data.avatar_url ?? data.photo_url}
-              onChange={(url) => onChange("avatar_url", url || "")}
+              onChange={(url) => onChange('avatar_url', url || '')}
               onUpload={onPhotoUpload}
               size="lg"
             />
@@ -50,8 +53,8 @@ export function Step1BasicInfo({
             <Input
               type="url"
               placeholder="https://images.unsplash.com/..."
-              value={data.avatar_url ?? data.photo_url ?? ""}
-              onChange={(e) => onChange("avatar_url", e.target.value)}
+              value={data.avatar_url ?? data.photo_url ?? ''}
+              onChange={(e) => onChange('avatar_url', e.target.value)}
             />
           )}
           {errors.avatar_url && (
@@ -67,13 +70,11 @@ export function Step1BasicInfo({
           <Input
             type="text"
             placeholder="Your full name"
-            value={data.name || ""}
-            onChange={(e) => onChange("name", e.target.value)}
+            value={data.name || ''}
+            onChange={(e) => onChange('name', e.target.value)}
             required
           />
-          {errors.name && (
-            <p className="text-sm text-red-600">{errors.name}</p>
-          )}
+          {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
         </div>
 
         {/* City */}
@@ -81,19 +82,18 @@ export function Step1BasicInfo({
           <label className="text-sm font-semibold text-ink">
             City <span className="text-red-500">*</span>
           </label>
-          <select
-            value={data.city_id || ""}
-            onChange={(e) => onChange("city_id", e.target.value)}
-            required
-            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="">Select your city</option>
-            {cities.map((city) => (
-              <option key={city.id} value={city.id}>
-                {city.name}, {city.country_name}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={data.city_id || ''}
+            onChange={(val) => onChange('city_id', val)}
+            options={[
+              { value: '', label: 'Select your city' },
+              ...cities.map((city) => ({
+                value: city.id,
+                label: `${city.name}, ${city.country_name}`,
+              })),
+            ]}
+            placeholder="Select your city"
+          />
           {errors.city_id && (
             <p className="text-sm text-red-600">{errors.city_id}</p>
           )}
@@ -105,28 +105,33 @@ export function Step1BasicInfo({
             Languages <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {["English", "Spanish", "Portuguese", "French", "German", "Italian"].map(
-              (language) => (
-                <label
-                  key={language}
-                  className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-brand/50 transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={data.languages?.includes(language) || false}
-                    onChange={(e) => {
-                      const current = data.languages || [];
-                      const updated = e.target.checked
-                        ? [...current, language]
-                        : current.filter((l: string) => l !== language);
-                      onChange("languages", updated);
-                    }}
-                    className="w-4 h-4 text-brand focus:ring-brand rounded"
-                  />
-                  <span className="text-sm text-ink">{language}</span>
-                </label>
-              )
-            )}
+            {[
+              'English',
+              'Spanish',
+              'Portuguese',
+              'French',
+              'German',
+              'Italian',
+            ].map((language) => (
+              <label
+                key={language}
+                className="flex items-center gap-2 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-brand/50 transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={data.languages?.includes(language) || false}
+                  onChange={(e) => {
+                    const current = data.languages || [];
+                    const updated = e.target.checked
+                      ? [...current, language]
+                      : current.filter((l: string) => l !== language);
+                    onChange('languages', updated);
+                  }}
+                  className="w-4 h-4 text-brand focus:ring-brand rounded"
+                />
+                <span className="text-sm text-ink">{language}</span>
+              </label>
+            ))}
           </div>
           {errors.languages && (
             <p className="text-sm text-red-600">{errors.languages}</p>
@@ -140,10 +145,10 @@ export function Step1BasicInfo({
           </label>
           <Textarea
             placeholder="Tell travelers about yourself, your background, and what makes your tours special..."
-            value={data.bio || ""}
+            value={data.bio || ''}
             onChange={(e) => {
               if (e.target.value.length <= 500) {
-                onChange("bio", e.target.value);
+                onChange('bio', e.target.value);
               }
             }}
             rows={4}
@@ -163,10 +168,10 @@ export function Step1BasicInfo({
           <Input
             type="text"
             placeholder="One-line summary of what you offer"
-            value={data.tagline || ""}
+            value={data.tagline || ''}
             onChange={(e) => {
               if (e.target.value.length <= 60) {
-                onChange("tagline", e.target.value);
+                onChange('tagline', e.target.value);
               }
             }}
             required
@@ -212,7 +217,7 @@ export function Step2LGBTQAlignment({
             <input
               type="checkbox"
               checked={data.identifies_lgbtq || false}
-              onChange={(e) => onChange("identifies_lgbtq", e.target.checked)}
+              onChange={(e) => onChange('identifies_lgbtq', e.target.checked)}
               className="w-5 h-5 text-brand focus:ring-brand rounded"
             />
             <span className="text-ink">I identify as LGBTQ+</span>
@@ -222,7 +227,7 @@ export function Step2LGBTQAlignment({
             <input
               type="checkbox"
               checked={data.is_ally || false}
-              onChange={(e) => onChange("is_ally", e.target.checked)}
+              onChange={(e) => onChange('is_ally', e.target.checked)}
               className="w-5 h-5 text-brand focus:ring-brand rounded"
             />
             <span className="text-ink">I'm an LGBTQ+ ally</span>
@@ -232,15 +237,15 @@ export function Step2LGBTQAlignment({
         {/* Why I Guide */}
         <div className="space-y-2">
           <label className="text-sm font-semibold text-ink">
-            Why I enjoy guiding LGBTQ+ travelers{" "}
+            Why I enjoy guiding LGBTQ+ travelers{' '}
             <span className="text-red-500">*</span>
           </label>
           <Textarea
             placeholder="Share your motivation for creating safe, authentic experiences for LGBTQ+ travelers..."
-            value={data.why_guide_lgbtq || ""}
+            value={data.why_guide_lgbtq || ''}
             onChange={(e) => {
               if (e.target.value.length <= 300) {
-                onChange("why_guide_lgbtq", e.target.value);
+                onChange('why_guide_lgbtq', e.target.value);
               }
             }}
             rows={4}
@@ -260,7 +265,7 @@ export function Step2LGBTQAlignment({
             <input
               type="checkbox"
               checked={data.safety_commitment || false}
-              onChange={(e) => onChange("safety_commitment", e.target.checked)}
+              onChange={(e) => onChange('safety_commitment', e.target.checked)}
               className="w-5 h-5 text-brand focus:ring-brand rounded mt-0.5"
               required
             />
@@ -269,8 +274,8 @@ export function Step2LGBTQAlignment({
                 Safety Commitment <span className="text-red-500">*</span>
               </span>
               <p className="text-sm text-ink-soft mt-1">
-                I commit to providing safe, respectful experiences and
-                following Rainbow Tour Guides' code of conduct.
+                I commit to providing safe, respectful experiences and following
+                Rainbow Tour Guides' code of conduct.
               </p>
             </div>
           </label>
@@ -297,14 +302,14 @@ export function Step3ExperienceTags({
   errors: any;
 }) {
   const experienceTags = [
-    "Nightlife",
-    "Daytime Culture",
-    "Food & Drink",
-    "Queer History",
-    "Hidden Gems",
-    "Architecture",
-    "Nature",
-    "Art Scene",
+    'Nightlife',
+    'Daytime Culture',
+    'Food & Drink',
+    'Queer History',
+    'Hidden Gems',
+    'Architecture',
+    'Nature',
+    'Art Scene',
   ];
 
   return (
@@ -313,9 +318,7 @@ export function Step3ExperienceTags({
         <h2 className="text-2xl font-bold text-ink mb-2">
           Experience & Specialties
         </h2>
-        <p className="text-ink-soft">
-          What kind of experiences do you offer?
-        </p>
+        <p className="text-ink-soft">What kind of experiences do you offer?</p>
       </div>
 
       <div className="space-y-4">
@@ -332,10 +335,10 @@ export function Step3ExperienceTags({
               <label
                 key={tag}
                 className={cn(
-                  "flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all",
+                  'flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all',
                   data.experience_tags?.includes(tag)
-                    ? "border-brand bg-brand/5"
-                    : "border-slate-200 hover:border-slate-300"
+                    ? 'border-brand bg-brand/5'
+                    : 'border-slate-200 hover:border-slate-300',
                 )}
               >
                 <input
@@ -346,7 +349,7 @@ export function Step3ExperienceTags({
                     const updated = e.target.checked
                       ? [...current, tag]
                       : current.filter((t: string) => t !== tag);
-                    onChange("experience_tags", updated);
+                    onChange('experience_tags', updated);
                   }}
                   className="w-4 h-4 text-brand focus:ring-brand rounded"
                 />
@@ -366,10 +369,10 @@ export function Step3ExperienceTags({
           </label>
           <Textarea
             placeholder="Describe a typical tour with you. What will travelers see, experience, and learn?"
-            value={data.tour_description || ""}
+            value={data.tour_description || ''}
             onChange={(e) => {
               if (e.target.value.length <= 400) {
-                onChange("tour_description", e.target.value);
+                onChange('tour_description', e.target.value);
               }
             }}
             rows={5}
@@ -432,8 +435,8 @@ export function Step4Pricing({
               max="500"
               step="5"
               placeholder="120"
-              value={data.price_4h || ""}
-              onChange={(e) => onChange("price_4h", parseFloat(e.target.value))}
+              value={data.price_4h || ''}
+              onChange={(e) => onChange('price_4h', parseFloat(e.target.value))}
               className="pl-7"
               required
             />
@@ -463,8 +466,8 @@ export function Step4Pricing({
               max="750"
               step="5"
               placeholder="170"
-              value={data.price_6h || ""}
-              onChange={(e) => onChange("price_6h", parseFloat(e.target.value))}
+              value={data.price_6h || ''}
+              onChange={(e) => onChange('price_6h', parseFloat(e.target.value))}
               className="pl-7"
               required
             />
@@ -494,8 +497,8 @@ export function Step4Pricing({
               max="1000"
               step="5"
               placeholder="220"
-              value={data.price_8h || ""}
-              onChange={(e) => onChange("price_8h", parseFloat(e.target.value))}
+              value={data.price_8h || ''}
+              onChange={(e) => onChange('price_8h', parseFloat(e.target.value))}
               className="pl-7"
               required
             />
@@ -527,8 +530,8 @@ export function Step5Availability({
   onChange: (field: string, value: any) => void;
   errors: any;
 }) {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const timeRanges = ["Morning", "Afternoon", "Evening"];
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const timeRanges = ['Morning', 'Afternoon', 'Evening'];
 
   return (
     <div className="space-y-6">
@@ -550,10 +553,10 @@ export function Step5Availability({
               <label
                 key={day}
                 className={cn(
-                  "px-4 py-2 border-2 rounded-lg cursor-pointer transition-all",
+                  'px-4 py-2 border-2 rounded-lg cursor-pointer transition-all',
                   data.available_days?.includes(day)
-                    ? "border-brand bg-brand/5 text-brand font-semibold"
-                    : "border-slate-200 text-ink-soft hover:border-slate-300"
+                    ? 'border-brand bg-brand/5 text-brand font-semibold'
+                    : 'border-slate-200 text-ink-soft hover:border-slate-300',
                 )}
               >
                 <input
@@ -564,7 +567,7 @@ export function Step5Availability({
                     const updated = e.target.checked
                       ? [...current, day]
                       : current.filter((d: string) => d !== day);
-                    onChange("available_days", updated);
+                    onChange('available_days', updated);
                   }}
                   className="sr-only"
                 />
@@ -587,10 +590,10 @@ export function Step5Availability({
               <label
                 key={time}
                 className={cn(
-                  "flex items-center justify-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition-all",
+                  'flex items-center justify-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition-all',
                   data.time_ranges?.includes(time)
-                    ? "border-brand bg-brand/5 text-brand font-semibold"
-                    : "border-slate-200 text-ink-soft hover:border-slate-300"
+                    ? 'border-brand bg-brand/5 text-brand font-semibold'
+                    : 'border-slate-200 text-ink-soft hover:border-slate-300',
                 )}
               >
                 <input
@@ -601,7 +604,7 @@ export function Step5Availability({
                     const updated = e.target.checked
                       ? [...current, time]
                       : current.filter((t: string) => t !== time);
-                    onChange("time_ranges", updated);
+                    onChange('time_ranges', updated);
                   }}
                   className="sr-only"
                 />
@@ -621,8 +624,8 @@ export function Step5Availability({
           </label>
           <Textarea
             placeholder="Any specific availability details, blackout dates, or scheduling preferences..."
-            value={data.availability_notes || ""}
-            onChange={(e) => onChange("availability_notes", e.target.value)}
+            value={data.availability_notes || ''}
+            onChange={(e) => onChange('availability_notes', e.target.value)}
             rows={3}
           />
         </div>
@@ -677,7 +680,7 @@ export function Step6IDUpload({
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  onChange("id_document", file.name);
+                  onChange('id_document', file.name);
                 }
               }}
               className="hidden"
@@ -701,7 +704,7 @@ export function Step6IDUpload({
               </div>
               <div>
                 <p className="text-ink font-medium">
-                  {data.id_document || "Click to upload ID"}
+                  {data.id_document || 'Click to upload ID'}
                 </p>
                 <p className="text-sm text-ink-soft mt-1">
                   Passport, driver's license, or national ID
@@ -766,7 +769,7 @@ export function Step7Review({
               <p className="text-xs text-ink-soft uppercase font-semibold mb-1">
                 Name
               </p>
-              <p className="text-ink">{data.name || "Not provided"}</p>
+              <p className="text-ink">{data.name || 'Not provided'}</p>
             </div>
             <div>
               <p className="text-xs text-ink-soft uppercase font-semibold mb-1">
@@ -775,7 +778,7 @@ export function Step7Review({
               <p className="text-ink">
                 {selectedCity
                   ? `${selectedCity.name}, ${selectedCity.country_name}`
-                  : "Not provided"}
+                  : 'Not provided'}
               </p>
             </div>
             <div>
@@ -783,7 +786,7 @@ export function Step7Review({
                 Languages
               </p>
               <p className="text-ink">
-                {data.languages?.join(", ") || "Not provided"}
+                {data.languages?.join(', ') || 'Not provided'}
               </p>
             </div>
             <div>
@@ -791,7 +794,7 @@ export function Step7Review({
                 Experience Tags
               </p>
               <p className="text-ink">
-                {data.experience_tags?.join(", ") || "Not provided"}
+                {data.experience_tags?.join(', ') || 'Not provided'}
               </p>
             </div>
           </div>
@@ -801,15 +804,15 @@ export function Step7Review({
               <p className="text-xs text-ink-soft uppercase font-semibold mb-1">
                 Tagline
               </p>
-              <p className="text-ink">{data.tagline || "Not provided"}</p>
+              <p className="text-ink">{data.tagline || 'Not provided'}</p>
             </div>
             <div>
               <p className="text-xs text-ink-soft uppercase font-semibold mb-1">
                 Pricing
               </p>
               <p className="text-ink">
-                4h: ${data.price_4h || "0"} • 6h: ${data.price_6h || "0"} • 8h: $
-                {data.price_8h || "0"}
+                4h: ${data.price_4h || '0'} • 6h: ${data.price_6h || '0'} • 8h:
+                ${data.price_8h || '0'}
               </p>
             </div>
             <div>
@@ -817,14 +820,14 @@ export function Step7Review({
                 Availability
               </p>
               <p className="text-ink">
-                {data.available_days?.join(", ") || "Not provided"}
+                {data.available_days?.join(', ') || 'Not provided'}
               </p>
             </div>
             <div>
               <p className="text-xs text-ink-soft uppercase font-semibold mb-1">
                 ID Document
               </p>
-              <p className="text-ink">{data.id_document || "Not uploaded"}</p>
+              <p className="text-ink">{data.id_document || 'Not uploaded'}</p>
             </div>
           </div>
         </div>
@@ -834,7 +837,7 @@ export function Step7Review({
             Bio
           </p>
           <p className="text-ink text-sm leading-relaxed">
-            {data.bio || "Not provided"}
+            {data.bio || 'Not provided'}
           </p>
         </div>
       </div>
@@ -845,21 +848,21 @@ export function Step7Review({
           <input
             type="checkbox"
             checked={data.terms_accepted || false}
-            onChange={(e) => onChange("terms_accepted", e.target.checked)}
+            onChange={(e) => onChange('terms_accepted', e.target.checked)}
             className="w-5 h-5 text-brand focus:ring-brand rounded mt-0.5"
             required
           />
           <div>
             <span className="text-ink font-medium">
-              I agree to the Terms and Code of Conduct{" "}
+              I agree to the Terms and Code of Conduct{' '}
               <span className="text-red-500">*</span>
             </span>
             <p className="text-sm text-ink-soft mt-1">
-              By checking this box, you agree to follow our{" "}
+              By checking this box, you agree to follow our{' '}
               <Link href="/legal/terms" className="text-brand hover:underline">
                 Terms of Service
-              </Link>{" "}
-              and{" "}
+              </Link>{' '}
+              and{' '}
               <Link
                 href="/legal/code-of-conduct"
                 className="text-brand hover:underline"

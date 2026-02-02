@@ -1,159 +1,228 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import * as SelectPrimitive from "@radix-ui/react-select"
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import * as React from 'react';
+import {
+  Select as HeroSelect,
+  SelectItem as HeroSelectItem,
+  SelectProps as HeroSelectProps,
+} from '@heroui/react';
+import { cn } from '@/lib/utils';
 
-import { cn } from "@/lib/utils"
+export interface SelectOption {
+  value: string;
+  label: string;
+}
 
-const Select = SelectPrimitive.Root
+export interface SelectProps extends Omit<
+  HeroSelectProps,
+  'children' | 'onChange'
+> {
+  options?: SelectOption[];
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  icon?: React.ReactNode;
+  className?: string;
+  label?: string;
+  ariaLabel?: string;
+  ariaLabelledby?: string;
+  onValueChange?: (value: string) => void;
+  defaultValue?: string;
+  children?: React.ReactNode;
+}
 
-const SelectGroup = SelectPrimitive.Group
+// Context for the shadcn-style composition API
+const SelectContext = React.createContext<{
+  value?: string;
+  onValueChange?: (value: string) => void;
+  placeholder?: string;
+  defaultValue?: string;
+}>({});
 
-const SelectValue = SelectPrimitive.Value
+/**
+ * Select component - HeroUI wrapper with project defaults
+ * Supports both composition API (shadcn-style) and simplified API
+ *
+ * Simplified usage:
+ * <Select
+ *   options={[{ value: '1', label: 'Option 1' }]}
+ *   value={selectedValue}
+ *   onChange={setSelectedValue}
+ * />
+ *
+ * Composition usage (for compatibility):
+ * <Select value={value} onValueChange={setValue}>
+ *   <SelectTrigger>
+ *     <SelectValue placeholder="Select..." />
+ *   </SelectTrigger>
+ *   <SelectContent>
+ *     <SelectItem value="1">Option 1</SelectItem>
+ *   </SelectContent>
+ * </Select>
+ */
+const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  (
+    {
+      options,
+      value,
+      onChange,
+      onValueChange,
+      placeholder = 'Select an option',
+      defaultValue,
+      icon,
+      className,
+      label,
+      ariaLabel,
+      ariaLabelledby,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const handleSelectionChange = (keys: Set<React.Key> | 'all') => {
+      if (keys !== 'all') {
+        const selectedValue = Array.from(keys)[0] as string;
+        onChange?.(selectedValue);
+        onValueChange?.(selectedValue);
+      }
+    };
 
+    // If options are provided, use simplified API
+    if (options) {
+      return (
+        <HeroSelect
+          ref={ref}
+          selectedKeys={value ? [value] : []}
+          onSelectionChange={handleSelectionChange}
+          placeholder={placeholder}
+          startContent={icon}
+          label={label}
+          aria-label={ariaLabel || label || placeholder}
+          aria-labelledby={ariaLabelledby}
+          variant="bordered"
+          classNames={{
+            trigger: cn(
+              'h-12 bg-transparent border-input shadow-sm',
+              'data-[hover=true]:bg-accent/50',
+              'data-[focus=true]:ring-1 data-[focus=true]:ring-ring',
+              className,
+            ),
+            value: 'text-sm',
+            popoverContent: 'rounded-md',
+          }}
+          {...props}
+        >
+          {options.map((option) => (
+            <HeroSelectItem key={option.value}>{option.label}</HeroSelectItem>
+          ))}
+        </HeroSelect>
+      );
+    }
+
+    // Otherwise, use composition API with context
+    // Extract SelectItems from SelectContent children
+    let selectItems: React.ReactNode[] = [];
+    let extractedPlaceholder = placeholder;
+
+    React.Children.forEach(children, (child) => {
+      if (!React.isValidElement(child)) return;
+
+      // If it's SelectContent, extract its children (the SelectItems)
+      if (child.type === SelectContent) {
+        selectItems = React.Children.toArray((child.props as any).children);
+      }
+      // If it's SelectValue, extract placeholder
+      else if (child.type === SelectValue && (child.props as any).placeholder) {
+        extractedPlaceholder = (child.props as any).placeholder;
+      }
+    });
+
+    return (
+      <SelectContext.Provider
+        value={{
+          value,
+          onValueChange,
+          placeholder: extractedPlaceholder,
+          defaultValue,
+        }}
+      >
+        <HeroSelect
+          ref={ref}
+          selectedKeys={value ? [value] : defaultValue ? [defaultValue] : []}
+          onSelectionChange={handleSelectionChange}
+          placeholder={extractedPlaceholder}
+          label={label}
+          variant="bordered"
+          classNames={{
+            trigger: cn(
+              'h-12 bg-transparent border-input shadow-sm',
+              'data-[hover=true]:bg-accent/50',
+              'data-[focus=true]:ring-1 data-[focus=true]:ring-ring',
+              className,
+            ),
+            value: 'text-sm',
+            popoverContent: 'rounded-md',
+          }}
+          {...props}
+        >
+          {selectItems as any}
+        </HeroSelect>
+      </SelectContext.Provider>
+    );
+  },
+);
+
+Select.displayName = 'Select';
+
+// Compatibility components for shadcn-style API
 const SelectTrigger = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-))
-SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ children, className, ...props }, ref) => {
+  // In HeroUI, the trigger is built into the Select component
+  // This is just a passthrough for compatibility
+  return <>{children}</>;
+});
+SelectTrigger.displayName = 'SelectTrigger';
 
-const SelectScrollUpButton = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.ScrollUpButton
-    ref={ref}
-    className={cn(
-      "flex cursor-default items-center justify-center py-1",
-      className
-    )}
-    {...props}
-  >
-    <ChevronUp className="h-4 w-4" />
-  </SelectPrimitive.ScrollUpButton>
-))
-SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
-
-const SelectScrollDownButton = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.ScrollDownButton>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.ScrollDownButton
-    ref={ref}
-    className={cn(
-      "flex cursor-default items-center justify-center py-1",
-      className
-    )}
-    {...props}
-  >
-    <ChevronDown className="h-4 w-4" />
-  </SelectPrimitive.ScrollDownButton>
-))
-SelectScrollDownButton.displayName =
-  SelectPrimitive.ScrollDownButton.displayName
+const SelectValue = React.forwardRef<
+  HTMLSpanElement,
+  React.HTMLAttributes<HTMLSpanElement> & { placeholder?: string }
+>(({ placeholder, ...props }, ref) => {
+  // In HeroUI, the value display is handled automatically
+  // This is just for compatibility
+  return null;
+});
+SelectValue.displayName = 'SelectValue';
 
 const SelectContent = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
-  <SelectPrimitive.Portal>
-    <SelectPrimitive.Content
-      ref={ref}
-      className={cn(
-        "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-select-content-transform-origin]",
-        position === "popper" &&
-          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-        className
-      )}
-      position={position}
-      {...props}
-    >
-      <SelectScrollUpButton />
-      <SelectPrimitive.Viewport
-        className={cn(
-          "p-1",
-          position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
-        )}
-      >
-        {children}
-      </SelectPrimitive.Viewport>
-      <SelectScrollDownButton />
-    </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
-))
-SelectContent.displayName = SelectPrimitive.Content.displayName
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ children, className, ...props }, ref) => {
+  // In HeroUI, the content/popover is built into the Select component
+  // Just pass through the children (SelectItems)
+  return <>{children}</>;
+});
+SelectContent.displayName = 'SelectContent';
 
-const SelectLabel = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Label>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.Label
-    ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold", className)}
-    {...props}
-  />
-))
-SelectLabel.displayName = SelectPrimitive.Label.displayName
-
+// Wrapper for SelectItem to handle value prop (HeroUI uses key instead)
 const SelectItem = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
-    )}
-    {...props}
-  >
-    <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-))
-SelectItem.displayName = SelectPrimitive.Item.displayName
+  HTMLLIElement,
+  Omit<React.ComponentProps<typeof HeroSelectItem>, 'key'> & {
+    value?: string;
+    key?: React.Key;
+  }
+>(({ value, children, ...props }, ref) => {
+  const itemKey =
+    value || (typeof children === 'string' ? children : undefined);
 
-const SelectSeparator = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
-    {...props}
-  />
-))
-SelectSeparator.displayName = SelectPrimitive.Separator.displayName
+  return (
+    <HeroSelectItem key={itemKey} {...props}>
+      {children}
+    </HeroSelectItem>
+  );
+});
 
-export {
-  Select,
-  SelectGroup,
-  SelectValue,
-  SelectTrigger,
-  SelectContent,
-  SelectLabel,
-  SelectItem,
-  SelectSeparator,
-  SelectScrollUpButton,
-  SelectScrollDownButton,
-}
+SelectItem.displayName = 'SelectItem';
+
+export { Select, SelectItem, SelectTrigger, SelectValue, SelectContent };

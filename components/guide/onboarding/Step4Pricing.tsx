@@ -1,8 +1,15 @@
-"use client";
+'use client';
 
-import { DollarSign, Info } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { DollarSign, Info } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 
 export type Step4Data = {
   rate4h: string;
@@ -17,48 +24,48 @@ type Step4PricingProps = {
 };
 
 const CURRENCY_OPTIONS = [
-  { value: "USD", label: "USD ($)", symbol: "$" },
-  { value: "EUR", label: "EUR (€)", symbol: "€" },
-  { value: "GBP", label: "GBP (£)", symbol: "£" },
+  { value: 'USD', label: 'USD ($)', symbol: '$' },
+  { value: 'EUR', label: 'EUR (€)', symbol: '€' },
+  { value: 'GBP', label: 'GBP (£)', symbol: '£' },
 ];
 
 export function Step4Pricing({ data, onChange }: Step4PricingProps) {
   const calculateHourlyRate = (totalRate: string, hours: number): string => {
     const rate = parseFloat(totalRate);
-    if (isNaN(rate) || rate === 0) return "0";
+    if (isNaN(rate) || rate === 0) return '0';
     return (rate / hours).toFixed(2);
   };
 
-  const selectedCurrency = CURRENCY_OPTIONS.find((c) => c.value === data.currency);
-  const currencySymbol = selectedCurrency?.symbol || "$";
+  const selectedCurrency = CURRENCY_OPTIONS.find(
+    (c) => c.value === data.currency,
+  );
+  const currencySymbol = selectedCurrency?.symbol || '$';
 
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="text-3xl font-serif">Pricing</CardTitle>
         <CardDescription>
-          Set your rates for different tour durations. You can always adjust these later.
+          Set your rates for different tour durations. You can always adjust
+          these later.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Currency Selection */}
         <div className="space-y-2">
-          <label htmlFor="currency" className="text-sm font-medium text-slate-700">
+          <label
+            htmlFor="currency"
+            className="text-sm font-medium text-slate-700"
+          >
             Currency <span className="text-destructive">*</span>
           </label>
-          <select
-            id="currency"
+          <Select
             value={data.currency}
-            onChange={(e) => onChange({ currency: e.target.value })}
-            required
-            className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-          >
-            {CURRENCY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => onChange({ currency: val })}
+            options={CURRENCY_OPTIONS}
+            placeholder="Select currency"
+            className="h-11"
+          />
         </div>
 
         {/* Pricing Grid */}
@@ -71,11 +78,16 @@ export function Step4Pricing({ data, onChange }: Step4PricingProps) {
               </div>
               <div className="flex-1 space-y-3">
                 <div>
-                  <h3 className="font-semibold text-slate-900 mb-1">4 Hour Experience</h3>
+                  <h3 className="font-semibold text-slate-900 mb-1">
+                    4 Hour Experience
+                  </h3>
                   <p className="text-sm text-slate-600">Half-day tour</p>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="rate4h" className="text-sm font-medium text-slate-700">
+                  <label
+                    htmlFor="rate4h"
+                    className="text-sm font-medium text-slate-700"
+                  >
                     Total Rate <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
@@ -96,7 +108,8 @@ export function Step4Pricing({ data, onChange }: Step4PricingProps) {
                   </div>
                   {data.rate4h && parseFloat(data.rate4h) > 0 && (
                     <p className="text-xs text-slate-500">
-                      ≈ {currencySymbol}{calculateHourlyRate(data.rate4h, 4)}/hour
+                      ≈ {currencySymbol}
+                      {calculateHourlyRate(data.rate4h, 4)}/hour
                     </p>
                   )}
                 </div>
@@ -113,15 +126,22 @@ export function Step4Pricing({ data, onChange }: Step4PricingProps) {
               <div className="flex-1 space-y-3">
                 <div className="flex items-center gap-2">
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">6 Hour Experience</h3>
-                    <p className="text-sm text-slate-600">Full-day tour (Most Popular)</p>
+                    <h3 className="font-semibold text-slate-900 mb-1">
+                      6 Hour Experience
+                    </h3>
+                    <p className="text-sm text-slate-600">
+                      Full-day tour (Most Popular)
+                    </p>
                   </div>
                   <span className="px-2 py-1 bg-brand text-white text-xs font-bold rounded-full uppercase">
                     Popular
                   </span>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="rate6h" className="text-sm font-medium text-slate-700">
+                  <label
+                    htmlFor="rate6h"
+                    className="text-sm font-medium text-slate-700"
+                  >
                     Total Rate <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
@@ -142,7 +162,8 @@ export function Step4Pricing({ data, onChange }: Step4PricingProps) {
                   </div>
                   {data.rate6h && parseFloat(data.rate6h) > 0 && (
                     <p className="text-xs text-slate-500">
-                      ≈ {currencySymbol}{calculateHourlyRate(data.rate6h, 6)}/hour
+                      ≈ {currencySymbol}
+                      {calculateHourlyRate(data.rate6h, 6)}/hour
                     </p>
                   )}
                 </div>
@@ -158,11 +179,16 @@ export function Step4Pricing({ data, onChange }: Step4PricingProps) {
               </div>
               <div className="flex-1 space-y-3">
                 <div>
-                  <h3 className="font-semibold text-slate-900 mb-1">8 Hour Experience</h3>
+                  <h3 className="font-semibold text-slate-900 mb-1">
+                    8 Hour Experience
+                  </h3>
                   <p className="text-sm text-slate-600">Extended day tour</p>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="rate8h" className="text-sm font-medium text-slate-700">
+                  <label
+                    htmlFor="rate8h"
+                    className="text-sm font-medium text-slate-700"
+                  >
                     Total Rate <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
@@ -183,7 +209,8 @@ export function Step4Pricing({ data, onChange }: Step4PricingProps) {
                   </div>
                   {data.rate8h && parseFloat(data.rate8h) > 0 && (
                     <p className="text-xs text-slate-500">
-                      ≈ {currencySymbol}{calculateHourlyRate(data.rate8h, 8)}/hour
+                      ≈ {currencySymbol}
+                      {calculateHourlyRate(data.rate8h, 8)}/hour
                     </p>
                   )}
                 </div>

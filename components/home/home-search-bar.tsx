@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, MapPin, Search, Users } from 'lucide-react';
-import { Combobox } from '@/components/ui/combobox';
-import { Input } from '@/components/ui/input';
+import { MapPin, Search, Users } from 'lucide-react';
+import { parseDate, type CalendarDate } from '@internationalized/date';
+import { Autocomplete } from '@/components/ui/autocomplete';
+import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import type { City } from '@/lib/mock-data';
 
 interface HomeSearchBarProps {
@@ -15,8 +17,8 @@ interface HomeSearchBarProps {
 export function HomeSearchBar({ cities }: HomeSearchBarProps) {
   const router = useRouter();
   const [city, setCity] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<CalendarDate | null>(null);
+  const [endDate, setEndDate] = useState<CalendarDate | null>(null);
   const [travelers, setTravelers] = useState('1');
 
   const cityOptions = cities.map((c) => ({
@@ -30,8 +32,8 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
     // Prefer city when available; otherwise browse all guides
     const params = new URLSearchParams();
     if (city) params.set('city', city);
-    if (startDate) params.set('start', startDate);
-    if (endDate) params.set('end', endDate);
+    if (startDate) params.set('start', startDate.toString());
+    if (endDate) params.set('end', endDate.toString());
     if (travelers) params.set('travelers', travelers);
 
     // If only city selected, take users to city details
@@ -55,6 +57,7 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
       className="w-full rounded-2xl bg-white/90 backdrop-blur-lg shadow-2xl ring-1 ring-black/5 border border-white/70 p-4 sm:p-6 space-y-4"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* City Autocomplete */}
         <div className="space-y-2">
           <label
             id={whereLabelId}
@@ -62,16 +65,17 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
           >
             Where to?
           </label>
-          <Combobox
+          <Autocomplete
             options={cityOptions}
             value={city}
             onChange={setCity}
             placeholder="Search cities"
-            icon={<MapPin className="h-4 w-4" />}
+            startContent={<MapPin className="h-4 w-4 text-ink-soft" />}
             ariaLabelledby={whereLabelId}
           />
         </div>
 
+        {/* Start Date */}
         <div className="space-y-2">
           <label
             htmlFor={startLabelId}
@@ -80,19 +84,17 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
           >
             Start
           </label>
-          <div className="relative">
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" />
-            <Input
-              id={startLabelId}
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              min={new Date().toISOString().split('T')[0]}
-              className="h-12 rounded-xl pl-11 text-sm"
-            />
-          </div>
+          <DatePicker
+            id={startLabelId}
+            value={startDate}
+            onChange={setStartDate}
+            minValue={parseDate(new Date().toISOString().split('T')[0])}
+            placeholderValue={parseDate(new Date().toISOString().split('T')[0])}
+            aria-labelledby={`${startLabelId}-label`}
+          />
         </div>
 
+        {/* End Date */}
         <div className="space-y-2">
           <label
             htmlFor={endLabelId}
@@ -101,19 +103,19 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
           >
             End
           </label>
-          <div className="relative">
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" />
-            <Input
-              id={endLabelId}
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              min={startDate || new Date().toISOString().split('T')[0]}
-              className="h-12 rounded-xl pl-11 text-sm"
-            />
-          </div>
+          <DatePicker
+            id={endLabelId}
+            value={endDate}
+            onChange={setEndDate}
+            minValue={
+              startDate ?? parseDate(new Date().toISOString().split('T')[0])
+            }
+            placeholderValue={parseDate(new Date().toISOString().split('T')[0])}
+            aria-labelledby={`${endLabelId}-label`}
+          />
         </div>
 
+        {/* Travelers Select */}
         <div className="space-y-2">
           <label
             htmlFor={travelersLabelId}
@@ -122,33 +124,36 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
           >
             Travelers
           </label>
-          <div className="relative">
-            <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none z-10" />
-            <select
-              id={travelersLabelId}
-              value={travelers}
-              onChange={(e) => setTravelers(e.target.value)}
-              className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-transparent px-3 py-2 pl-11 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="1">1 Traveler</option>
-              <option value="2">2 Travelers</option>
-              <option value="3">3 Travelers</option>
-              <option value="4">4 Travelers</option>
-              <option value="5">5 Travelers</option>
-            </select>
-          </div>
+          <Select
+            value={travelers}
+            onChange={setTravelers}
+            placeholder="Select travelers"
+            options={[
+              { value: '1', label: '1 Traveler' },
+              { value: '2', label: '2 Travelers' },
+              { value: '3', label: '3 Travelers' },
+              { value: '4', label: '4 Travelers' },
+              { value: '5', label: '5 Travelers' },
+            ]}
+            icon={<Users className="h-4 w-4 text-ink-soft" />}
+            aria-labelledby={`${travelersLabelId}-label`}
+            className="h-12"
+          />
         </div>
       </div>
 
+      {/* Search Button */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-ink-soft">
-          Flexible dates? Leave them blank and explore guides in your destination.
+          Flexible dates? Leave them blank and explore guides in your
+          destination.
         </p>
         <Button
           type="submit"
-          className="w-full sm:w-auto h-12 px-6 rounded-xl text-base font-semibold flex items-center justify-center gap-2"
+          size="lg"
+          className="w-full sm:w-auto h-12 px-6 rounded-xl text-base font-semibold gap-2"
+          startContent={<Search className="h-4 w-4" />}
         >
-          <Search className="h-4 w-4" />
           Search Now
         </Button>
       </div>
