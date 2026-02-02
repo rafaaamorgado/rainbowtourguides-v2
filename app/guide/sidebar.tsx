@@ -72,12 +72,6 @@ export function GuideSidebar({
       show: true,
     },
     {
-      name: 'Pricing',
-      href: '/guide/pricing',
-      icon: DollarSign,
-      show: true,
-    },
-    {
       name: 'Photos',
       href: '/guide/photos',
       icon: ImageIcon,

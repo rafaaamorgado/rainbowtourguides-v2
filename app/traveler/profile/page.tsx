@@ -11,6 +11,16 @@ export default async function TravelerProfilePage() {
     .select("*")
     .order("name");
 
+  // Fetch traveler record for interests
+  const travelerResult = await supabase
+    .from("travelers")
+    .select("interests")
+    .eq("id", user.id)
+    .single();
+  
+  // Extract interests safely (cast to any to handle Supabase typing)
+  const interests = ((travelerResult.data as any)?.interests as string[]) || [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,6 +31,7 @@ export default async function TravelerProfilePage() {
         <TravelerProfileForm
           profile={profile}
           countries={countries || []}
+          interests={interests}
           onSubmit={updateTravelerProfile}
         />
       </div>

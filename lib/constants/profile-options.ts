@@ -1,14 +1,18 @@
 // Shared profile options for travelers and guides
 
 export const TRAVELER_INTERESTS = [
-  "LGBTQ+ History & Culture",
-  "Local Food & Dining",
-  "Nightlife & Entertainment",
-  "Art & Museums",
-  "Nature & Outdoors",
-  "Shopping & Markets",
-  "Photography Spots",
-  "Off-the-beaten-path",
+  "Arts & Architecture",
+  "Culture & History",
+  "Food & Drink",
+  "Hidden Gems",
+  "Nature & Outdoor",
+  "Queer History",
+  "Shopping",
+  "Nightlife",
+  "Photography",
+  "Clubs",
+  "Local Life",
+  "Music",
 ] as const;
 
 export const GUIDE_SPECIALTIES = [
