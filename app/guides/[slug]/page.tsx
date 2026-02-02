@@ -204,12 +204,6 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
     notFound();
   }
 
-  // Public Visibility Gate: Only show approved guides
-  // Guides in 'draft', 'pending', or 'rejected' status are not publicly visible
-  if (guide.status !== 'approved') {
-    notFound();
-  }
-
   const fullName =
     guide.profile?.full_name ||
     "Local Guide";

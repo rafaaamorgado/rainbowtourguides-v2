@@ -49,19 +49,9 @@ export function GuideSidebar({
   const pathname = usePathname();
   const router = useRouter();
 
-  // Onboarding is incomplete when status is 'draft' (not yet submitted for review)
-  const isOnboardingIncomplete = guide?.status === 'draft';
+  const isApproved = guide?.status === 'approved';
 
   const navigationLinks = [
-    // Onboarding at TOP when incomplete - soft gate priority
-    {
-      name: 'Onboarding',
-      href: '/guide/onboarding',
-      icon: ClipboardCheck,
-      badge: isOnboardingIncomplete ? 'Todo' : undefined,
-      badgeVariant: 'warning' as const,
-      show: isOnboardingIncomplete, // Only show when onboarding is incomplete
-    },
     {
       name: 'Dashboard',
       href: '/guide/dashboard',
@@ -100,6 +90,12 @@ export function GuideSidebar({
       show: true,
     },
     {
+      name: 'Onboarding',
+      href: '/guide/onboarding',
+      icon: ClipboardCheck,
+      show: !isApproved, // Only show if not approved
+    },
+    {
       name: 'Profile',
       href: '/guide/profile',
       icon: User,
@@ -108,7 +104,7 @@ export function GuideSidebar({
     {
       name: 'Payouts',
       href: '/guide/payouts',
-      icon: DollarSign,
+      icon: DollarSign, // Using DollarSign again or a different one? Payouts usually use DollarSign. Pricing could use Tag? Or CreditCard. Let's stick to DollarSign for Payouts. Maybe Tag for Pricing? Or just DollarSign is fine. But duplicate icons might be confusing. Let's use Tag for Pricing or similar. Actually, DollarSign is fine for both generally, but let's see. Payouts is definitely DollarSign. Pricing... maybe 'Coins'? Let's keep existing DollarSign for Payouts, and maybe change Pricing to something else if I can import it. But for now I will use DollarSign for Payouts (as it was) and... wait, existing code has Payouts at the end. I will reuse that.
       show: true,
     },
     {
@@ -282,14 +278,7 @@ export function GuideSidebar({
                     <Icon className="h-5 w-5 flex-shrink-0" />
                     <span className="flex-1">{link.name}</span>
                     {link.badge !== undefined && (
-                      <Badge 
-                        className={cn(
-                          "border-0 text-xs",
-                          link.badgeVariant === 'warning' 
-                            ? "bg-amber-500 text-white" 
-                            : "bg-brand text-white"
-                        )}
-                      >
+                      <Badge className="bg-brand text-white border-0 text-xs">
                         {link.badge}
                       </Badge>
                     )}
