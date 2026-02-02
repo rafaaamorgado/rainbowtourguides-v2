@@ -1,6 +1,8 @@
 import { requireRole } from "@/lib/auth-helpers";
 import { GuideSidebar } from "./sidebar";
+import { GuideStatusBanner } from "@/components/guide/guide-status-banner";
 import type { Database } from "@/types/database";
+import type { GuideStatus } from "@/types/database";
 
 type Guide = Database["public"]["Tables"]["guides"]["Row"];
 
@@ -43,7 +45,15 @@ export default async function GuideLayout({
       {/* Main Content */}
       <div className="lg:pl-64">
         <main className="p-8">
-          <div className="max-w-7xl mx-auto">{children}</div>
+          <div className="max-w-7xl mx-auto">
+            {/* Status Banner - Soft Gate */}
+            {guide && (
+              <div className="mb-6">
+                <GuideStatusBanner status={guide.status as GuideStatus} />
+              </div>
+            )}
+            {children}
+          </div>
         </main>
       </div>
     </div>
