@@ -1,13 +1,14 @@
-import fs from "fs";
-import path from "path";
-import { notFound } from "next/navigation";
-import { GuideHero } from "@/components/guide/guide-hero";
-import { GuideAbout } from "@/components/guide/guide-about";
-import { GuideHighlights } from "@/components/guide/guide-highlights";
-import { GuideReviews } from "@/components/guide/guide-reviews";
-import { BookingCard } from "@/components/guide/booking-card";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { logError } from "@/lib/query-logger";
+import fs from 'fs';
+import path from 'path';
+import { notFound } from 'next/navigation';
+import { GuideHero } from '@/components/guide/guide-hero';
+import { GuideAbout } from '@/components/guide/guide-about';
+import { GuideHighlights } from '@/components/guide/guide-highlights';
+import { GuideReviews } from '@/components/guide/guide-reviews';
+import { BookingCard } from '@/components/guide/booking-card';
+import { PublicProfileGallery } from '@/components/profile/PublicProfileGallery';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { logError } from '@/lib/query-logger';
 
 interface GuidePageProps {
   params: Promise<{ slug: string }>;
@@ -28,6 +29,7 @@ type GuideRow = {
   profile: {
     full_name?: string | null;
     avatar_url?: string | null;
+    cover_url?: string | null;
     languages?: string[] | null;
   } | null;
   city: {
@@ -40,39 +42,41 @@ type GuideRow = {
 };
 
 function resolveCover(slug: string, citySlug?: string | null) {
-  const coverDir = path.join(process.cwd(), "public", "images");
+  const coverDir = path.join(process.cwd(), 'public', 'images');
   const candidates = [
-    path.join(coverDir, "guides", "covers", `${slug}.jpg`),
-    path.join(coverDir, "guides", "covers", `${slug}.png`),
-    citySlug ? path.join(coverDir, "cities", `${citySlug}.jpg`) : null,
-    citySlug ? path.join(coverDir, "cities", `${citySlug}.png`) : null,
+    path.join(coverDir, 'guides', 'covers', `${slug}.jpg`),
+    path.join(coverDir, 'guides', 'covers', `${slug}.png`),
+    citySlug ? path.join(coverDir, 'cities', `${citySlug}.jpg`) : null,
+    citySlug ? path.join(coverDir, 'cities', `${citySlug}.png`) : null,
   ].filter(Boolean) as string[];
 
   for (const filePath of candidates) {
     if (fs.existsSync(filePath)) {
-      const rel = filePath.split("public")[1];
-      return rel.startsWith("/") ? rel : `/${rel}`;
+      const rel = filePath.split('public')[1];
+      return rel.startsWith('/') ? rel : `/${rel}`;
     }
   }
-  return "/images/covers/default.svg";
+  return '/images/covers/default.svg';
 }
 
 function resolveHighlights(citySlug?: string | null) {
-  const base = path.join(process.cwd(), "public", "images", "highlights");
+  const base = path.join(process.cwd(), 'public', 'images', 'highlights');
   const candidates: string[] = [];
   if (citySlug) {
     [1, 2, 3].forEach((i) => {
       const jpg = path.join(base, `${citySlug}-${i}.jpg`);
       const png = path.join(base, `${citySlug}-${i}.png`);
-      if (fs.existsSync(jpg)) candidates.push(`/images/highlights/${citySlug}-${i}.jpg`);
-      else if (fs.existsSync(png)) candidates.push(`/images/highlights/${citySlug}-${i}.png`);
+      if (fs.existsSync(jpg))
+        candidates.push(`/images/highlights/${citySlug}-${i}.jpg`);
+      else if (fs.existsSync(png))
+        candidates.push(`/images/highlights/${citySlug}-${i}.png`);
     });
   }
   if (candidates.length === 0) {
     candidates.push(
-      "/images/highlights/default-1.svg",
-      "/images/highlights/default-2.svg",
-      "/images/highlights/default-3.svg",
+      '/images/highlights/default-1.svg',
+      '/images/highlights/default-2.svg',
+      '/images/highlights/default-3.svg',
     );
   }
   return candidates;
@@ -82,29 +86,29 @@ function toReviews(raw: any[], guideName: string) {
   if (!raw?.length) {
     return [
       {
-        id: "sample-1",
-        author: "Anonymous Traveler",
+        id: 'sample-1',
+        author: 'Anonymous Traveler',
         rating: 4.8,
-        comment:
-          `Had an incredible time with ${guideName}! They knew every queer-friendly spot and made me feel safe the whole time.`,
-        date: "about 2 months ago",
+        comment: `Had an incredible time with ${guideName}! They knew every queer-friendly spot and made me feel safe the whole time.`,
+        date: 'about 2 months ago',
       },
       {
-        id: "sample-2",
-        author: "Jess P.",
+        id: 'sample-2',
+        author: 'Jess P.',
         rating: 5,
-        comment: "Super thoughtful and fun. Great food recs and nightlife tips.",
-        date: "about 1 month ago",
+        comment:
+          'Super thoughtful and fun. Great food recs and nightlife tips.',
+        date: 'about 1 month ago',
       },
     ];
   }
 
   return raw.map((r, idx) => ({
     id: r.id || `rev-${idx}`,
-    author: r.reviewer_name || "Anonymous Traveler",
+    author: r.reviewer_name || 'Anonymous Traveler',
     rating: r.rating || 5,
-    comment: r.comment || "Lovely experience.",
-    date: r.created_at || "",
+    comment: r.comment || 'Lovely experience.',
+    date: r.created_at || '',
   }));
 }
 
@@ -120,7 +124,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
 
   // First attempt: search by slug
   const { data: guideBySlug, error: slugError } = await supabase
-    .from("guides")
+    .from('guides')
     .select(
       `
         id,
@@ -137,6 +141,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
         profile:profiles!guides_id_fkey(
           full_name,
           avatar_url,
+          cover_url,
           languages
         ),
         city:cities!guides_city_id_fkey(
@@ -146,19 +151,20 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
             name
           )
         )
-      `
+      `,
     )
-    .eq("slug", slug)
+    .eq('slug', slug)
     .single<GuideRow>();
 
   if (guideBySlug) {
     guide = guideBySlug;
   } else {
     // Second attempt: search by ID (if slug looks like a UUID)
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (uuidRegex.test(slug)) {
       const { data: guideById, error: idError } = await supabase
-        .from("guides")
+        .from('guides')
         .select(
           `
             id,
@@ -184,9 +190,9 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
                 name
               )
             )
-          `
+          `,
         )
-        .eq("id", slug)
+        .eq('id', slug)
         .single<GuideRow>();
 
       if (guideById) {
@@ -200,25 +206,37 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
   }
 
   if (error || !guide) {
-    logError("SELECT", "guides", error);
+    logError('SELECT', 'guides', error);
     notFound();
   }
 
-  const fullName =
-    guide.profile?.full_name ||
-    "Local Guide";
-  const verified = guide.status === "approved";
-  const coverImage = resolveCover(slug, guide.city?.slug || undefined);
+  const fullName = guide.profile?.full_name || 'Local Guide';
+  const verified = guide.status === 'approved';
+
+  // Use cover_url from profile if available, otherwise fall back to file system
+  const coverImage =
+    guide.profile?.cover_url ||
+    resolveCover(slug, guide.city?.slug || undefined);
   const highlightImages = resolveHighlights(guide.city?.slug || undefined);
 
+  // Fetch profile gallery images (public read, limit 30)
+  const { data: galleryImages } = await supabase
+    .from('profile_images')
+    .select('*')
+    .eq('user_id', guide.id)
+    .order('is_primary', { ascending: false })
+    .order('sort_order', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .limit(30);
+
   const { data: reviewRows, error: reviewError } = await supabase
-    .from("reviews")
-    .select("id, rating, comment, created_at")
-    .eq("subject_id", guide.id)
+    .from('reviews')
+    .select('id, rating, comment, created_at')
+    .eq('subject_id', guide.id)
     .limit(6);
 
   if (reviewError) {
-    logError("SELECT", "reviews", reviewError);
+    logError('SELECT', 'reviews', reviewError);
   }
 
   const reviews = toReviews(reviewRows || [], fullName);
@@ -232,8 +250,8 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         <GuideHero
           name={fullName}
-          city={guide.city?.name ?? ""}
-          country={guide.city?.country?.name ?? ""}
+          city={guide.city?.name ?? ''}
+          country={guide.city?.country?.name ?? ''}
           avatarUrl={guide.profile?.avatar_url}
           coverImage={coverImage}
           rating={rating}
@@ -245,10 +263,18 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
           <div className="lg:col-span-2 space-y-10">
             <GuideAbout
               name={fullName}
-              bio={guide.bio || ""}
+              bio={guide.bio || ''}
               languages={guide.profile?.languages || []}
               interests={guide.experience_tags || []}
             />
+
+            {/* Profile Gallery - only show if images exist */}
+            {galleryImages && galleryImages.length > 0 && (
+              <PublicProfileGallery
+                images={galleryImages}
+                userName={fullName}
+              />
+            )}
 
             <GuideHighlights images={highlightImages.slice(0, 3)} />
 
