@@ -1,22 +1,36 @@
 import { requireRole } from "@/lib/auth-helpers";
-import { EmptyState } from "@/components/ui/empty-state";
+import { GuideSettingsForm } from "@/components/guide/settings-form";
+import { updateGuideSettings, resetPasswordForGuide, deleteGuideAccount } from "./actions";
 
 export default async function GuideSettingsPage() {
-    await requireRole("guide");
+  const { supabase, profile } = await requireRole("guide");
 
-    return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-ink">Settings</h1>
-                <p className="text-ink-soft">Manage your account preferences.</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 min-h-[400px] flex items-center justify-center">
-                <EmptyState
-                    title="Account Settings"
-                    description="Update your notification preferences and account details."
-                    icon="settings"
-                />
-            </div>
-        </div>
-    );
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  const email = authUser?.email ?? "";
+
+  const profileAny = profile as { is_public?: boolean | null; email_notifications?: boolean | null };
+  const isPublic = profileAny.is_public ?? true;
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div>
+        <h1 className="text-3xl font-bold text-ink">Settings</h1>
+        <p className="text-ink-soft">Manage your account preferences.</p>
+      </div>
+      <div className="bg-white rounded-2xl border border-slate-200 p-8">
+        <GuideSettingsForm
+          initialData={{
+            full_name: profile.full_name || "",
+            hide_public_profile: !isPublic,
+            email_notifications: profileAny.email_notifications ?? true,
+            sms_notifications: false,
+            email,
+          }}
+          onSubmit={updateGuideSettings}
+          onPasswordReset={resetPasswordForGuide}
+          onDeleteAccount={deleteGuideAccount}
+        />
+      </div>
+    </div>
+  );
 }

@@ -19,7 +19,6 @@ import {
   MessageSquare,
   Star,
   Settings,
-  Image as ImageIcon,
   ExternalLink,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -72,12 +71,6 @@ export function GuideSidebar({
       show: true,
     },
     {
-      name: 'Photos',
-      href: '/guide/photos',
-      icon: ImageIcon,
-      show: true,
-    },
-    {
       name: 'Messages',
       href: '/guide/messages',
       icon: MessageSquare,
@@ -123,11 +116,15 @@ export function GuideSidebar({
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">RT</span>
-          </div>
-          <span className="font-bold text-ink">Rainbow Tour Guides</span>
+        <Link href="/guide/dashboard" className="flex items-center">
+          <Image
+            src="/images/rtg-logo.png"
+            alt="Rainbow Tour Guides"
+            width={150}
+            height={40}
+            className="h-8 w-[150px] object-contain object-left"
+            priority
+          />
         </Link>
 
         <button
@@ -159,13 +156,15 @@ export function GuideSidebar({
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="flex items-center justify-between mb-6">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">RT</span>
-                </div>
-                <span className="font-bold text-ink text-sm">
-                  Rainbow Tours
-                </span>
+              <Link href="/guide/dashboard" className="flex items-center">
+                <Image
+                  src="/images/rtg-logo.png"
+                  alt="Rainbow Tour Guides"
+                  width={150}
+                  height={40}
+                  className="h-8 w-[150px] object-contain object-left"
+                  priority
+                />
               </Link>
 
               {/* Close button (mobile only) */}

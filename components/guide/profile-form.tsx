@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PhotoUpload } from '@/components/ui/photo-upload';
+import { CoverUploader } from '@/components/profile/CoverUploader';
 import { uploadAvatar } from '@/lib/storage-helpers';
 import {
   GUIDE_SPECIALTIES,
@@ -35,6 +36,10 @@ interface GuideProfileFormProps {
   cities: City[];
   onSubmit: (
     data: GuideProfileFormData,
+  ) => Promise<{ success: boolean; error?: string }>;
+  /** Called when profile photo is uploaded so sidebar and public page update immediately */
+  onProfilePhotoUpdate?: (
+    avatarUrl: string | null,
   ) => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -61,6 +66,7 @@ export function GuideProfileForm({
   guide,
   cities,
   onSubmit,
+  onProfilePhotoUpdate,
 }: GuideProfileFormProps) {
   const [formData, setFormData] = useState<GuideProfileFormData>({
     display_name: profile.full_name || '',
@@ -82,10 +88,25 @@ export function GuideProfileForm({
   const [success, setSuccess] = useState(false);
 
   const handleAvatarUpload = useCallback(
-    async (file: File) => {
-      return uploadAvatar(profile.id, file);
+    async (
+      file: File,
+    ): Promise<{ success: boolean; url?: string; error?: string }> => {
+      const result = await uploadAvatar(profile.id, file);
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
+      if (!result.url) {
+        return { success: false, error: 'Upload failed' };
+      }
+      const updateResult = await onProfilePhotoUpdate?.(result.url);
+      if (updateResult && !updateResult.success) {
+        return { success: false, error: updateResult.error };
+      }
+      setFormData((prev) => ({ ...prev, avatar_url: result.url ?? null }));
+      window.dispatchEvent(new Event('profile-updated'));
+      return { success: true, url: result.url };
     },
-    [profile.id],
+    [profile.id, onProfilePhotoUpdate],
   );
 
   const handleAvatarChange = (url: string | string[] | null) => {
@@ -177,76 +198,81 @@ export function GuideProfileForm({
         </div>
       )}
 
-      <Tabs defaultValue="basic" className="w-full">
+      {/* Cover Image (full width) */}
+      <div className="space-y-2 mb-6">
+        <Label className="text-sm font-medium">Cover Image</Label>
+        <CoverUploader
+          currentCoverUrl={profile.cover_url}
+          userId={profile.id}
+        />
+      </div>
+
+      {/* Profile Photo (single source of truth; circular) */}
+      <div className="space-y-2 mb-6">
+        <Label className="text-sm font-medium">Profile Photo</Label>
+        <p className="text-sm text-muted-foreground mb-2">
+          This is your main photo shown on your public profile and in the dashboard.
+        </p>
+        <PhotoUpload
+          variant="avatar"
+          size="lg"
+          value={formData.avatar_url}
+          onChange={handleAvatarChange}
+          onUpload={handleAvatarUpload}
+          placeholder={formData.display_name}
+          helperText="JPG, PNG, WebP or GIF. Max 2MB."
+        />
+      </div>
+
+      {/* Display Name, City, Bio */}
+      <div className="grid gap-4 mb-8">
+        <div className="grid gap-2">
+          <Label htmlFor="display_name">Display Name</Label>
+          <Input
+            id="display_name"
+            value={formData.display_name}
+            onChange={(e) => handleChange('display_name', e.target.value)}
+            placeholder="Your name"
+            required
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="city_id">City</Label>
+          <Select
+            value={formData.city_id}
+            onChange={(value) => handleChange('city_id', value)}
+            options={cities.map((city) => ({
+              value: city.id,
+              label: city.name,
+            }))}
+            placeholder="Select your city"
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="bio">Bio</Label>
+          <Textarea
+            id="bio"
+            value={formData.bio || ''}
+            onChange={(e) => handleChange('bio', e.target.value)}
+            placeholder="Tell travelers about yourself, your background, and what makes you a great guide..."
+            className="min-h-[150px]"
+            maxLength={1000}
+          />
+          <p className="text-xs text-muted-foreground text-right">
+            {(formData.bio || '').length}/1000 characters
+          </p>
+        </div>
+      </div>
+
+      <Tabs defaultValue="tour" className="w-full">
         <TabsList>
-          <TabsTrigger value="basic">Basic Info</TabsTrigger>
           <TabsTrigger value="tour">Tour Details</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
         </TabsList>
 
-        {/* Tab 1: Basic Info */}
-        <TabsContent value="basic" className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-medium">Profile Photo</h3>
-              <p className="text-sm text-muted-foreground">
-                This is your main photo that travelers will see.
-              </p>
-            </div>
-            <PhotoUpload
-              variant="avatar"
-              size="lg"
-              value={formData.avatar_url}
-              onChange={handleAvatarChange}
-              onUpload={handleAvatarUpload}
-              placeholder={formData.display_name}
-              helperText="JPG, PNG, WebP or GIF. Max 2MB."
-            />
-          </div>
-
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="display_name">Display Name</Label>
-              <Input
-                id="display_name"
-                value={formData.display_name}
-                onChange={(e) => handleChange('display_name', e.target.value)}
-                placeholder="Your name"
-                required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="city_id">City</Label>
-              <Select
-                value={formData.city_id}
-                onChange={(value) => handleChange('city_id', value)}
-                options={cities.map((city) => ({
-                  value: city.id,
-                  label: city.name,
-                }))}
-                placeholder="Select your city"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                value={formData.bio || ''}
-                onChange={(e) => handleChange('bio', e.target.value)}
-                placeholder="Tell travelers about yourself, your background, and what makes you a great guide..."
-                className="min-h-[150px]"
-                maxLength={1000}
-              />
-              <p className="text-xs text-muted-foreground text-right">
-                {(formData.bio || '').length}/1000 characters
-              </p>
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Tab 2: Tour Details */}
+        {/* Tab: Tour Details */}
         <TabsContent value="tour" className="space-y-6">
           <div className="grid gap-4">
             <div className="grid gap-2">

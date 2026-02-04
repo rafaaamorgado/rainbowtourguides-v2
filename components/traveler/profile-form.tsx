@@ -9,8 +9,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { PhotoUpload } from '@/components/ui/photo-upload';
-import { uploadAvatar, uploadTravelerPhoto } from '@/lib/storage-helpers';
 import { TRAVELER_INTERESTS } from '@/lib/constants/profile-options';
 import type { Database } from '@/types/database';
 
@@ -34,7 +32,6 @@ export interface TravelerProfileFormData {
   country_of_origin: string | null;
   languages: string[];
   interests: string[];
-  photo_urls?: string[];
 }
 
 export function TravelerProfileForm({
@@ -51,7 +48,6 @@ export function TravelerProfileForm({
     country_of_origin: profile.country_of_origin || '',
     languages: profile.languages || [],
     interests: initialInterests || [],
-    photo_urls: [], // Empty for now, will be populated from DB later
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,47 +83,21 @@ export function TravelerProfileForm({
     });
   };
 
-  // Photo management handlers (not connected yet)
-  const handleRemovePhoto = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      photo_urls: (prev.photo_urls || []).filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleSetPrimaryPhoto = (url: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      avatar_url: url,
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🟢 [ProfileForm] Submitting form with data:', formData);
-
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
 
     try {
-      console.log('🟢 [ProfileForm] Calling onSubmit...');
       const result = await onSubmit(formData);
-      console.log('🟢 [ProfileForm] onSubmit result:', result);
-
       if (result.success) {
         setSuccess(true);
-        console.log('✅ [ProfileForm] Profile updated successfully!');
-
-        // Dispatch custom event to update UserMenu
         window.dispatchEvent(new Event('profile-updated'));
-        console.log('🔄 [ProfileForm] Dispatched profile-updated event');
       } else {
         setError(result.error || 'Failed to update profile');
-        console.error('❌ [ProfileForm] Update failed:', result.error);
       }
     } catch (err) {
-      console.error('❌ [ProfileForm] Exception:', err);
       setError(
         err instanceof Error ? err.message : 'An unexpected error occurred',
       );
@@ -149,46 +119,6 @@ export function TravelerProfileForm({
           Profile updated successfully!
         </div>
       )}
-
-      {/* Avatar Section */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-medium">Profile Photo</h3>
-          <p className="text-sm text-muted-foreground">
-            This is your main profile photo visible to guides.
-          </p>
-        </div>
-        <PhotoUpload
-          variant="avatar"
-          size="lg"
-          value={formData.avatar_url}
-          onChange={(url) =>
-            handleChange('avatar_url', typeof url === 'string' ? url : null)
-          }
-          onUpload={async (file) => uploadAvatar(profile.id, file)}
-          placeholder={formData.full_name}
-          helperText="JPG, PNG, WebP or GIF. Max 2MB."
-        />
-      </div>
-
-      {/* Additional Photos Section */}
-      <PhotoUpload
-        variant="gallery"
-        size="md"
-        value={formData.photo_urls || []}
-        onChange={(urls) => {
-          const urlArray = Array.isArray(urls) ? urls : [];
-          handleChange('photo_urls', urlArray);
-        }}
-        onUpload={async (file) => {
-          const currentPhotos = formData.photo_urls || [];
-          const nextIndex = currentPhotos.length;
-          return uploadTravelerPhoto(profile.id, file, nextIndex);
-        }}
-        maxFiles={4}
-        label="Additional Photos"
-        helperText="Upload up to 4 photos to showcase your personality."
-      />
 
       {/* Personal Info Section */}
       <div className="space-y-4">

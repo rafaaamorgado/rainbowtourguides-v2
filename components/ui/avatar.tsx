@@ -63,16 +63,28 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         ? avatarContent.fallback
         : avatarContent.alt || '';
 
+    // Normalize empty src so fallback shows (no broken image request)
+    const src =
+      avatarContent.src && String(avatarContent.src).trim()
+        ? avatarContent.src
+        : undefined;
+
+    // Fallback: full circle, centered initials; merge consumer classes so layout is always correct
+    const fallbackClassName = cn(
+      'flex h-full w-full items-center justify-center rounded-full',
+      avatarContent.fallbackClassName || 'bg-muted text-muted-foreground',
+    );
+
     return (
       <HeroAvatar
         ref={ref}
-        src={avatarContent.src}
+        src={src}
         name={name}
         radius="full"
         size="md"
         className={cn(className)}
         classNames={{
-          name: avatarContent.fallbackClassName,
+          name: fallbackClassName,
         }}
         {...props}
       />

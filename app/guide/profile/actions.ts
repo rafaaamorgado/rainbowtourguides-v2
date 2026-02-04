@@ -4,6 +4,39 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-helpers";
 import type { GuideProfileFormData } from "@/components/guide/profile-form";
 
+/** Update only profiles.avatar_url (e.g. after profile photo upload). Revalidates guide profile and public page. */
+export async function updateProfileAvatar(
+  avatarUrl: string | null,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase, user } = await requireRole("guide");
+    const db = supabase as any;
+
+    const { error } = await db
+      .from("profiles")
+      .update({ avatar_url: avatarUrl })
+      .eq("id", user.id);
+
+    if (error) {
+      return { success: false, error: "Failed to update profile photo" };
+    }
+
+    revalidatePath("/guide/profile");
+    revalidatePath("/guide");
+    const { data: guideData } = await db
+      .from("guides")
+      .select("slug")
+      .eq("id", user.id)
+      .single();
+    if (guideData?.slug) {
+      revalidatePath(`/guides/${guideData.slug}`);
+    }
+    return { success: true };
+  } catch {
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
 export async function updateGuideProfile(
   data: GuideProfileFormData
 ): Promise<{ success: boolean; error?: string }> {

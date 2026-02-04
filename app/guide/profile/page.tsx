@@ -1,10 +1,8 @@
 import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/auth-helpers';
 import { GuideProfileForm } from '@/components/guide/profile-form';
-import { AvatarUploader } from '@/components/profile/AvatarUploader';
-import { CoverUploader } from '@/components/profile/CoverUploader';
 import { ProfileGallery } from '@/components/profile/ProfileGallery';
-import { updateGuideProfile } from './actions';
+import { updateGuideProfile, updateProfileAvatar } from './actions';
 
 export default async function GuideProfilePage() {
   const { supabase, user, profile } = await requireRole('guide');
@@ -38,29 +36,15 @@ export default async function GuideProfilePage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      {/* Cover and Avatar Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-8 space-y-6">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Profile Images</h2>
-
-          {/* Cover Image */}
-          <div className="space-y-2 mb-6">
-            <label className="text-sm font-medium">Cover Image</label>
-            <CoverUploader
-              currentCoverUrl={profile.cover_url}
-              userId={user.id}
-            />
-          </div>
-
-          {/* Avatar Image */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Avatar</label>
-            <AvatarUploader
-              currentAvatarUrl={profile.avatar_url}
-              userId={user.id}
-            />
-          </div>
-        </div>
+      {/* Single "Profile & Listing" section: Cover, Profile Photo, fields, then gallery */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-8">
+        <GuideProfileForm
+          profile={profile}
+          guide={guide}
+          cities={cities || []}
+          onSubmit={updateGuideProfile}
+          onProfilePhotoUpdate={updateProfileAvatar}
+        />
       </div>
 
       {/* Profile Gallery */}
@@ -71,14 +55,6 @@ export default async function GuideProfilePage() {
           initialImages={profileImages || []}
         />
       </div>
-
-      {/* Profile Form */}
-      <GuideProfileForm
-        profile={profile}
-        guide={guide}
-        cities={cities || []}
-        onSubmit={updateGuideProfile}
-      />
     </div>
   );
 }
