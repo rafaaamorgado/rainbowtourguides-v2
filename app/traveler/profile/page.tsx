@@ -1,8 +1,11 @@
+import Link from 'next/link';
 import { requireRole } from '@/lib/auth-helpers';
 import { TravelerProfileForm } from '@/components/traveler/profile-form';
 import { AvatarUploader } from '@/components/profile/AvatarUploader';
 import { CoverUploader } from '@/components/profile/CoverUploader';
 import { ProfileGallery } from '@/components/profile/ProfileGallery';
+import { Button } from '@/components/ui/button';
+import { Eye } from 'lucide-react';
 import { updateTravelerProfile } from './actions';
 
 export default async function TravelerProfilePage() {
@@ -36,9 +39,17 @@ export default async function TravelerProfilePage() {
     <div className="space-y-6 max-w-3xl">
       {/* Single "My Profile" container: Cover, Profile Photo, form, then gallery */}
       <div className="bg-white rounded-2xl border border-slate-200 p-8 space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">My Profile</h1>
-          <p className="text-muted-foreground">Manage your personal information and photos.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-ink">My Profile</h1>
+            <p className="text-muted-foreground">Manage your personal information and photos.</p>
+          </div>
+          <Link href={`/travelers/${user.id}`} target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" type="button">
+              <Eye className="mr-2 h-4 w-4" />
+              View Public Profile
+            </Button>
+          </Link>
         </div>
 
         {/* Cover Image (full width) */}
