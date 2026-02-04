@@ -73,10 +73,6 @@ export default async function TravelerProfilePage() {
 
       {/* Profile Gallery (same component as Guides; stored in profile_images) */}
       <div className="bg-white rounded-2xl border border-slate-200 p-8">
-        <h2 className="text-xl font-semibold mb-4">Travel Photos</h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          Upload multiple photos to showcase your travels. No limit.
-        </p>
         <ProfileGallery
           userId={user.id}
           isOwner={true}

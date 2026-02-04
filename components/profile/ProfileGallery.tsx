@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Upload, Loader2, Trash2, Star, Edit2, Check, X } from 'lucide-react';
+import { Upload, Loader2, Trash2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { uploadProfileImage } from '@/lib/cloudinary';
 import { safeDeleteCloudinaryImage } from '@/lib/cloudinary/deleteImage';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
@@ -26,8 +25,6 @@ export function ProfileGallery({
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [editingCaption, setEditingCaption] = useState<string | null>(null);
-  const [captionValue, setCaptionValue] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load images on mount
@@ -217,44 +214,6 @@ export function ProfileGallery({
     }
   };
 
-  const handleStartEditCaption = (image: ProfileImage) => {
-    setEditingCaption(image.id);
-    setCaptionValue(image.caption || '');
-  };
-
-  const handleSaveCaption = async (imageId: string) => {
-    const supabase = createSupabaseBrowserClient();
-    if (!supabase) return;
-
-    const newCaption = captionValue.trim() || null;
-
-    // Optimistic update
-    setImages((prev) =>
-      prev.map((img) =>
-        img.id === imageId ? { ...img, caption: newCaption } : img,
-      ),
-    );
-    setEditingCaption(null);
-
-    // Update database
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any)
-      .from('profile_images')
-      .update({ caption: newCaption })
-      .eq('id', imageId);
-
-    if (error) {
-      // Revert optimistic update
-      await loadImages();
-      setError('Failed to update caption');
-    }
-  };
-
-  const handleCancelEditCaption = () => {
-    setEditingCaption(null);
-    setCaptionValue('');
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -330,7 +289,7 @@ export function ProfileGallery({
               <div className="aspect-square relative bg-slate-100">
                 <img
                   src={image.url}
-                  alt={image.caption || 'Profile image'}
+                  alt="Profile image"
                   className="w-full h-full object-cover"
                 />
 
@@ -363,67 +322,6 @@ export function ProfileGallery({
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Caption */}
-              <div className="p-2 bg-white">
-                {editingCaption === image.id ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      value={captionValue}
-                      onChange={(e) => setCaptionValue(e.target.value)}
-                      placeholder="Add caption..."
-                      className="h-8 text-sm"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleSaveCaption(image.id);
-                        } else if (e.key === 'Escape') {
-                          handleCancelEditCaption();
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                      onClick={() => handleSaveCaption(image.id)}
-                    >
-                      <Check className="h-4 w-4 text-green-600" />
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                      onClick={handleCancelEditCaption}
-                    >
-                      <X className="h-4 w-4 text-red-600" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm text-slate-600 truncate flex-1">
-                      {image.caption || (
-                        <span className="text-slate-400 italic">
-                          No caption
-                        </span>
-                      )}
-                    </p>
-                    {isOwner && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 w-6 p-0 flex-shrink-0"
-                        onClick={() => handleStartEditCaption(image)}
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </Button>
-                    )}
                   </div>
                 )}
               </div>

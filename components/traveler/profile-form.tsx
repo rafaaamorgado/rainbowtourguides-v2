@@ -238,7 +238,7 @@ export function TravelerProfileForm({
                 className={`cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'hover:bg-accent hover:text-accent-foreground'
+                    : 'hover:bg-primary hover:text-primary-foreground'
                 }`}
                 onClick={() => handleInterestToggle(interest)}
               >
