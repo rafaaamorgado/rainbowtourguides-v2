@@ -9,6 +9,7 @@ import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
 } from "@/lib/supabase-browser";
+import { getBaseUrl } from "@/lib/url-helpers";
 
 export function SignInForm() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export function SignInForm() {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${getBaseUrl()}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

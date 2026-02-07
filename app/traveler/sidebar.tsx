@@ -75,7 +75,7 @@ export function TravelerSidebar({ profile }: SidebarProps) {
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-20 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden fixed top-14 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-pink-500 flex items-center justify-center">
             <span className="text-white font-bold text-sm">RT</span>
@@ -94,7 +94,7 @@ export function TravelerSidebar({ profile }: SidebarProps) {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed top-20 left-0 right-0 bottom-0 bg-black/50 z-50"
+          className="lg:hidden fixed top-14 left-0 right-0 bottom-0 bg-black/50 z-50"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -102,7 +102,7 @@ export function TravelerSidebar({ profile }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-20 bottom-0 left-0 z-40 w-64 bg-white border-r border-slate-200',
+          'fixed top-14 bottom-0 left-0 z-40 w-64 bg-white border-r border-slate-200',
           'transform transition-transform duration-300 ease-in-out',
           'lg:translate-x-0',
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',

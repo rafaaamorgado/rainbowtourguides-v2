@@ -2,15 +2,14 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getBaseUrl } from '@/lib/url-helpers';
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   const role = requestUrl.searchParams.get('role'); // Role passed from sign-up form
-  const origin = requestUrl.origin;
 
-  // Use production URL if available, otherwise fall back to request origin
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || origin;
+  const baseUrl = getBaseUrl();
 
   if (code) {
     const cookieStore = await cookies();
