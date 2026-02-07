@@ -1,15 +1,39 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Calendar } from '@taskgenius/calendar';
+import {
+  CalendarCore,
+  DayJsAdapter,
+  MonthView,
+  ViewRegistry,
+  WeekView,
+} from '@taskgenius/calendar';
 import '@taskgenius/calendar/styles.css';
 import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/en';
 import type {
   AvailabilityPattern,
   UnavailableDate,
 } from '@/lib/guide-availability';
+import type { GuideTimeOff } from '@/lib/guide-time-off';
 
-type ViewType = 'month' | 'week' | 'day';
+type ViewType = 'month' | 'week';
+
+class MonthViewLongLabel extends MonthView {
+  static override meta = {
+    ...MonthView.meta,
+    label: 'Month',
+    shortLabel: 'Month',
+  };
+}
+
+class WeekViewLongLabel extends WeekView {
+  static override meta = {
+    ...WeekView.meta,
+    label: 'Week',
+    shortLabel: 'Week',
+  };
+}
 
 interface BookingEvent {
   id: string;
@@ -22,25 +46,24 @@ interface BookingEvent {
 interface GuideAvailabilityCalendarProps {
   availabilityPattern: AvailabilityPattern;
   unavailableDates: UnavailableDate[];
+  timeOff?: GuideTimeOff[];
   bookings?: BookingEvent[];
 }
 
 export function GuideAvailabilityCalendar({
   availabilityPattern,
   unavailableDates,
+  timeOff = [],
   bookings = [],
 }: GuideAvailabilityCalendarProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const calendarRef = useRef<Calendar | null>(null);
+  const calendarRef = useRef<CalendarCore | null>(null);
   const [view, setView] = useState<ViewType>('month');
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
+  dayjs.locale('en');
 
   // Calculate visible date range for the current view to generate availability slots.
   const visibleRange = useMemo(() => {
-    if (view === 'day') {
-      const start = currentDate.startOf('day');
-      return { start, end: start };
-    }
     if (view === 'week') {
       const start = currentDate
         .startOf('day')
@@ -105,6 +128,18 @@ export function GuideAvailabilityCalendar({
       });
     });
 
+    // Time off intervals (timestamptz)
+    timeOff.forEach((item) => {
+      result.push({
+        id: `timeoff-${item.id}`,
+        title: item.title || 'Time off',
+        start: item.starts_at,
+        end: item.ends_at,
+        color: '#ef4444', // red
+        metadata: { type: 'time_off' },
+      });
+    });
+
     // Bookings (passed in from server if available)
     bookings.forEach((booking) => {
       result.push({
@@ -122,6 +157,7 @@ export function GuideAvailabilityCalendar({
     availabilityPattern,
     bookings,
     unavailableDates,
+    timeOff,
     visibleRange.end,
     visibleRange.start,
   ]);
@@ -129,9 +165,18 @@ export function GuideAvailabilityCalendar({
   // Initialize calendar once
   useEffect(() => {
     if (!containerRef.current) return;
-    const calendar = new Calendar(containerRef.current, {
+    const registry = new ViewRegistry();
+    registry.register(MonthViewLongLabel);
+    registry.register(WeekViewLongLabel);
+    const calendar = new CalendarCore(containerRef.current, {
+      viewRegistry: registry,
+      dateAdapter: new DayJsAdapter(),
       view: { type: view },
       events,
+      dateFormats: {
+        monthHeader: 'MMMM YYYY',
+        dayHeader: 'ddd',
+      },
       draggable: { enabled: false }, // per requirements, no drag/resize
       onViewChange: (nextView) => {
         setView((prev) => (prev === nextView ? prev : (nextView as ViewType)));

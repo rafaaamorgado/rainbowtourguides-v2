@@ -9,7 +9,7 @@ import {
 } from './actions';
 
 export default async function GuideAvailabilityPage() {
-  const { availabilityPattern, unavailableDates } =
+  const { availabilityPattern, unavailableDates, timeOff } =
     await getGuideAvailability();
 
   return (
@@ -25,6 +25,7 @@ export default async function GuideAvailabilityPage() {
         <GuideAvailabilityCalendar
           availabilityPattern={availabilityPattern}
           unavailableDates={unavailableDates}
+          timeOff={timeOff}
         />
 
         <div className="space-y-4">
@@ -35,7 +36,7 @@ export default async function GuideAvailabilityPage() {
             onBlockDate={blockUnavailableDate}
             onUnblockDate={unblockUnavailableDate}
           />
-          <TimeOffList items={unavailableDates} />
+          <TimeOffList items={timeOff} />
         </div>
       </div>
     </div>

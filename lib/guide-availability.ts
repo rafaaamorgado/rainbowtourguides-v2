@@ -1,4 +1,5 @@
 import { requireRole } from "./auth-helpers";
+import { GuideTimeOff } from "./guide-time-off";
 
 export type AvailabilityPattern = Record<string, { active: boolean; start: string; end: string }> | null;
 
@@ -11,6 +12,7 @@ export interface UnavailableDate {
 export interface GuideAvailabilityData {
   availabilityPattern: AvailabilityPattern;
   unavailableDates: UnavailableDate[];
+  timeOff: GuideTimeOff[];
 }
 
 // Server-side data loader for the guide availability page.
@@ -31,8 +33,16 @@ export async function getGuideAvailability(): Promise<GuideAvailabilityData> {
     .eq("guide_id", user.id)
     .order("start_date", { ascending: true });
 
+  // Fetch time off ranges
+  const { data: timeOff } = await supabase
+    .from("guide_time_off")
+    .select("*")
+    .eq("guide_id", user.id)
+    .order("starts_at", { ascending: true });
+
   return {
     availabilityPattern: (guide as any)?.availability_pattern ?? null,
     unavailableDates: unavailableDates || [],
+    timeOff: (timeOff as GuideTimeOff[]) || [],
   };
 }

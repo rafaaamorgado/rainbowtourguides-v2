@@ -1,12 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Loader2, AlertTriangle } from 'lucide-react';
 
 export interface GuideSettingsFormData {
   full_name: string;
@@ -23,8 +29,12 @@ interface GuideSettingsFormProps {
     sms_notifications: boolean;
     email: string;
   };
-  onSubmit: (data: GuideSettingsFormData) => Promise<{ success: boolean; error?: string }>;
-  onPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    data: GuideSettingsFormData,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onPasswordReset: (
+    email: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   onDeleteAccount?: () => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -35,7 +45,7 @@ export function GuideSettingsForm({
   onDeleteAccount,
 }: GuideSettingsFormProps) {
   const [formData, setFormData] = useState<GuideSettingsFormData>({
-    full_name: initialData.full_name || "",
+    full_name: initialData.full_name || '',
     hide_public_profile: initialData.hide_public_profile ?? false,
     email_notifications: initialData.email_notifications ?? true,
     sms_notifications: initialData.sms_notifications ?? false,
@@ -48,7 +58,10 @@ export function GuideSettingsForm({
   const [success, setSuccess] = useState(false);
   const [passwordResetSuccess, setPasswordResetSuccess] = useState(false);
 
-  const handleChange = (field: keyof GuideSettingsFormData, value: string | boolean) => {
+  const handleChange = (
+    field: keyof GuideSettingsFormData,
+    value: string | boolean,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
     setSuccess(false);
@@ -64,12 +77,14 @@ export function GuideSettingsForm({
       const result = await onSubmit(formData);
       if (result.success) {
         setSuccess(true);
-        window.dispatchEvent(new Event("profile-updated"));
+        window.dispatchEvent(new Event('profile-updated'));
       } else {
-        setError(result.error || "Failed to update settings");
+        setError(result.error || 'Failed to update settings');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -85,19 +100,26 @@ export function GuideSettingsForm({
       if (result.success) {
         setPasswordResetSuccess(true);
       } else {
-        setError(result.error || "Failed to send password reset email");
+        setError(result.error || 'Failed to send password reset email');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred',
+      );
     } finally {
       setIsResettingPassword(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
+    if (
+      !confirm(
+        'Are you sure you want to delete your account? This cannot be undone.',
+      )
+    )
+      return;
     if (!onDeleteAccount) {
-      setError("Account deletion is not available. Please contact support.");
+      setError('Account deletion is not available. Please contact support.');
       return;
     }
     setIsDeleting(true);
@@ -105,12 +127,14 @@ export function GuideSettingsForm({
     try {
       const result = await onDeleteAccount();
       if (result.success) {
-        window.location.href = "/";
+        window.location.href = '/';
       } else {
-        setError(result.error || "Failed to delete account");
+        setError(result.error || 'Failed to delete account');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred',
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -140,7 +164,9 @@ export function GuideSettingsForm({
       <Card>
         <CardHeader>
           <CardTitle>Identity</CardTitle>
-          <CardDescription>Manage your display name and profile information.</CardDescription>
+          <CardDescription>
+            Manage your display name and profile information.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
@@ -148,7 +174,7 @@ export function GuideSettingsForm({
             <Input
               id="full_name"
               value={formData.full_name}
-              onChange={(e) => handleChange("full_name", e.target.value)}
+              onChange={(e) => handleChange('full_name', e.target.value)}
               placeholder="Your name"
               required
             />
@@ -160,20 +186,26 @@ export function GuideSettingsForm({
       <Card>
         <CardHeader>
           <CardTitle>Privacy</CardTitle>
-          <CardDescription>Control your public profile visibility (e.g. when on vacation or not ready to accept bookings).</CardDescription>
+          <CardDescription>
+            Control your public profile visibility (e.g. when on vacation or not
+            ready to accept bookings).
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="hide_public_profile">Hide Public Profile</Label>
               <p className="text-sm text-muted-foreground">
-                When enabled, your guide profile is hidden from search and public listing.
+                When enabled, your guide profile is hidden from search and
+                public listing.
               </p>
             </div>
             <Switch
               id="hide_public_profile"
               checked={formData.hide_public_profile}
-              onCheckedChange={(checked) => handleChange("hide_public_profile", checked)}
+              onCheckedChange={(checked) =>
+                handleChange('hide_public_profile', checked)
+              }
             />
           </div>
         </CardContent>
@@ -183,20 +215,25 @@ export function GuideSettingsForm({
       <Card>
         <CardHeader>
           <CardTitle>Notifications</CardTitle>
-          <CardDescription>Manage how you receive updates about bookings and messages.</CardDescription>
+          <CardDescription>
+            Manage how you receive updates about bookings and messages.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="email_notifications">Email Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Receive email updates about bookings, messages, and platform news.
+                Receive email updates about bookings, messages, and platform
+                news.
               </p>
             </div>
             <Switch
               id="email_notifications"
               checked={formData.email_notifications}
-              onCheckedChange={(checked) => handleChange("email_notifications", checked)}
+              onCheckedChange={(checked) =>
+                handleChange('email_notifications', checked)
+              }
             />
           </div>
           <div className="flex items-center justify-between">
@@ -209,7 +246,9 @@ export function GuideSettingsForm({
             <Switch
               id="sms_notifications"
               checked={formData.sms_notifications}
-              onCheckedChange={(checked) => handleChange("sms_notifications", checked)}
+              onCheckedChange={(checked) =>
+                handleChange('sms_notifications', checked)
+              }
               disabled
             />
           </div>
@@ -220,19 +259,22 @@ export function GuideSettingsForm({
       <Card>
         <CardHeader>
           <CardTitle>Security</CardTitle>
-          <CardDescription>Manage your account security settings.</CardDescription>
+          <CardDescription>
+            Manage your account security settings.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Password</Label>
               <p className="text-sm text-muted-foreground">
-                Change your password by clicking the button below. A reset link will be sent to your email.
+                Change your password by clicking the button below. A reset link
+                will be sent to your email.
               </p>
             </div>
             <Button
               type="button"
-              variant="outline"
+              variant="bordered"
               onClick={handlePasswordReset}
               disabled={isResettingPassword}
             >
@@ -242,7 +284,7 @@ export function GuideSettingsForm({
                   Sending...
                 </>
               ) : (
-                "Change Password"
+                'Change Password'
               )}
             </Button>
           </div>
@@ -257,13 +299,14 @@ export function GuideSettingsForm({
             Danger Zone
           </CardTitle>
           <CardDescription>
-            Permanently delete your account and all associated data. This cannot be undone.
+            Permanently delete your account and all associated data. This cannot
+            be undone.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button
             type="button"
-            variant="destructive"
+            variant="ghost"
             onClick={handleDeleteAccount}
             disabled={isDeleting}
           >
@@ -273,7 +316,7 @@ export function GuideSettingsForm({
                 Deleting...
               </>
             ) : (
-              "Delete Account"
+              'Delete Account'
             )}
           </Button>
         </CardContent>
@@ -287,7 +330,7 @@ export function GuideSettingsForm({
               Saving...
             </>
           ) : (
-            "Save Changes"
+            'Save Changes'
           )}
         </Button>
       </div>

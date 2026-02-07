@@ -1,41 +1,42 @@
-import * as React from "react";
-import { AlertCircle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export interface ErrorStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Error message to display
    */
   message?: string;
-  
+
   /**
    * Optional retry function
    */
   onRetry?: () => void;
-  
+
   /**
    * Optional title (defaults to "Something went wrong")
    */
   title?: string;
-  
+
   /**
    * Show icon (defaults to true)
    */
   showIcon?: boolean;
-  
+
   /**
    * Variant styling
    */
-  variant?: "default" | "minimal" | "card";
+  variant?: 'default' | 'minimal' | 'card';
 }
 
 /**
  * ErrorState - Premium error component with retry functionality
- * 
+ *
  * @example
- * <ErrorState 
- *   message="Unable to load guides. Please check your connection." 
+ * <ErrorState
+ *   message="Unable to load guides. Please check your connection."
  *   onRetry={() => fetchGuides()}
  * />
  */
@@ -43,50 +44,47 @@ export const ErrorState = React.forwardRef<HTMLDivElement, ErrorStateProps>(
   (
     {
       className,
-      message = "We encountered an issue loading this content. Please try again.",
+      message = 'We encountered an issue loading this content. Please try again.',
       onRetry,
-      title = "Something went wrong",
+      title = 'Something went wrong',
       showIcon = true,
-      variant = "default",
+      variant = 'default',
       ...props
     },
-    ref
+    ref,
   ) => {
-    const isCard = variant === "card";
-    const isMinimal = variant === "minimal";
+    const isCard = variant === 'card';
+    const isMinimal = variant === 'minimal';
 
     return (
       <div
         ref={ref}
         className={cn(
-          "flex flex-col items-center justify-center text-center",
-          isCard && "rounded-2xl border bg-card shadow-md p-8",
-          !isCard && !isMinimal && "py-12 px-4",
-          isMinimal && "py-6 px-4",
-          className
+          'flex flex-col items-center justify-center text-center',
+          isCard && 'rounded-2xl border bg-card shadow-md p-8',
+          !isCard && !isMinimal && 'py-12 px-4',
+          isMinimal && 'py-6 px-4',
+          className,
         )}
         {...props}
       >
         {showIcon && (
           <div
             className={cn(
-              "mb-4 rounded-full bg-red-50 p-3",
-              isMinimal && "mb-3 p-2"
+              'mb-4 rounded-full bg-red-50 p-3',
+              isMinimal && 'mb-3 p-2',
             )}
           >
             <AlertCircle
-              className={cn(
-                "text-brand",
-                isMinimal ? "h-5 w-5" : "h-6 w-6"
-              )}
+              className={cn('text-brand', isMinimal ? 'h-5 w-5' : 'h-6 w-6')}
             />
           </div>
         )}
 
         <h3
           className={cn(
-            "font-semibold text-slate-900 mb-2",
-            isMinimal ? "text-base" : "text-lg tracking-tight"
+            'font-semibold text-slate-900 mb-2',
+            isMinimal ? 'text-base' : 'text-lg tracking-tight',
           )}
         >
           {title}
@@ -94,8 +92,8 @@ export const ErrorState = React.forwardRef<HTMLDivElement, ErrorStateProps>(
 
         <p
           className={cn(
-            "text-muted-foreground max-w-md",
-            isMinimal ? "text-sm mb-3" : "text-sm mb-6"
+            'text-muted-foreground max-w-md',
+            isMinimal ? 'text-sm mb-3' : 'text-sm mb-6',
           )}
         >
           {message}
@@ -104,8 +102,8 @@ export const ErrorState = React.forwardRef<HTMLDivElement, ErrorStateProps>(
         {onRetry && (
           <Button
             onClick={onRetry}
-            variant="default"
-            size={isMinimal ? "sm" : "default"}
+            variant="solid"
+            size={isMinimal ? 'sm' : 'md'}
             className="gap-2"
           >
             <RefreshCw className="h-4 w-4" />
@@ -114,31 +112,29 @@ export const ErrorState = React.forwardRef<HTMLDivElement, ErrorStateProps>(
         )}
       </div>
     );
-  }
+  },
 );
-ErrorState.displayName = "ErrorState";
+ErrorState.displayName = 'ErrorState';
 
 /**
  * InlineErrorState - Compact error for inline display
  */
 export const InlineErrorState = React.forwardRef<
   HTMLDivElement,
-  Omit<ErrorStateProps, "variant">
+  Omit<ErrorStateProps, 'variant'>
 >(({ className, message, onRetry, showIcon = true, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "flex items-center gap-3 rounded-xl bg-red-50 border border-red-100 p-4 text-sm",
-      className
+      'flex items-center gap-3 rounded-xl bg-red-50 border border-red-100 p-4 text-sm',
+      className,
     )}
     {...props}
   >
-    {showIcon && (
-      <AlertCircle className="h-5 w-5 text-brand flex-shrink-0" />
-    )}
-    
+    {showIcon && <AlertCircle className="h-5 w-5 text-brand flex-shrink-0" />}
+
     <p className="flex-1 text-slate-700">{message}</p>
-    
+
     {onRetry && (
       <Button
         onClick={onRetry}
@@ -151,14 +147,14 @@ export const InlineErrorState = React.forwardRef<
     )}
   </div>
 ));
-InlineErrorState.displayName = "InlineErrorState";
+InlineErrorState.displayName = 'InlineErrorState';
 
 /**
  * NetworkErrorState - Specialized error for network issues
  */
 export const NetworkErrorState = React.forwardRef<
   HTMLDivElement,
-  Omit<ErrorStateProps, "title" | "message">
+  Omit<ErrorStateProps, 'title' | 'message'>
 >(({ onRetry, ...props }, ref) => (
   <ErrorState
     ref={ref}
@@ -168,20 +164,16 @@ export const NetworkErrorState = React.forwardRef<
     {...props}
   />
 ));
-NetworkErrorState.displayName = "NetworkErrorState";
+NetworkErrorState.displayName = 'NetworkErrorState';
 
 /**
  * NotFoundErrorState - Specialized error for 404s
  */
 export const NotFoundErrorState = React.forwardRef<
   HTMLDivElement,
-  Omit<ErrorStateProps, "title" | "message" | "showIcon">
+  Omit<ErrorStateProps, 'title' | 'message' | 'showIcon'>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("text-center py-12 px-4", className)}
-    {...props}
-  >
+  <div ref={ref} className={cn('text-center py-12 px-4', className)} {...props}>
     <div className="mb-4 text-6xl font-bold text-slate-200">404</div>
     <h3 className="text-lg font-semibold text-slate-900 mb-2">
       Page not found
@@ -189,10 +181,9 @@ export const NotFoundErrorState = React.forwardRef<
     <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
       The page you're looking for doesn't exist or has been moved.
     </p>
-    <Button asChild variant="default">
-      <a href="/">Go home</a>
+    <Button asChild variant="solid">
+      <Link href="/">Go home</Link>
     </Button>
   </div>
 ));
-NotFoundErrorState.displayName = "NotFoundErrorState";
-
+NotFoundErrorState.displayName = 'NotFoundErrorState';

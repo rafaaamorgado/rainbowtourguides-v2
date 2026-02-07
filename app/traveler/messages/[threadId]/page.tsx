@@ -49,7 +49,7 @@ export default async function TravelerMessageThreadPage({ params }: PageProps) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" size="icon">
+          <Button asChild variant="ghost" size="sm">
             <Link href="/traveler/messages">
               <ArrowLeft className="h-4 w-4" />
             </Link>
@@ -69,7 +69,7 @@ export default async function TravelerMessageThreadPage({ params }: PageProps) {
               to start chatting with {guideName}.
             </p>
           </div>
-          <Button asChild variant="outline">
+          <Button asChild variant="bordered">
             <Link href="/traveler/bookings">View Bookings</Link>
           </Button>
         </div>
@@ -98,7 +98,7 @@ export default async function TravelerMessageThreadPage({ params }: PageProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon">
+        <Button asChild variant="ghost" size="sm">
           <Link href="/traveler/messages">
             <ArrowLeft className="h-4 w-4" />
           </Link>

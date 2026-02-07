@@ -140,7 +140,7 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
                 {filteredGuides.length === 1 ? 'guide' : 'guides'} found
               </p>
             </div>
-            <Button onClick={clearFilters} variant="outline">
+            <Button onClick={clearFilters} variant="bordered">
               Clear Filters
             </Button>
           </div>

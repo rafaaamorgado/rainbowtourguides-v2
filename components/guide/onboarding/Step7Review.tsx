@@ -1,17 +1,32 @@
-"use client";
+'use client';
 
-import { User, MapPin, Languages, Sparkles, DollarSign, Calendar, Shield, CheckCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { Step1Data } from "./Step1BasicInfo";
-import type { Step2Data } from "./Step2LGBTQAlignment";
-import type { Step3Data } from "./Step3ExperienceTags";
-import type { Step4Data } from "./Step4Pricing";
-import type { Step5Data } from "./Step5Availability";
-import type { Step6Data } from "./Step6IDUpload";
-import type { Database } from "@/types/database";
+import {
+  User,
+  MapPin,
+  Languages,
+  Sparkles,
+  DollarSign,
+  Calendar,
+  Shield,
+  CheckCircle,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import type { Step1Data } from './Step1BasicInfo';
+import type { Step2Data } from './Step2LGBTQAlignment';
+import type { Step3Data } from './Step3ExperienceTags';
+import type { Step4Data } from './Step4Pricing';
+import type { Step5Data } from './Step5Availability';
+import type { Step6Data } from './Step6IDUpload';
+import type { Database } from '@/types/database';
 
-type City = Database["public"]["Tables"]["cities"]["Row"];
+type City = Database['public']['Tables']['cities']['Row'];
 
 type Step7ReviewProps = {
   step1: Step1Data;
@@ -25,24 +40,33 @@ type Step7ReviewProps = {
 };
 
 const EXPERIENCE_LABELS: Record<string, string> = {
-  daytime: "Daytime Explorer",
-  nightlife: "Nightlife",
-  food: "Food & Dining",
-  "queer-history": "Queer History",
-  "hidden-gems": "Hidden Gems",
+  daytime: 'Daytime Explorer',
+  nightlife: 'Nightlife',
+  food: 'Food & Dining',
+  'queer-history': 'Queer History',
+  'hidden-gems': 'Hidden Gems',
 };
 
 const DAY_LABELS: Record<string, string> = {
-  monday: "Mon",
-  tuesday: "Tue",
-  wednesday: "Wed",
-  thursday: "Thu",
-  friday: "Fri",
-  saturday: "Sat",
-  sunday: "Sun",
+  monday: 'Mon',
+  tuesday: 'Tue',
+  wednesday: 'Wed',
+  thursday: 'Thu',
+  friday: 'Fri',
+  saturday: 'Sat',
+  sunday: 'Sun',
 };
 
-export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, onEdit }: Step7ReviewProps) {
+export function Step7Review({
+  step1,
+  step2,
+  step3,
+  step4,
+  step5,
+  step6,
+  cities,
+  onEdit,
+}: Step7ReviewProps) {
   const selectedCity = cities.find((c) => c.id === step1.cityId);
   const avatarUrl = step1.avatarUrl ?? null;
 
@@ -54,9 +78,12 @@ export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, 
           <div className="w-16 h-16 bg-brand/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <CheckCircle size={32} className="text-brand" />
           </div>
-          <CardTitle className="text-3xl font-serif">Review Your Profile</CardTitle>
+          <CardTitle className="text-3xl font-serif">
+            Review Your Profile
+          </CardTitle>
           <CardDescription className="text-base">
-            Please review all your information before submitting. You can go back to edit any section.
+            Please review all your information before submitting. You can go
+            back to edit any section.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -90,23 +117,32 @@ export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, 
             <div className="flex-1 space-y-2">
               <div>
                 <p className="text-xs text-slate-500">Name</p>
-                <p className="font-semibold text-slate-900">{step1.displayName}</p>
+                <p className="font-semibold text-slate-900">
+                  {step1.displayName}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">City</p>
                 <p className="font-semibold text-slate-900">
-                  {selectedCity?.name}{selectedCity?.country_name ? `, ${selectedCity.country_name}` : ""}
+                  {selectedCity?.name}
+                  {selectedCity?.country_name
+                    ? `, ${selectedCity.country_name}`
+                    : ''}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Languages</p>
-                <p className="font-semibold text-slate-900">{step1.languages}</p>
+                <p className="font-semibold text-slate-900">
+                  {step1.languages}
+                </p>
               </div>
             </div>
           </div>
           <div>
             <p className="text-xs text-slate-500 mb-1">Bio</p>
-            <p className="text-sm text-slate-700 leading-relaxed">{step1.shortBio}</p>
+            <p className="text-sm text-slate-700 leading-relaxed">
+              {step1.shortBio}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -131,18 +167,28 @@ export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, 
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {step2.identifiesAsLGBTQ && (
-              <Badge variant="secondary" className="px-3 py-1">LGBTQ+ Community Member</Badge>
+              <Badge variant="secondary" className="px-3 py-1">
+                LGBTQ+ Community Member
+              </Badge>
             )}
             {step2.allyCommitment && (
-              <Badge variant="secondary" className="px-3 py-1">Committed Ally</Badge>
+              <Badge variant="secondary" className="px-3 py-1">
+                Committed Ally
+              </Badge>
             )}
             {step2.safespaceAdvocate && (
-              <Badge variant="secondary" className="px-3 py-1">Safe Space Advocate</Badge>
+              <Badge variant="secondary" className="px-3 py-1">
+                Safe Space Advocate
+              </Badge>
             )}
           </div>
           <div>
-            <p className="text-xs text-slate-500 mb-1">Why I guide LGBTQ+ travelers</p>
-            <p className="text-sm text-slate-700 leading-relaxed">{step2.whyGuideQueer}</p>
+            <p className="text-xs text-slate-500 mb-1">
+              Why I guide LGBTQ+ travelers
+            </p>
+            <p className="text-sm text-slate-700 leading-relaxed">
+              {step2.whyGuideQueer}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -197,19 +243,22 @@ export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, 
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
               <p className="text-xs text-slate-500 mb-1">4 Hour</p>
               <p className="text-lg font-bold text-brand">
-                {step4.currency === "USD" ? "$" : step4.currency}{step4.rate4h || "0"}
+                {step4.currency === 'USD' ? '$' : step4.currency}
+                {step4.rate4h || '0'}
               </p>
             </div>
             <div className="p-4 bg-brand/5 rounded-xl border border-brand text-center">
               <p className="text-xs text-slate-500 mb-1">6 Hour</p>
               <p className="text-lg font-bold text-brand">
-                {step4.currency === "USD" ? "$" : step4.currency}{step4.rate6h || "0"}
+                {step4.currency === 'USD' ? '$' : step4.currency}
+                {step4.rate6h || '0'}
               </p>
             </div>
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
               <p className="text-xs text-slate-500 mb-1">8 Hour</p>
               <p className="text-lg font-bold text-brand">
-                {step4.currency === "USD" ? "$" : step4.currency}{step4.rate8h || "0"}
+                {step4.currency === 'USD' ? '$' : step4.currency}
+                {step4.rate8h || '0'}
               </p>
             </div>
           </div>
@@ -274,9 +323,13 @@ export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, 
           <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
             <CheckCircle size={20} className="text-green-600" />
             <div>
-              <p className="text-sm font-semibold text-green-900">ID Document Uploaded</p>
+              <p className="text-sm font-semibold text-green-900">
+                ID Document Uploaded
+              </p>
               <p className="text-xs text-green-700">
-                {step6.idDocumentType.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                {step6.idDocumentType
+                  .replace('-', ' ')
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
               </p>
             </div>
           </div>
@@ -287,10 +340,13 @@ export function Step7Review({ step1, step2, step3, step4, step5, step6, cities, 
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="pt-6">
           <div className="space-y-3 text-center">
-            <h3 className="text-lg font-semibold text-slate-900">Ready to Submit?</h3>
+            <h3 className="text-lg font-semibold text-slate-900">
+              Ready to Submit?
+            </h3>
             <p className="text-sm text-slate-700 leading-relaxed max-w-xl mx-auto">
-              Once you submit, our team will review your profile. This typically takes 1-3 business days.
-              We&apos;ll email you once your profile is approved and you can start receiving bookings!
+              Once you submit, our team will review your profile. This typically
+              takes 1-3 business days. We&apos;ll email you once your profile is
+              approved and you can start receiving bookings!
             </p>
           </div>
         </CardContent>

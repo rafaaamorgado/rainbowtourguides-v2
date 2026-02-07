@@ -1,38 +1,44 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { StepIndicator } from "./StepIndicator";
-import { Step1BasicInfo, type Step1Data } from "./Step1BasicInfo";
-import { Step2LGBTQAlignment, type Step2Data } from "./Step2LGBTQAlignment";
-import { Step3ExperienceTags, type Step3Data } from "./Step3ExperienceTags";
-import { Step4Pricing, type Step4Data } from "./Step4Pricing";
-import { Step5Availability, type Step5Data } from "./Step5Availability";
-import { Step6IDUpload, type Step6Data } from "./Step6IDUpload";
-import { Step7Review } from "./Step7Review";
-import type { Database } from "@/types/database";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeft, ChevronRight, Send } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { StepIndicator } from './StepIndicator';
+import { Step1BasicInfo, type Step1Data } from './Step1BasicInfo';
+import { Step2LGBTQAlignment, type Step2Data } from './Step2LGBTQAlignment';
+import { Step3ExperienceTags, type Step3Data } from './Step3ExperienceTags';
+import { Step4Pricing, type Step4Data } from './Step4Pricing';
+import { Step5Availability, type Step5Data } from './Step5Availability';
+import { Step6IDUpload, type Step6Data } from './Step6IDUpload';
+import { Step7Review } from './Step7Review';
+import type { Database } from '@/types/database';
 
-type City = Database["public"]["Tables"]["cities"]["Row"];
+type City = Database['public']['Tables']['cities']['Row'];
 
 const STEP_TITLES = [
-  "Basic Info",
-  "LGBTQ+ Alignment",
-  "Experience Tags",
-  "Pricing",
-  "Availability",
-  "ID Upload",
-  "Review",
+  'Basic Info',
+  'LGBTQ+ Alignment',
+  'Experience Tags',
+  'Pricing',
+  'Availability',
+  'ID Upload',
+  'Review',
 ];
 
 type OnboardingWizardProps = {
   cities: City[];
   profileName: string;
-  onSubmit: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    formData: FormData,
+  ) => Promise<{ success: boolean; error?: string }>;
 };
 
-export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWizardProps) {
+export function OnboardingWizard({
+  cities,
+  profileName,
+  onSubmit,
+}: OnboardingWizardProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,16 +48,16 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
   const [step1Data, setStep1Data] = useState<Step1Data>({
     displayName: profileName,
     avatarUrl: null,
-    cityId: "",
-    languages: "",
-    shortBio: "",
+    cityId: '',
+    languages: '',
+    shortBio: '',
   });
 
   const [step2Data, setStep2Data] = useState<Step2Data>({
     identifiesAsLGBTQ: false,
     allyCommitment: false,
     safespaceAdvocate: false,
-    whyGuideQueer: "",
+    whyGuideQueer: '',
   });
 
   const [step3Data, setStep3Data] = useState<Step3Data>({
@@ -59,21 +65,21 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
   });
 
   const [step4Data, setStep4Data] = useState<Step4Data>({
-    rate4h: "",
-    rate6h: "",
-    rate8h: "",
-    currency: "USD",
+    rate4h: '',
+    rate6h: '',
+    rate8h: '',
+    currency: 'USD',
   });
 
   const [step5Data, setStep5Data] = useState<Step5Data>({
     availableDays: [],
-    startTime: "09:00",
-    endTime: "18:00",
+    startTime: '09:00',
+    endTime: '18:00',
   });
 
   const [step6Data, setStep6Data] = useState<Step6Data>({
     idDocumentUrl: null,
-    idDocumentType: "",
+    idDocumentType: '',
   });
 
   // Validation for each step
@@ -89,7 +95,9 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
         );
       case 2:
         return !!(
-          (step2Data.identifiesAsLGBTQ || step2Data.allyCommitment || step2Data.safespaceAdvocate) &&
+          (step2Data.identifiesAsLGBTQ ||
+            step2Data.allyCommitment ||
+            step2Data.safespaceAdvocate) &&
           step2Data.whyGuideQueer.length >= 50
         );
       case 3:
@@ -97,7 +105,11 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
       case 4:
         return !!(step4Data.rate4h && step4Data.rate6h && step4Data.rate8h);
       case 5:
-        return !!(step5Data.availableDays.length > 0 && step5Data.startTime && step5Data.endTime);
+        return !!(
+          step5Data.availableDays.length > 0 &&
+          step5Data.startTime &&
+          step5Data.endTime
+        );
       case 6:
         return !!(step6Data.idDocumentUrl && step6Data.idDocumentType);
       case 7:
@@ -110,14 +122,14 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
   const handleNext = () => {
     if (canProceed() && currentStep < 7) {
       setCurrentStep(currentStep + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -129,40 +141,43 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
     const formData = new FormData();
 
     // Step 1
-    formData.set("full_name", step1Data.displayName); // ⚠️ full_name, not display_name
-    formData.set("city_id", step1Data.cityId);
-    formData.set("languages", step1Data.languages);
-    formData.set("short_bio", step1Data.shortBio);
+    formData.set('full_name', step1Data.displayName); // ⚠️ full_name, not display_name
+    formData.set('city_id', step1Data.cityId);
+    formData.set('languages', step1Data.languages);
+    formData.set('short_bio', step1Data.shortBio);
     if (step1Data.avatarUrl) {
-      formData.set("avatar_url", step1Data.avatarUrl);
+      formData.set('avatar_url', step1Data.avatarUrl);
     }
 
     // Step 2
-    formData.set("lgbtq_alignment", JSON.stringify({
-      identifiesAsLGBTQ: step2Data.identifiesAsLGBTQ,
-      allyCommitment: step2Data.allyCommitment,
-      safespaceAdvocate: step2Data.safespaceAdvocate,
-    }));
-    formData.set("why_guide_queer", step2Data.whyGuideQueer);
+    formData.set(
+      'lgbtq_alignment',
+      JSON.stringify({
+        identifiesAsLGBTQ: step2Data.identifiesAsLGBTQ,
+        allyCommitment: step2Data.allyCommitment,
+        safespaceAdvocate: step2Data.safespaceAdvocate,
+      }),
+    );
+    formData.set('why_guide_queer', step2Data.whyGuideQueer);
 
     // Step 3
-    formData.set("experience_tags", JSON.stringify(step3Data.experienceTags));
+    formData.set('experience_tags', JSON.stringify(step3Data.experienceTags));
 
     // Step 4
-    formData.set("rate_4h", step4Data.rate4h);
-    formData.set("rate_6h", step4Data.rate6h);
-    formData.set("rate_8h", step4Data.rate8h);
-    formData.set("currency", step4Data.currency);
+    formData.set('rate_4h', step4Data.rate4h);
+    formData.set('rate_6h', step4Data.rate6h);
+    formData.set('rate_8h', step4Data.rate8h);
+    formData.set('currency', step4Data.currency);
 
     // Step 5
-    formData.set("available_days", JSON.stringify(step5Data.availableDays));
-    formData.set("start_time", step5Data.startTime);
-    formData.set("end_time", step5Data.endTime);
+    formData.set('available_days', JSON.stringify(step5Data.availableDays));
+    formData.set('start_time', step5Data.startTime);
+    formData.set('end_time', step5Data.endTime);
 
     // Step 6
-    formData.set("id_document_type", step6Data.idDocumentType);
+    formData.set('id_document_type', step6Data.idDocumentType);
     if (step6Data.idDocumentUrl) {
-      formData.set("id_document_url", step6Data.idDocumentUrl);
+      formData.set('id_document_url', step6Data.idDocumentUrl);
     }
 
     const result = await onSubmit(formData);
@@ -170,10 +185,10 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
     setIsSubmitting(false);
 
     if (result.success) {
-      router.push("/guide/dashboard");
+      router.push('/guide/dashboard');
     } else {
-      setError(result.error || "Failed to submit. Please try again.");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      setError(result.error || 'Failed to submit. Please try again.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -251,7 +266,7 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-4 pt-6">
           <Button
             type="button"
-            variant="outline"
+            variant="bordered"
             size="lg"
             onClick={handleBack}
             disabled={currentStep === 1 || isSubmitting}
@@ -280,7 +295,9 @@ export function OnboardingWizard({ cities, profileName, onSubmit }: OnboardingWi
               disabled={!canProceed() || isSubmitting}
               className="gap-2"
             >
-              {isSubmitting ? "Submitting..." : (
+              {isSubmitting ? (
+                'Submitting...'
+              ) : (
                 <>
                   Submit for Review
                   <Send size={20} />

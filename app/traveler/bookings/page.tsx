@@ -381,7 +381,7 @@ export default function TravelerBookingsPage() {
           <Button
             onClick={handleCreateDemoBooking}
             disabled={isCreatingDemo}
-            variant="outline"
+            variant="bordered"
             size="sm"
             className="border-dashed border-amber-500 text-amber-700 hover:bg-amber-50"
           >
@@ -606,12 +606,12 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
 
         {/* Actions */}
         <div className="flex flex-col gap-2 lg:min-w-[160px]">
-          <Button asChild variant="outline" size="sm" className="w-full">
+          <Button asChild variant="bordered" size="sm" className="w-full">
             <Link href={`/traveler/bookings/${booking.id}`}>View Details</Link>
           </Button>
 
           {isMessagingEnabled(booking.status) && (
-            <Button asChild variant="outline" size="sm" className="w-full">
+            <Button asChild variant="bordered" size="sm" className="w-full">
               <Link
                 href={`/traveler/messages?booking=${booking.id}`}
                 className="flex items-center gap-2"
@@ -634,7 +634,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
           )}
 
           {isCompleted && !hasReview && (
-            <Button asChild variant="default" size="sm" className="w-full">
+            <Button asChild variant="solid" size="sm" className="w-full">
               <Link
                 href={`/traveler/bookings/${booking.id}/review`}
                 className="flex items-center gap-2"

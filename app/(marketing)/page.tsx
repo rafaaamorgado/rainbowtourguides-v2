@@ -1,7 +1,15 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
-import { Shield, Map, Users, ArrowRight, Search, CheckCircle, Heart } from 'lucide-react';
+import {
+  Shield,
+  Map,
+  Users,
+  ArrowRight,
+  Search,
+  CheckCircle,
+  Heart,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CityCard } from '@/components/ui/CityCard';
 import { GuideCard } from '@/components/cards/GuideCard';
@@ -77,8 +85,9 @@ export default async function MarketingPage() {
               </h1>
 
               <p className="text-base md:text-lg text-slate-600 max-w-[55ch] font-light leading-relaxed">
-                Book verified guides who know every queer-friendly corner, hidden speakeasy,
-                and community hotspot—so you can explore with confidence.
+                Book verified guides who know every queer-friendly corner,
+                hidden speakeasy, and community hotspot—so you can explore with
+                confidence.
               </p>
 
               {/* Trusted By Section */}
@@ -162,7 +171,10 @@ export default async function MarketingPage() {
       {/* Manifesto / Introduction */}
       <section className="py-16 md:py-20 bg-white relative">
         <div className="max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
+          <div
+            className="opacity-0 animate-fade-in-up"
+            style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}
+          >
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6 leading-tight">
               Not just a guide.
               <br />
@@ -284,8 +296,8 @@ export default async function MarketingPage() {
                 Meet Our Top Guides
               </h2>
               <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
-                Verified locals who share authentic experiences and safe
-                spaces in their cities.
+                Verified locals who share authentic experiences and safe spaces
+                in their cities.
               </p>
             </div>
             <Button asChild variant="ghost" className="mt-2 md:mt-0">
@@ -382,7 +394,11 @@ export default async function MarketingPage() {
                 ))}
               </div>
 
-              <Button asChild size="lg" className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+              <Button
+                asChild
+                size="lg"
+                className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
                 <Link href="/cities">Browse Cities</Link>
               </Button>
             </div>
@@ -417,8 +433,9 @@ export default async function MarketingPage() {
                       Safer First Impressions
                     </h4>
                     <p className="text-sm text-slate-600 leading-relaxed">
-                      All guides are ID-verified, interviewed, and background-checked.
-                      Know who you're meeting before you arrive.
+                      All guides are ID-verified, interviewed, and
+                      background-checked. Know who you're meeting before you
+                      arrive.
                     </p>
                   </div>
                 </div>
@@ -432,8 +449,9 @@ export default async function MarketingPage() {
                       Cultural Context
                     </h4>
                     <p className="text-sm text-slate-600 leading-relaxed">
-                      Navigate queer-friendly spaces, local etiquette, and LGBTQ+
-                      rights with someone who knows the community intimately.
+                      Navigate queer-friendly spaces, local etiquette, and
+                      LGBTQ+ rights with someone who knows the community
+                      intimately.
                     </p>
                   </div>
                 </div>
@@ -447,18 +465,23 @@ export default async function MarketingPage() {
                       Personal Fit
                     </h4>
                     <p className="text-sm text-slate-600 leading-relaxed">
-                      Match with guides based on interests, pace, and vibe. Whether
-                      you want nightlife or museums, find your perfect companion.
+                      Match with guides based on interests, pace, and vibe.
+                      Whether you want nightlife or museums, find your perfect
+                      companion.
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-4">
-                <Button asChild variant="outline" className="hover:-translate-y-0.5 transition-all">
+                <Button variant="bordered" asChild>
                   <Link href="/legal/safety">Learn About Safety</Link>
                 </Button>
-                <Button asChild variant="ghost" className="hover:-translate-y-0.5 transition-all">
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="hover:-translate-y-0.5 transition-all"
+                >
                   <Link href="/legal/terms">Community Guidelines</Link>
                 </Button>
               </div>
@@ -491,10 +514,19 @@ export default async function MarketingPage() {
             underground scene, do it with someone who gets it.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button asChild size="lg" className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <Button
+              asChild
+              size="lg"
+              className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+            >
               <Link href="/cities">Start Exploring</Link>
             </Button>
-            <Button asChild variant="ghost" size="lg" className="hover:-translate-y-0.5 transition-all">
+            <Button
+              asChild
+              variant="ghost"
+              size="lg"
+              className="hover:-translate-y-0.5 transition-all"
+            >
               <Link
                 href="/auth/sign-up?role=guide"
                 className="flex items-center gap-2"

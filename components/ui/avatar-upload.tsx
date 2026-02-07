@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useRef, useCallback } from "react";
-import { Upload, X, User, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useState, useRef, useCallback } from 'react';
+import { Upload, X, User, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export interface AvatarUploadProps {
   /** Current avatar URL */
@@ -11,9 +11,11 @@ export interface AvatarUploadProps {
   /** Callback when avatar is uploaded */
   onChange: (url: string | null) => void;
   /** Upload function that takes the file and returns the URL */
-  onUpload: (file: File) => Promise<{ success: boolean; url?: string; error?: string }>;
+  onUpload: (
+    file: File,
+  ) => Promise<{ success: boolean; url?: string; error?: string }>;
   /** Size of the avatar preview */
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   /** Whether the upload is disabled */
   disabled?: boolean;
   /** Additional class names */
@@ -21,22 +23,22 @@ export interface AvatarUploadProps {
 }
 
 const sizeClasses = {
-  sm: "w-16 h-16",
-  md: "w-24 h-24",
-  lg: "w-32 h-32",
+  sm: 'w-16 h-16',
+  md: 'w-24 h-24',
+  lg: 'w-32 h-32',
 };
 
 const iconSizes = {
-  sm: "h-6 w-6",
-  md: "h-10 w-10",
-  lg: "h-12 w-12",
+  sm: 'h-6 w-6',
+  md: 'h-10 w-10',
+  lg: 'h-12 w-12',
 };
 
 export function AvatarUpload({
   value,
   onChange,
   onUpload,
-  size = "md",
+  size = 'md',
   disabled = false,
   className,
 }: AvatarUploadProps) {
@@ -51,14 +53,14 @@ export function AvatarUpload({
       if (!file) return;
 
       // Validate file type
-      if (!file.type.startsWith("image/")) {
-        setError("Please select an image file");
+      if (!file.type.startsWith('image/')) {
+        setError('Please select an image file');
         return;
       }
 
       // Validate file size (2MB max)
       if (file.size > 2 * 1024 * 1024) {
-        setError("Image must be less than 2MB");
+        setError('Image must be less than 2MB');
         return;
       }
 
@@ -76,21 +78,21 @@ export function AvatarUpload({
           onChange(result.url);
           setPreview(null);
         } else {
-          setError(result.error || "Upload failed");
+          setError(result.error || 'Upload failed');
           setPreview(null);
         }
       } catch (err) {
-        setError("Upload failed. Please try again.");
+        setError('Upload failed. Please try again.');
         setPreview(null);
       } finally {
         setIsUploading(false);
         // Reset input so same file can be selected again
         if (fileInputRef.current) {
-          fileInputRef.current.value = "";
+          fileInputRef.current.value = '';
         }
       }
     },
-    [onUpload, onChange]
+    [onUpload, onChange],
   );
 
   const handleRemove = useCallback(() => {
@@ -102,12 +104,12 @@ export function AvatarUpload({
   const displayUrl = preview || value;
 
   return (
-    <div className={cn("flex items-center gap-4", className)}>
+    <div className={cn('flex items-center gap-4', className)}>
       {/* Avatar Preview */}
       <div
         className={cn(
-          "relative rounded-full bg-gradient-to-br from-pride-lilac to-pride-mint flex items-center justify-center flex-shrink-0 overflow-hidden",
-          sizeClasses[size]
+          'relative rounded-full bg-gradient-to-br from-pride-lilac to-pride-mint flex items-center justify-center flex-shrink-0 overflow-hidden',
+          sizeClasses[size],
         )}
       >
         {displayUrl ? (
@@ -124,7 +126,7 @@ export function AvatarUpload({
             )}
           </>
         ) : (
-          <User className={cn("text-white", iconSizes[size])} />
+          <User className={cn('text-white', iconSizes[size])} />
         )}
       </div>
 
@@ -133,7 +135,7 @@ export function AvatarUpload({
         <div className="flex items-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="bordered"
             size="sm"
             disabled={disabled || isUploading}
             onClick={() => fileInputRef.current?.click()}
@@ -146,7 +148,7 @@ export function AvatarUpload({
             ) : (
               <>
                 <Upload className="h-4 w-4 mr-2" />
-                {value ? "Change" : "Upload"}
+                {value ? 'Change' : 'Upload'}
               </>
             )}
           </Button>

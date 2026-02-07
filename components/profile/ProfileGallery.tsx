@@ -230,7 +230,7 @@ export function ProfileGallery({
           <div>
             <Button
               type="button"
-              variant="outline"
+              variant="bordered"
               size="sm"
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
@@ -317,7 +317,7 @@ export function ProfileGallery({
                     <Button
                       type="button"
                       size="sm"
-                      variant="destructive"
+                      variant="ghost"
                       onClick={() => handleDeleteImage(image.id)}
                     >
                       <Trash2 className="h-4 w-4" />

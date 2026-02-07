@@ -18,7 +18,9 @@ function formatJoinedDate(isoDate: string | null | undefined): string {
   }
 }
 
-export default async function TravelerPublicPage({ params }: TravelerPageProps) {
+export default async function TravelerPublicPage({
+  params,
+}: TravelerPageProps) {
   const { id } = await params;
   if (!id) notFound();
 
@@ -26,7 +28,9 @@ export default async function TravelerPublicPage({ params }: TravelerPageProps) 
 
   const { data: profileRow, error: profileError } = await supabase
     .from('profiles')
-    .select('id, role, full_name, avatar_url, cover_url, bio, country_of_origin, languages, created_at')
+    .select(
+      'id, role, full_name, avatar_url, cover_url, bio, country_of_origin, languages, created_at',
+    )
     .eq('id', id)
     .single();
 
@@ -69,8 +73,10 @@ export default async function TravelerPublicPage({ params }: TravelerPageProps) 
       .limit(30),
   ]);
 
-  const interests = ((travelerResult.data as { interests?: string[] } | null)?.interests ?? []) as string[];
-  const countryName = (countryResult.data as { name?: string } | null)?.name ?? null;
+  const interests = ((travelerResult.data as { interests?: string[] } | null)
+    ?.interests ?? []) as string[];
+  const countryName =
+    (countryResult.data as { name?: string } | null)?.name ?? null;
   const galleryImages = galleryResult.data ?? [];
 
   const fullName = profile.full_name || 'Traveler';
@@ -133,10 +139,7 @@ export default async function TravelerPublicPage({ params }: TravelerPageProps) 
           )}
 
           {galleryImages.length > 0 && (
-            <PublicProfileGallery
-              images={galleryImages}
-              userName={fullName}
-            />
+            <PublicProfileGallery images={galleryImages} userName={fullName} />
           )}
         </div>
       </div>

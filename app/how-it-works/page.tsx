@@ -1,5 +1,5 @@
-import { Metadata } from "next";
-import Link from "next/link";
+import { Metadata } from 'next';
+import Link from 'next/link';
 import {
   Search,
   Shield,
@@ -11,14 +11,14 @@ import {
   DollarSign,
   Globe,
   ArrowRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 export const metadata: Metadata = {
-  title: "How It Works - Rainbow Tour Guides",
+  title: 'How It Works - Rainbow Tour Guides',
   description:
-    "Learn how to book authentic LGBTQ+ tours with local guides or become a guide yourself.",
+    'Learn how to book authentic LGBTQ+ tours with local guides or become a guide yourself.',
 };
 
 export default function HowItWorksPage() {
@@ -160,8 +160,8 @@ export default function HowItWorksPage() {
                 Become a Guide
               </h2>
               <p className="text-xl text-ink-soft max-w-2xl mx-auto">
-                Share your city with LGBTQ+ travelers and earn income doing
-                what you love
+                Share your city with LGBTQ+ travelers and earn income doing what
+                you love
               </p>
             </div>
 
@@ -291,9 +291,7 @@ export default function HowItWorksPage() {
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-ink mb-4">
-              Safety & Trust
-            </h2>
+            <h2 className="text-4xl font-bold text-ink mb-4">Safety & Trust</h2>
             <p className="text-xl text-ink-soft max-w-2xl mx-auto">
               Your safety and security are our top priorities
             </p>
@@ -319,9 +317,7 @@ export default function HowItWorksPage() {
               <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Clock className="w-8 h-8 text-brand" />
               </div>
-              <h3 className="text-xl font-bold text-ink mb-4">
-                24/7 Support
-              </h3>
+              <h3 className="text-xl font-bold text-ink mb-4">24/7 Support</h3>
               <p className="text-ink-soft leading-relaxed">
                 Our support team is available around the clock to assist with
                 any issues before, during, or after your tour.
@@ -352,14 +348,14 @@ export default function HowItWorksPage() {
             Ready to Start Your Adventure?
           </h2>
           <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-            Join thousands of travelers discovering authentic LGBTQ+
-            experiences worldwide
+            Join thousands of travelers discovering authentic LGBTQ+ experiences
+            worldwide
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/guides">
               <Button
                 size="lg"
-                variant="outline"
+                variant="bordered"
                 className="bg-white text-brand hover:bg-gray-50 px-8 py-6 text-lg rounded-full border-2 border-white"
               >
                 Browse Guides
@@ -368,7 +364,7 @@ export default function HowItWorksPage() {
             <Link href="/cities">
               <Button
                 size="lg"
-                variant="outline"
+                variant="bordered"
                 className="bg-transparent text-white hover:bg-white/10 px-8 py-6 text-lg rounded-full border-2 border-white"
               >
                 Explore Cities

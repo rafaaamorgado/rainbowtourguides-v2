@@ -135,7 +135,7 @@ export function CoverUploader({
         <div className="flex items-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="bordered"
             size="sm"
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}

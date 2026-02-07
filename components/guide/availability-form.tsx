@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Modal, ModalBody, ModalContent, ModalFooter } from '@heroui/react';
 import { TimeInput } from '@/components/ui/time-input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -87,6 +88,12 @@ export function AvailabilityForm({
     );
   });
 
+  const baselineRef = useRef<string>(JSON.stringify(weeklySchedule));
+  const isDirty = useMemo(
+    () => JSON.stringify(weeklySchedule) !== baselineRef.current,
+    [weeklySchedule],
+  );
+
   const [isSavingSchedule, setIsSavingSchedule] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -128,6 +135,7 @@ export function AvailabilityForm({
       const result = await onSaveSchedule(weeklySchedule);
       if (result.success) {
         setSuccess(true);
+        baselineRef.current = JSON.stringify(weeklySchedule);
       } else {
         setError(result.error || 'Failed to save schedule');
       }
@@ -148,11 +156,24 @@ export function AvailabilityForm({
         </div>
       )}
 
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-          Schedule saved successfully!
-        </div>
-      )}
+      <Modal isOpen={success} onOpenChange={setSuccess} placement="center">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalBody className="py-6 text-center">
+                <div className="text-lg font-semibold">
+                  Schedule saved successfully!
+                </div>
+              </ModalBody>
+              <ModalFooter className="justify-center">
+                <Button type="button" onClick={onClose}>
+                  OK
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
       {/* Weekly Schedule Section */}
       <Card className="w-[320px] p-2" shadow="sm" radius="lg">
@@ -210,7 +231,10 @@ export function AvailabilityForm({
             <Button
               type="button"
               onClick={handleSaveSchedule}
-              disabled={isSavingSchedule}
+              disabled={isSavingSchedule || !isDirty}
+              variant="solid"
+              color="primary"
+              isLoading={isSavingSchedule}
             >
               {isSavingSchedule ? (
                 <>

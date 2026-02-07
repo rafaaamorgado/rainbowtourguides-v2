@@ -1,8 +1,23 @@
-import * as React from "react";
-import Link from "next/link";
-import { Sparkles, Search, MapPin, Heart, Users, Calendar, Clock, DollarSign, Image, MessageSquare, Star, Settings, FileText, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import Link from 'next/link';
+import {
+  Sparkles,
+  Search,
+  MapPin,
+  Heart,
+  Users,
+  Calendar,
+  Clock,
+  DollarSign,
+  Image,
+  MessageSquare,
+  Star,
+  Settings,
+  FileText,
+  User,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -18,7 +33,22 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Optional icon (uses default sparkles if not provided)
    */
-  icon?: "sparkles" | "search" | "map" | "heart" | "users" | "calendar" | "clock" | "dollar" | "image" | "message" | "star" | "settings" | "file-text" | "user" | React.ReactNode;
+  icon?:
+    | 'sparkles'
+    | 'search'
+    | 'map'
+    | 'heart'
+    | 'users'
+    | 'calendar'
+    | 'clock'
+    | 'dollar'
+    | 'image'
+    | 'message'
+    | 'star'
+    | 'settings'
+    | 'file-text'
+    | 'user'
+    | React.ReactNode;
 
   /**
    * Optional CTA button label
@@ -39,7 +69,7 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Variant styling
    */
-  variant?: "default" | "minimal" | "card";
+  variant?: 'default' | 'minimal' | 'card' | 'solid';
 }
 
 const iconMap = {
@@ -55,16 +85,16 @@ const iconMap = {
   message: MessageSquare,
   star: Star,
   settings: Settings,
-  "file-text": FileText,
+  'file-text': FileText,
   user: User,
 };
 
 /**
  * EmptyState - Premium empty state component with warm, friendly microcopy
- * 
+ *
  * @example
- * <EmptyState 
- *   title="No guides here... yet" 
+ * <EmptyState
+ *   title="No guides here... yet"
  *   description="Try another city or join our waitlist to be notified when guides become available."
  *   icon="map"
  *   actionLabel="Explore other cities"
@@ -77,24 +107,24 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
       className,
       title,
       description,
-      icon = "sparkles",
+      icon = 'sparkles',
       actionLabel,
       actionHref,
       secondaryActionLabel,
       secondaryActionHref,
-      variant = "default",
+      variant = 'default',
       ...props
     },
-    ref
+    ref,
   ) => {
-    const isCard = variant === "card";
-    const isMinimal = variant === "minimal";
+    const isCard = variant === 'card';
+    const isMinimal = variant === 'minimal';
 
     // Determine icon component
     let IconComponent: React.ElementType = Sparkles;
     let customIcon: React.ReactNode = null;
 
-    if (typeof icon === "string") {
+    if (typeof icon === 'string') {
       IconComponent = iconMap[icon as keyof typeof iconMap] || Sparkles;
     } else {
       customIcon = icon;
@@ -104,19 +134,19 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
       <div
         ref={ref}
         className={cn(
-          "flex flex-col items-center justify-center text-center",
-          isCard && "rounded-2xl border bg-card shadow-md p-8",
-          !isCard && !isMinimal && "py-16 px-4",
-          isMinimal && "py-8 px-4",
-          className
+          'flex flex-col items-center justify-center text-center',
+          isCard && 'rounded-2xl border bg-card shadow-md p-8',
+          !isCard && !isMinimal && 'py-16 px-4',
+          isMinimal && 'py-8 px-4',
+          className,
         )}
         {...props}
       >
         {/* Icon */}
         <div
           className={cn(
-            "mb-4 rounded-full bg-gradient-to-br from-pink-50 to-rose-50 p-4",
-            isMinimal && "mb-3 p-3"
+            'mb-4 rounded-full bg-gradient-to-br from-pink-50 to-rose-50 p-4',
+            isMinimal && 'mb-3 p-3',
           )}
         >
           {customIcon ? (
@@ -124,10 +154,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
           ) : (
             IconComponent && (
               <IconComponent
-                className={cn(
-                  "text-brand",
-                  isMinimal ? "h-5 w-5" : "h-6 w-6"
-                )}
+                className={cn('text-brand', isMinimal ? 'h-5 w-5' : 'h-6 w-6')}
               />
             )
           )}
@@ -136,8 +163,8 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         {/* Title */}
         <h3
           className={cn(
-            "font-semibold text-slate-900 mb-2 max-w-md",
-            isMinimal ? "text-base" : "text-xl tracking-tight"
+            'font-semibold text-slate-900 mb-2 max-w-md',
+            isMinimal ? 'text-base' : 'text-xl tracking-tight',
           )}
         >
           {title}
@@ -146,8 +173,8 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         {/* Description */}
         <p
           className={cn(
-            "text-muted-foreground max-w-md leading-relaxed",
-            isMinimal ? "text-sm mb-4" : "text-sm mb-6"
+            'text-muted-foreground max-w-md leading-relaxed',
+            isMinimal ? 'text-sm mb-4' : 'text-sm mb-6',
           )}
         >
           {description}
@@ -157,17 +184,13 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         {(actionLabel || secondaryActionLabel) && (
           <div className="flex flex-col sm:flex-row gap-3 items-center">
             {actionLabel && actionHref && (
-              <Button asChild variant="default" size={isMinimal ? "sm" : "default"}>
+              <Button asChild variant="solid" size={isMinimal ? 'sm' : 'md'}>
                 <Link href={actionHref}>{actionLabel}</Link>
               </Button>
             )}
 
             {secondaryActionLabel && secondaryActionHref && (
-              <Button
-                asChild
-                variant="outline"
-                size={isMinimal ? "sm" : "default"}
-              >
+              <Button asChild variant="bordered" size={isMinimal ? 'sm' : 'md'}>
                 <Link href={secondaryActionHref}>{secondaryActionLabel}</Link>
               </Button>
             )}
@@ -175,20 +198,24 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         )}
       </div>
     );
-  }
+  },
 );
-EmptyState.displayName = "EmptyState";
+EmptyState.displayName = 'EmptyState';
 
 /**
  * NoGuidesEmptyState - Pre-configured for empty guide lists
  */
 export const NoGuidesEmptyState = React.forwardRef<
   HTMLDivElement,
-  Omit<EmptyStateProps, "title" | "description" | "icon"> & { cityName?: string }
+  Omit<EmptyStateProps, 'title' | 'description' | 'icon'> & {
+    cityName?: string;
+  }
 >(({ cityName, ...props }, ref) => (
   <EmptyState
     ref={ref}
-    title={cityName ? `No guides in ${cityName}... yet` : "No guides here... yet"}
+    title={
+      cityName ? `No guides in ${cityName}... yet` : 'No guides here... yet'
+    }
     description="We're growing our community of trusted local guides. Check back soon or explore other destinations."
     icon="map"
     actionLabel="Explore other cities"
@@ -198,14 +225,14 @@ export const NoGuidesEmptyState = React.forwardRef<
     {...props}
   />
 ));
-NoGuidesEmptyState.displayName = "NoGuidesEmptyState";
+NoGuidesEmptyState.displayName = 'NoGuidesEmptyState';
 
 /**
  * NoBookingsEmptyState - Pre-configured for empty booking lists
  */
 export const NoBookingsEmptyState = React.forwardRef<
   HTMLDivElement,
-  Omit<EmptyStateProps, "title" | "description" | "icon">
+  Omit<EmptyStateProps, 'title' | 'description' | 'icon'>
 >(({ ...props }, ref) => (
   <EmptyState
     ref={ref}
@@ -217,14 +244,14 @@ export const NoBookingsEmptyState = React.forwardRef<
     {...props}
   />
 ));
-NoBookingsEmptyState.displayName = "NoBookingsEmptyState";
+NoBookingsEmptyState.displayName = 'NoBookingsEmptyState';
 
 /**
  * NoSavedEmptyState - Pre-configured for empty saved/favorites lists
  */
 export const NoSavedEmptyState = React.forwardRef<
   HTMLDivElement,
-  Omit<EmptyStateProps, "title" | "description" | "icon">
+  Omit<EmptyStateProps, 'title' | 'description' | 'icon'>
 >(({ ...props }, ref) => (
   <EmptyState
     ref={ref}
@@ -236,14 +263,16 @@ export const NoSavedEmptyState = React.forwardRef<
     {...props}
   />
 ));
-NoSavedEmptyState.displayName = "NoSavedEmptyState";
+NoSavedEmptyState.displayName = 'NoSavedEmptyState';
 
 /**
  * NoResultsEmptyState - Pre-configured for empty search results
  */
 export const NoResultsEmptyState = React.forwardRef<
   HTMLDivElement,
-  Omit<EmptyStateProps, "title" | "description" | "icon"> & { searchQuery?: string }
+  Omit<EmptyStateProps, 'title' | 'description' | 'icon'> & {
+    searchQuery?: string;
+  }
 >(({ searchQuery, ...props }, ref) => (
   <EmptyState
     ref={ref}
@@ -261,14 +290,17 @@ export const NoResultsEmptyState = React.forwardRef<
     {...props}
   />
 ));
-NoResultsEmptyState.displayName = "NoResultsEmptyState";
+NoResultsEmptyState.displayName = 'NoResultsEmptyState';
 
 /**
  * NoMessagesEmptyState - Pre-configured for empty message lists
  */
 export const NoMessagesEmptyState = React.forwardRef<
   HTMLDivElement,
-  Omit<EmptyStateProps, "title" | "description" | "icon" | "actionLabel" | "actionHref">
+  Omit<
+    EmptyStateProps,
+    'title' | 'description' | 'icon' | 'actionLabel' | 'actionHref'
+  >
 >(({ ...props }, ref) => (
   <EmptyState
     ref={ref}
@@ -279,5 +311,4 @@ export const NoMessagesEmptyState = React.forwardRef<
     {...props}
   />
 ));
-NoMessagesEmptyState.displayName = "NoMessagesEmptyState";
-
+NoMessagesEmptyState.displayName = 'NoMessagesEmptyState';

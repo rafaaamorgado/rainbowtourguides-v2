@@ -46,8 +46,12 @@ export default async function GuidesPage() {
           <p className="text-sm text-red-700">{primaryError}</p>
           {showDebugText && (
             <p className="text-xs text-red-600">
-              Supabase URL: {(guidesDebug?.hasUrl ?? citiesDebug?.hasUrl) ? 'yes' : 'no'} | Anon key:{' '}
-              {(guidesDebug?.hasAnonKey ?? citiesDebug?.hasAnonKey) ? 'yes' : 'no'}
+              Supabase URL:{' '}
+              {(guidesDebug?.hasUrl ?? citiesDebug?.hasUrl) ? 'yes' : 'no'} |
+              Anon key:{' '}
+              {(guidesDebug?.hasAnonKey ?? citiesDebug?.hasAnonKey)
+                ? 'yes'
+                : 'no'}
             </p>
           )}
         </div>
@@ -64,7 +68,8 @@ export default async function GuidesPage() {
   // Use mock data fallback if no guides in database
   const useMockData = allGuides.length === 0;
   const guides = useMockData ? getMockGuides() : allGuides;
-  const displayCities = useMockData && cities.length === 0 ? getMockCities() : cities;
+  const displayCities =
+    useMockData && cities.length === 0 ? getMockCities() : cities;
 
   // Sort guides by rating for top-rated section
   const topRatedGuides = [...guides]
@@ -79,9 +84,7 @@ export default async function GuidesPage() {
 
   // Get all unique experience tags
   const allTags = Array.from(
-    new Set(
-      guides.flatMap((g) => g.experience_tags || g.themes || []),
-    ),
+    new Set(guides.flatMap((g) => g.experience_tags || g.themes || [])),
   ).sort();
 
   // Cities with low guide count (new destinations)
@@ -167,9 +170,7 @@ export default async function GuidesPage() {
 
             <div className="space-y-8">
               {newDestinations.map((city) => {
-                const cityGuides = guides.filter(
-                  (g) => g.city_id === city.id,
-                );
+                const cityGuides = guides.filter((g) => g.city_id === city.id);
 
                 return (
                   <div key={city.id} className="space-y-4">
@@ -275,7 +276,7 @@ export default async function GuidesPage() {
               title="No destinations to show yet"
               description="Once guides are available, featured cities will appear here."
               icon="map"
-              variant="default"
+              variant="solid"
             />
           </div>
         )}

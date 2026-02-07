@@ -485,7 +485,7 @@ function BookingCard({
               <Button
                 onClick={() => onDecline(booking.id)}
                 disabled={isLoading}
-                variant="outline"
+                variant="bordered"
                 size="sm"
                 className="border-red-200 text-red-600 hover:bg-red-50"
               >
@@ -494,7 +494,7 @@ function BookingCard({
               </Button>
             </>
           ) : (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="bordered" size="sm">
               <Link href={`/guide/bookings/${booking.id}`}>View Details</Link>
             </Button>
           )}
