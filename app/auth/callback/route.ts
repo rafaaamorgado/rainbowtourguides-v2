@@ -8,8 +8,16 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   const role = requestUrl.searchParams.get('role'); // Role passed from sign-up form
+  const nextPath = requestUrl.searchParams.get('next'); // e.g. /auth/update-password for password reset
 
   const baseUrl = getBaseUrl();
+
+  // Safe redirect: only allow relative paths under /auth/ (e.g. password reset flow)
+  const isSafeNext =
+    nextPath &&
+    nextPath.startsWith('/auth/') &&
+    !nextPath.includes('//') &&
+    nextPath.length < 200;
 
   if (code) {
     const cookieStore = await cookies();
@@ -35,6 +43,11 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=callback_error`);
+    }
+
+    // Password reset (or other) flow: redirect to requested path after successful exchange
+    if (data.user && isSafeNext) {
+      return NextResponse.redirect(`${baseUrl}${nextPath}`);
     }
 
     if (data.user) {
