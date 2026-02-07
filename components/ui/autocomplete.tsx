@@ -23,6 +23,7 @@ export interface AutocompleteProps extends Omit<
   placeholder?: string;
   startContent?: React.ReactNode;
   ariaLabelledby?: string;
+  inputClassName?: string;
 }
 
 /**
@@ -40,13 +41,24 @@ export function Autocomplete({
   placeholder,
   startContent,
   className,
+  inputClassName = 'text-base',
   ariaLabelledby,
+  inputProps,
   ...props
 }: AutocompleteProps) {
   const handleSelectionChange = (key: React.Key | null) => {
     if (key && onChange) {
       onChange(String(key));
     }
+  };
+
+  const mergedInputProps = {
+    ...inputProps,
+    classNames: {
+      ...inputProps?.classNames,
+      inputWrapper: cn('h-12 min-h-12', inputProps?.classNames?.inputWrapper),
+      input: cn(inputClassName, inputProps?.classNames?.input),
+    },
   };
 
   return (
@@ -60,6 +72,7 @@ export function Autocomplete({
       startContent={startContent}
       aria-labelledby={ariaLabelledby}
       className={cn(className)}
+      inputProps={mergedInputProps}
       {...props}
     >
       {options?.map((option) => (

@@ -100,7 +100,7 @@ export default function RootLayout({
           {/* Shared shell */}
           <div className="flex min-h-screen flex-col">
             <SiteHeader />
-            <main className="flex-1 pt-20">{children}</main>
+            <main className="flex-1 pt-14">{children}</main>
             <ConditionalFooter />
           </div>
         </Providers>

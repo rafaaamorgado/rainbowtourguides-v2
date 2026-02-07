@@ -1,6 +1,9 @@
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
+/** Verified sender for production. Override via EMAIL_FROM env var if needed. */
+const DEFAULT_EMAIL_FROM = "Rainbow Tour Guides <hello@rainbowtourguides.com>";
+
 // Initialize Resend client
 let resend: Resend | null = null;
 
@@ -41,14 +44,16 @@ function getResendClient(): Resend | null {
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  const emailFrom = process.env.EMAIL_FROM;
-
-  if (!apiKey || !emailFrom) {
+  if (!apiKey) {
     return null;
   }
 
   resend = new Resend(apiKey);
   return resend;
+}
+
+function getEmailFrom(): string {
+  return process.env.EMAIL_FROM || DEFAULT_EMAIL_FROM;
 }
 
 /**
@@ -86,14 +91,9 @@ export async function sendBookingRequestEmail({
     return; // No-op if Resend not configured
   }
 
-  const emailFrom = process.env.EMAIL_FROM;
-  if (!emailFrom) {
-    return;
-  }
-
   try {
     await client.emails.send({
-      from: emailFrom,
+      from: getEmailFrom(),
       to: email,
       subject: "New booking request on Rainbow Tour Guides",
       html: `
@@ -145,11 +145,6 @@ export async function sendBookingStatusEmail({
     return; // No-op if Resend not configured
   }
 
-  const emailFrom = process.env.EMAIL_FROM;
-  if (!emailFrom) {
-    return;
-  }
-
   const statusText = status === "accepted" ? "accepted" : "declined";
   const statusMessage =
     status === "accepted"
@@ -158,7 +153,7 @@ export async function sendBookingStatusEmail({
 
   try {
     await client.emails.send({
-      from: emailFrom,
+      from: getEmailFrom(),
       to: email,
       subject: `Booking ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} - Rainbow Tour Guides`,
       html: `
@@ -216,16 +211,11 @@ export async function sendBookingPaidEmail({
     return; // No-op if Resend not configured
   }
 
-  const emailFrom = process.env.EMAIL_FROM;
-  if (!emailFrom) {
-    return;
-  }
-
   // Send to traveler
   if (travelerEmailFinal) {
     try {
       await client.emails.send({
-        from: emailFrom,
+        from: getEmailFrom(),
         to: travelerEmailFinal,
       subject: "Payment Confirmed - Rainbow Tour Guides",
       html: `
@@ -248,7 +238,7 @@ export async function sendBookingPaidEmail({
   if (guideEmailFinal) {
     try {
       await client.emails.send({
-        from: emailFrom,
+        from: getEmailFrom(),
         to: guideEmailFinal,
       subject: "Payment Received - Rainbow Tour Guides",
       html: `

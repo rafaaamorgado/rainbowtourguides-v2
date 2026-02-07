@@ -11,7 +11,6 @@ import {
   User,
   DollarSign,
   Menu,
-  X,
   MapPin,
   LogOut,
   ChevronRight,
@@ -115,7 +114,7 @@ export function GuideSidebar({
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden fixed top-14 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <Link href="/guide/dashboard" className="flex items-center">
           <Image
             src="/images/rtg-logo.png"
@@ -138,7 +137,7 @@ export function GuideSidebar({
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-50"
+          className="lg:hidden fixed top-14 left-0 right-0 bottom-0 bg-black/50 z-50"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -146,7 +145,7 @@ export function GuideSidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200',
+          'fixed top-14 bottom-0 left-0 z-50 w-64 bg-white border-r border-slate-200',
           'transform transition-transform duration-300 ease-in-out',
           'lg:translate-x-0',
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
@@ -155,27 +154,6 @@ export function GuideSidebar({
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
-            <div className="flex items-center justify-between mb-6">
-              <Link href="/guide/dashboard" className="flex items-center">
-                <Image
-                  src="/images/rtg-logo.png"
-                  alt="Rainbow Tour Guides"
-                  width={150}
-                  height={40}
-                  className="h-8 w-[150px] object-contain object-left"
-                  priority
-                />
-              </Link>
-
-              {/* Close button (mobile only) */}
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="lg:hidden p-1 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <X className="h-5 w-5 text-ink-soft" />
-              </button>
-            </div>
-
             {/* User Info Card */}
             <div className="space-y-3">
               {guide ? (

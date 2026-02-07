@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { BadgeCheck, MapPin, Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getStoragePublicUrl } from "@/lib/storage-helpers";
+import { getAvatarUrl } from "@/lib/storage-helpers";
 
 interface GuideHeroProps {
   name: string;
@@ -27,8 +27,7 @@ export function GuideHero({
   verified,
 }: GuideHeroProps) {
   const photo =
-    getStoragePublicUrl(avatarUrl || "") ||
-    avatarUrl ||
+    (avatarUrl && (getAvatarUrl(avatarUrl) || avatarUrl)) ||
     "/images/guides/default.svg";
   const ratingLabel =
     rating && rating > 0 ? `${rating.toFixed(1)} (${reviews ?? 0} reviews)` : "New";
@@ -44,16 +43,16 @@ export function GuideHero({
           className="object-cover"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-transparent" />
       </div>
 
       <div className="relative px-6 sm:px-10 lg:px-14 py-10 sm:py-16 flex flex-col justify-end text-white gap-6">
         <div className="flex flex-col sm:flex-row sm:items-end gap-5">
-          <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border-4 border-white/20 shadow-lg bg-white/10">
+          <div className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-full overflow-hidden border-4 border-white shadow-lg bg-white/10">
             <Avatar className="h-full w-full">
               <AvatarImage src={photo} alt={name} />
               <AvatarFallback className="bg-brand text-white text-xl font-semibold">
-                {name.slice(0, 1)}
+                {name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </div>

@@ -10,6 +10,9 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Select } from '@/components/ui/select';
 import type { City } from '@/lib/mock-data';
 
+const SEARCH_INPUT_HEIGHT = 'h-12';
+const SEARCH_INPUT_FONT = 'text-base';
+
 interface HeroSearchProps {
   cities: City[];
 }
@@ -17,8 +20,7 @@ interface HeroSearchProps {
 export function HeroSearch({ cities }: HeroSearchProps) {
   const router = useRouter();
   const [selectedCity, setSelectedCity] = useState('');
-  const [startDate, setStartDate] = useState<CalendarDate | null>(null);
-  const [endDate, setEndDate] = useState<CalendarDate | null>(null);
+  const [date, setDate] = useState<CalendarDate | null>(null);
   const [travelers, setTravelers] = useState('1');
   const [error, setError] = useState('');
 
@@ -31,35 +33,26 @@ export function HeroSearch({ cities }: HeroSearchProps) {
     e?.preventDefault();
     setError('');
 
-    // Validation: at least city must be selected
-    if (!selectedCity) {
-      setError('Please select a destination');
-      return;
-    }
-
-    // Build query params
     const params = new URLSearchParams();
-    if (startDate && endDate) {
-      params.set('dates', `${startDate.toString()}_${endDate.toString()}`);
-    }
-    params.set('travelers', travelers);
+    if (selectedCity) params.set('city', selectedCity);
+    if (date) params.set('date', date.toString());
+    if (travelers) params.set('travelers', travelers);
 
-    // Navigate to city page or cities listing
-    const url = `/cities/${selectedCity}${params.toString() ? `?${params.toString()}` : ''}`;
-    router.push(url);
+    const query = params.toString();
+    router.push(`/guides${query ? `?${query}` : ''}`);
   };
 
   return (
     <form onSubmit={handleSearch} className="w-full">
       <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr,1fr,1fr,0.8fr,auto] gap-4 lg:gap-5 items-end">
-          {/* City Autocomplete - Where to */}
-          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr,1.2fr,1fr,auto] gap-4 lg:gap-5 items-end">
+          {/* Where - City */}
+          <div className="space-y-2">
             <label
               htmlFor="city-search"
               className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1"
             >
-              Where to
+              Where
             </label>
             <Combobox
               options={cityOptions}
@@ -67,46 +60,27 @@ export function HeroSearch({ cities }: HeroSearchProps) {
               onChange={setSelectedCity}
               placeholder="Search destinations..."
               icon={<MapPin className="h-4 w-4" />}
+              inputClassName={SEARCH_INPUT_FONT}
             />
           </div>
 
-          {/* Start Date */}
+          {/* When - Single Date */}
           <div className="space-y-2">
             <label
-              htmlFor="start-date"
+              htmlFor="when-date"
               className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1"
             >
-              Start date
+              When
             </label>
             <DatePicker
-              id="start-date"
-              value={startDate}
-              onChange={setStartDate}
+              id="when-date"
+              value={date}
+              onChange={setDate}
               minValue={parseDate(new Date().toISOString().split('T')[0])}
               placeholderValue={parseDate(
                 new Date().toISOString().split('T')[0],
               )}
-            />
-          </div>
-
-          {/* End Date */}
-          <div className="space-y-2">
-            <label
-              htmlFor="end-date"
-              className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1"
-            >
-              End date
-            </label>
-            <DatePicker
-              id="end-date"
-              value={endDate}
-              onChange={setEndDate}
-              minValue={
-                startDate || parseDate(new Date().toISOString().split('T')[0])
-              }
-              placeholderValue={parseDate(
-                new Date().toISOString().split('T')[0],
-              )}
+              className="h-12 [&_button]:h-12 [&_button]:text-base [&_input]:text-base"
             />
           </div>
 
@@ -126,18 +100,19 @@ export function HeroSearch({ cities }: HeroSearchProps) {
                 { value: '2', label: '2 Travelers' },
                 { value: '3', label: '3 Travelers' },
                 { value: '4', label: '4 Travelers' },
+                { value: '5', label: '5 Travelers' },
               ]}
               icon={<Users className="h-4 w-4 text-slate-400" />}
-              className="h-12"
+              className={`${SEARCH_INPUT_HEIGHT} ${SEARCH_INPUT_FONT}`}
             />
           </div>
 
           {/* Search Button */}
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div className="flex items-end">
             <Button
               type="submit"
               size="lg"
-              className="w-full h-12 rounded-xl text-base font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
+              className={`w-full ${SEARCH_INPUT_HEIGHT} ${SEARCH_INPUT_FONT} rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all`}
             >
               <SearchIcon className="h-5 w-5" />
               <span className="hidden sm:inline">Search Now</span>
@@ -146,13 +121,11 @@ export function HeroSearch({ cities }: HeroSearchProps) {
           </div>
         </div>
 
-        {/* Helper Text */}
         <p className="mt-4 text-sm text-slate-500">
-          Flexible dates? Leave them blank and explore guides in your
+          Flexible dates? Leave the date blank to explore guides in your
           destination.
         </p>
 
-        {/* Error Message */}
         {error && (
           <div className="mt-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
             {error}

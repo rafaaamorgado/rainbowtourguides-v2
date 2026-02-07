@@ -9,6 +9,7 @@ import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
 } from '@/lib/supabase-browser';
+import { getBaseUrl } from '@/lib/url-helpers';
 import type { ProfileRole, Database } from '@/types/database';
 
 type SignUpFormProps = {
@@ -88,7 +89,7 @@ export function SignUpForm({ initialRole = 'traveler' }: SignUpFormProps) {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+        redirectTo: `${getBaseUrl()}/auth/callback?role=${role}`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

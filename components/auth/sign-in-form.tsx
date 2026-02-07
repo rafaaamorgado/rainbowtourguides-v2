@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -9,6 +10,7 @@ import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
 } from '@/lib/supabase-browser';
+import { getBaseUrl } from '@/lib/url-helpers';
 
 export function SignInForm() {
   const router = useRouter();
@@ -84,7 +86,7 @@ export function SignInForm() {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${getBaseUrl()}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -132,6 +134,14 @@ export function SignInForm() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
+        <p className="text-right">
+          <Link
+            className="text-sm text-primary underline"
+            href="/auth/forgot-password"
+          >
+            Forgot password?
+          </Link>
+        </p>
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button
