@@ -1,27 +1,16 @@
-import { requireRole } from "@/lib/auth-helpers";
-import { AvailabilityForm } from "@/components/guide/availability-form";
+import { AvailabilityForm } from '@/components/guide/availability-form';
+import { GuideAvailabilityCalendar } from '@/components/guide/availability-calendar';
+import { TimeOffList } from '@/components/guide/time-off-list';
+import { getGuideAvailability } from '@/lib/guide-availability';
 import {
   saveAvailabilityPattern,
   blockUnavailableDate,
   unblockUnavailableDate,
-} from "./actions";
+} from './actions';
 
 export default async function GuideAvailabilityPage() {
-  const { supabase, user } = await requireRole("guide");
-
-  // Fetch guide record with availability pattern
-  const { data: guide } = await supabase
-    .from("guides")
-    .select("availability_pattern")
-    .eq("id", user.id)
-    .single();
-
-  // Fetch unavailable dates
-  const { data: unavailableDates } = await supabase
-    .from("guide_unavailable_dates")
-    .select("id, start_date, end_date")
-    .eq("guide_id", user.id)
-    .order("start_date", { ascending: true });
+  const { availabilityPattern, unavailableDates } =
+    await getGuideAvailability();
 
   return (
     <div className="space-y-6">
@@ -32,13 +21,23 @@ export default async function GuideAvailabilityPage() {
         </p>
       </div>
 
-      <AvailabilityForm
-        initialAvailabilityPattern={(guide as any)?.availability_pattern || null}
-        initialUnavailableDates={unavailableDates || []}
-        onSaveSchedule={saveAvailabilityPattern}
-        onBlockDate={blockUnavailableDate}
-        onUnblockDate={unblockUnavailableDate}
-      />
+      <div className="grid gap-6 lg:grid-cols-[6fr_1fr] h-auto">
+        <GuideAvailabilityCalendar
+          availabilityPattern={availabilityPattern}
+          unavailableDates={unavailableDates}
+        />
+
+        <div className="space-y-4">
+          <AvailabilityForm
+            initialAvailabilityPattern={availabilityPattern}
+            initialUnavailableDates={unavailableDates}
+            onSaveSchedule={saveAvailabilityPattern}
+            onBlockDate={blockUnavailableDate}
+            onUnblockDate={unblockUnavailableDate}
+          />
+          <TimeOffList items={unavailableDates} />
+        </div>
+      </div>
     </div>
   );
 }
