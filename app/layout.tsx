@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Manrope } from 'next/font/google';
 
 import { SiteHeader } from '@/components/site-header';
 import { Providers } from './providers';
@@ -80,12 +81,18 @@ export const metadata: Metadata = {
   },
 };
 
+const manrope = Manrope({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-manrope',
+  display: 'swap',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`bg-background text-foreground`}>
+      <body className={`${manrope.variable} bg-background text-foreground`}>
         <Providers>
           {/* Noise Overlay */}
           <div className="noise-overlay" />

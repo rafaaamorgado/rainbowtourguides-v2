@@ -56,7 +56,7 @@
     @apply text-foreground antialiased;
     background-color: #fcfcfc;
     font-family:
-      var(--font-geist-sans),
+      var(--font-manrope),
       system-ui,
       -apple-system,
       BlinkMacSystemFont,
