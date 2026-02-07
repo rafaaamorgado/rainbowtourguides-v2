@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-helpers";
+import { getBaseUrl } from "@/lib/url-helpers";
 import type { GuideSettingsFormData } from "@/components/guide/settings-form";
 
 export async function updateGuideSettings(
@@ -54,7 +55,7 @@ export async function resetPasswordForGuide(
     const { supabase } = await requireRole("guide");
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/reset-password`,
+      redirectTo: `${getBaseUrl()}/auth/reset-password`,
     });
 
     if (error) {

@@ -3,7 +3,6 @@ import path from 'path';
 import { notFound } from 'next/navigation';
 import { GuideHero } from '@/components/guide/guide-hero';
 import { GuideAbout } from '@/components/guide/guide-about';
-import { GuideHighlights } from '@/components/guide/guide-highlights';
 import { GuideReviews } from '@/components/guide/guide-reviews';
 import { BookingCard } from '@/components/guide/booking-card';
 import { PublicProfileGallery } from '@/components/profile/PublicProfileGallery';
@@ -57,29 +56,6 @@ function resolveCover(slug: string, citySlug?: string | null) {
     }
   }
   return '/images/covers/default.svg';
-}
-
-function resolveHighlights(citySlug?: string | null) {
-  const base = path.join(process.cwd(), 'public', 'images', 'highlights');
-  const candidates: string[] = [];
-  if (citySlug) {
-    [1, 2, 3].forEach((i) => {
-      const jpg = path.join(base, `${citySlug}-${i}.jpg`);
-      const png = path.join(base, `${citySlug}-${i}.png`);
-      if (fs.existsSync(jpg))
-        candidates.push(`/images/highlights/${citySlug}-${i}.jpg`);
-      else if (fs.existsSync(png))
-        candidates.push(`/images/highlights/${citySlug}-${i}.png`);
-    });
-  }
-  if (candidates.length === 0) {
-    candidates.push(
-      '/images/highlights/default-1.svg',
-      '/images/highlights/default-2.svg',
-      '/images/highlights/default-3.svg',
-    );
-  }
-  return candidates;
 }
 
 function toReviews(raw: any[], guideName: string) {
@@ -217,7 +193,6 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
   const coverImage =
     guide.profile?.cover_url ||
     resolveCover(slug, guide.city?.slug || undefined);
-  const highlightImages = resolveHighlights(guide.city?.slug || undefined);
 
   // Fetch profile gallery images (public read, limit 30)
   const { data: galleryImages } = await supabase
@@ -275,8 +250,6 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
                 userName={fullName}
               />
             )}
-
-            <GuideHighlights images={highlightImages.slice(0, 3)} />
 
             <GuideReviews reviews={reviews} />
           </div>

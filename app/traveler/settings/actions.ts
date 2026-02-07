@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-helpers";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getBaseUrl } from "@/lib/url-helpers";
 import type { TravelerSettingsFormData } from "@/components/traveler/settings-form";
 
 export async function updateTravelerSettings(
@@ -49,7 +49,7 @@ export async function resetPasswordForTraveler(
 
     // Send password reset email
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/reset-password`,
+      redirectTo: `${getBaseUrl()}/auth/reset-password`,
     });
 
     if (error) {

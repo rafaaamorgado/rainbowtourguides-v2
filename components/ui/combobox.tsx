@@ -16,6 +16,7 @@ export interface ComboboxProps {
   placeholder?: string;
   icon?: React.ReactNode;
   className?: string;
+  inputClassName?: string;
   label?: string;
   ariaLabel?: string;
   ariaLabelledby?: string;
@@ -33,6 +34,7 @@ export function Combobox({
   placeholder = 'Select...',
   icon,
   className,
+  inputClassName = 'text-base',
   label,
   ariaLabel,
   ariaLabelledby,
@@ -61,7 +63,7 @@ export function Combobox({
       }}
       inputProps={{
         classNames: {
-          input: 'text-sm',
+          input: inputClassName,
           inputWrapper: cn(
             'h-12 border-slate-200 bg-white rounded-xl shadow-sm',
             'data-[hover=true]:bg-white',
