@@ -18,10 +18,10 @@ export function GuideCard({ guide }: CityGuideCardProps) {
     guide.price_6h ||
     guide.price_8h ||
     0;
+  const avatarSource = guide.avatar_url || guide.photo_url || null;
   const photo =
-    getStoragePublicUrl(guide.avatar_url || guide.photo_url || "") ||
-    guide.photo_url ||
-    "/images/guides/default.svg";
+    (avatarSource ? getStoragePublicUrl(avatarSource, "guide-photos") : null) ||
+    "/placeholder-avatar.svg";
   const ratingDisplay =
     guide.rating && guide.rating > 0 ? guide.rating.toFixed(1) : "New";
 

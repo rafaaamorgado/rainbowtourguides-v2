@@ -70,9 +70,9 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
 
     // Standardize avatar URL logic
     // Prefer avatar_url, fallback to photo_url, then placeholder
-    const avatar = guide.avatar_url ?? guide.photo_url;
-    const photo =
-      getStoragePublicUrl(avatar, 'guide-photos') || '/placeholder-avatar.svg';
+    const avatar = guide.avatar_url || guide.photo_url || null;
+    const resolvedUrl = avatar ? getStoragePublicUrl(avatar, 'guide-photos') : null;
+    const photo = resolvedUrl || '/placeholder-avatar.svg';
 
     // Handle price display logic
     // Some sources provide price_4h (number), others provide hourly_rate (string)

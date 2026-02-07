@@ -370,9 +370,7 @@ export async function getGuidesWithMeta(
     cityId = (city as any)?.id;
   }
 
-  // Build query
-  // NOTE: Removed profile JOIN to avoid RLS infinite recursion error
-  // Profile data will need to be fetched separately if needed
+  // Build query with profile and city joins
   let query = supabase.from('guides').select(
     `
       id,
@@ -403,6 +401,7 @@ export async function getGuidesWithMeta(
         id,
         full_name,
         avatar_url,
+        cover_url,
         languages
       )
     `,
@@ -490,7 +489,7 @@ export async function getGuidesWithMeta(
 
     return adaptGuideFromDB(
       guide,
-      null, // profile removed to avoid RLS recursion
+      guide.profile as any, // profile join is included in the query
       guide.city as any, // city already contains nested country
       rating,
       reviewCount,
