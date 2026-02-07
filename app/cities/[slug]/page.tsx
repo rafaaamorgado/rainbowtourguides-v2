@@ -1,28 +1,12 @@
-import fs from "fs";
-import path from "path";
 import { notFound } from "next/navigation";
 import { CityHero } from "@/components/city/city-hero";
 import { CityFilters } from "@/components/city/city-filters";
 import { getCity, getGuidesWithMeta } from "@/lib/data-service";
 import { getMockCity, getMockGuides } from "@/lib/mock-data";
+import { getCityImageUrl } from "@/lib/city-images";
 
 interface CityPageProps {
   params: Promise<{ slug: string }>;
-}
-
-function resolveCityImage(slug: string) {
-  const publicDir = path.join(process.cwd(), "public", "images", "cities");
-  const candidates = [
-    path.join(publicDir, `${slug}.jpg`),
-    path.join(publicDir, `${slug}.png`),
-    path.join(publicDir, `${slug}.svg`),
-  ];
-
-  const found = candidates.find((filePath) => fs.existsSync(filePath));
-  if (found) {
-    return `/images/cities/${path.basename(found)}`;
-  }
-  return "/images/cities/default.svg";
 }
 
 export default async function CityPage({ params }: CityPageProps) {
@@ -43,7 +27,8 @@ export default async function CityPage({ params }: CityPageProps) {
       ? guidesData.filter((g) => g.city_id === city.id)
       : getMockGuides(slug);
 
-  const heroImage = resolveCityImage(slug);
+  // Prefer DB hero_image_url (Cloudinary), fallback to local SVG map
+  const heroImage = getCityImageUrl(slug, city.image_url);
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -53,6 +38,9 @@ export default async function CityPage({ params }: CityPageProps) {
           country={city.country_name}
           guideCount={guides.length}
           imageSrc={heroImage}
+          attribution={city.hero_image_attribution}
+          attributionUrl={city.hero_image_attribution_url}
+          imageSource={city.hero_image_source}
         />
 
         <CityFilters

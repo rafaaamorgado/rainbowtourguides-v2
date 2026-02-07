@@ -38,6 +38,13 @@ type CitiesTable = {
     is_active: boolean;
     is_featured: boolean;
     hero_image_url: string | null;
+    hero_image_path: string | null;
+    hero_image_backup_url: string | null;
+    hero_image_source: string | null;
+    hero_image_attribution: string | null;
+    hero_image_attribution_url: string | null;
+    hero_image_license: string | null;
+    hero_image_updated_at: string | null;
     country_code: string | null;
     country_name: string | null;
     created_at: string;
@@ -51,6 +58,13 @@ type CitiesTable = {
     is_active?: boolean;
     is_featured?: boolean;
     hero_image_url?: string | null;
+    hero_image_path?: string | null;
+    hero_image_backup_url?: string | null;
+    hero_image_source?: string | null;
+    hero_image_attribution?: string | null;
+    hero_image_attribution_url?: string | null;
+    hero_image_license?: string | null;
+    hero_image_updated_at?: string | null;
     country_code?: string | null;
     country_name?: string | null;
     created_at?: string;

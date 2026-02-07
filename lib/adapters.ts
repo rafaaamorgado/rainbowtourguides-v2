@@ -100,16 +100,26 @@ export function adaptCityFromDB(
   countryRow: CountryRow | null,
   guideCount: number,
 ): City {
+  // Cast to access columns that exist in DB but may not be in the TS type yet
+  const row = cityRow as CityRow & {
+    hero_image_attribution?: string | null;
+    hero_image_attribution_url?: string | null;
+    hero_image_source?: string | null;
+  };
+
   return {
-    id: cityRow.id,
-    slug: cityRow.slug,
-    name: cityRow.name,
-    country_id: cityRow.country_id,
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    country_id: row.country_id,
     country_name: countryRow?.name || '', // ⚠️ need to join with countries
     // TODO: add description field to cities table
     description: '',
-    image_url: cityRow.hero_image_url || '',
+    image_url: row.hero_image_url || '',
     guide_count: guideCount,
+    hero_image_attribution: row.hero_image_attribution ?? null,
+    hero_image_attribution_url: row.hero_image_attribution_url ?? null,
+    hero_image_source: row.hero_image_source ?? null,
   };
 }
 

@@ -37,6 +37,12 @@ export interface City {
   description: string;
   image_url: string;
   guide_count: number;
+  /** Photographer name (e.g. from Unsplash) */
+  hero_image_attribution?: string | null;
+  /** Link to photographer profile */
+  hero_image_attribution_url?: string | null;
+  /** Image source label (e.g. "Unsplash") */
+  hero_image_source?: string | null;
 }
 
 export interface Guide {

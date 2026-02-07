@@ -8,9 +8,23 @@ interface CityHeroProps {
   country?: string;
   guideCount: number;
   imageSrc: string;
+  /** Photographer name (e.g. from Unsplash) */
+  attribution?: string | null;
+  /** Link to photographer profile */
+  attributionUrl?: string | null;
+  /** Image source (e.g. "Unsplash") */
+  imageSource?: string | null;
 }
 
-export function CityHero({ name, country, guideCount, imageSrc }: CityHeroProps) {
+export function CityHero({
+  name,
+  country,
+  guideCount,
+  imageSrc,
+  attribution,
+  attributionUrl,
+  imageSource,
+}: CityHeroProps) {
   const guideLabel = guideCount === 1 ? "guide" : "guides";
 
   return (
@@ -40,6 +54,39 @@ export function CityHero({ name, country, guideCount, imageSrc }: CityHeroProps)
           {guideCount} {guideLabel} available
         </p>
       </div>
+
+      {/* Unsplash attribution (required by Unsplash guidelines) */}
+      {attribution && (
+        <div className="absolute bottom-3 right-4 text-[10px] text-white/50">
+          Photo by{" "}
+          {attributionUrl ? (
+            <a
+              href={attributionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-white/70 transition-colors"
+            >
+              {attribution}
+            </a>
+          ) : (
+            attribution
+          )}
+          {imageSource && (
+            <>
+              {" "}
+              on{" "}
+              <a
+                href="https://unsplash.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white/70 transition-colors"
+              >
+                {imageSource}
+              </a>
+            </>
+          )}
+        </div>
+      )}
     </section>
   );
 }
