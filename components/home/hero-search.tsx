@@ -4,7 +4,7 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Users, Search as SearchIcon } from 'lucide-react';
 import { parseDate, type CalendarDate } from '@internationalized/date';
-import { Combobox } from '@/components/ui/combobox';
+import { CitySearchSelect } from '@/components/form/CitySearchSelect';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Select } from '@/components/ui/select';
@@ -14,6 +14,7 @@ const SEARCH_INPUT_HEIGHT = 'h-12';
 const SEARCH_INPUT_FONT = 'text-base';
 
 interface HeroSearchProps {
+  /** DB cities that have guides (for priority display in search results) */
   cities: City[];
 }
 
@@ -24,8 +25,9 @@ export function HeroSearch({ cities }: HeroSearchProps) {
   const [travelers, setTravelers] = useState('1');
   const [error, setError] = useState('');
 
-  const cityOptions = cities.map((city) => ({
-    value: city.slug,
+  // DB cities formatted for the search select (these have active guides)
+  const dbCityOptions = cities.map((city) => ({
+    value: city.name,
     label: `${city.name}, ${city.country_name}`,
   }));
 
@@ -54,10 +56,10 @@ export function HeroSearch({ cities }: HeroSearchProps) {
             >
               Where
             </label>
-            <Combobox
-              options={cityOptions}
+            <CitySearchSelect
               value={selectedCity}
               onChange={setSelectedCity}
+              dbCities={dbCityOptions}
               placeholder="Search destinations..."
               icon={<MapPin className="h-4 w-4" />}
               inputClassName={SEARCH_INPUT_FONT}

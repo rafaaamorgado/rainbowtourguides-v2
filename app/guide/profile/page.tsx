@@ -7,10 +7,10 @@ import { updateGuideProfile, updateProfileAvatar } from './actions';
 export default async function GuideProfilePage() {
   const { supabase, user, profile } = await requireRole('guide');
 
-  // Fetch guide record
-  const { data: guide } = await supabase
+  // Fetch guide record with city + country data for initial form values
+  const { data: guide } = await (supabase as any)
     .from('guides')
-    .select('*')
+    .select('*, city:cities!guides_city_id_fkey(name, country_code, country_name)')
     .eq('id', user.id)
     .single();
 
@@ -18,13 +18,6 @@ export default async function GuideProfilePage() {
   if (!guide) {
     redirect('/guide/onboarding');
   }
-
-  // Fetch cities for dropdown
-  const { data: cities } = await supabase
-    .from('cities')
-    .select('*')
-    .eq('is_active', true)
-    .order('name');
 
   // Fetch profile images for gallery
   const { data: profileImages } = await supabase
@@ -41,7 +34,8 @@ export default async function GuideProfilePage() {
         <GuideProfileForm
           profile={profile}
           guide={guide}
-          cities={cities || []}
+          initialCityName={guide.city?.name || ''}
+          initialCountryCode={guide.city?.country_code || ''}
           onSubmit={updateGuideProfile}
           onProfilePhotoUpdate={updateProfileAvatar}
         />

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { GuideOnboardingData } from '@/lib/validations/guide-onboarding';
 import {
@@ -12,47 +11,19 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { PhotoUpload } from '@/components/ui/photo-upload';
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
-import { uploadAvatar, getCurrentUserId } from '@/lib/storage-helpers';
+import { CountrySelect } from '@/components/form/CountrySelect';
+import { CitySelect } from '@/components/form/CitySelect';
+import { useStepBasicInfo } from './lib/use-step-basic-info';
 
 interface StepBasicInfoProps {
   form: UseFormReturn<GuideOnboardingData>;
 }
 
 export function StepBasicInfo({ form }: StepBasicInfoProps) {
-  const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const { avatarUrl, setAvatarUrl, handleAvatarUpload } = useStepBasicInfo(form);
 
-  useEffect(() => {
-    async function fetchCities() {
-      const supabase = createSupabaseBrowserClient();
-      if (!supabase) return;
-      const { data } = await (supabase.from('cities') as any)
-        .select('id, name')
-        .order('name');
-      if (data) setCities(data);
-    }
-    fetchCities();
-  }, []);
-
-  const handleAvatarUpload = async (file: File) => {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-      return {
-        success: false,
-        error: 'You must be logged in to upload photos',
-      };
-    }
-    return uploadAvatar(userId, file);
-  };
+  const selectedCountry = form.watch('country_code');
 
   return (
     <div className="space-y-6">
@@ -98,18 +69,37 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
 
       <FormField
         control={form.control}
-        name="city_id"
+        name="country_code"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Country</FormLabel>
+            <FormControl>
+              <CountrySelect
+                value={field.value}
+                onChange={(val) => {
+                  field.onChange(val);
+                  // Reset city when country changes
+                  form.setValue('city_name', '');
+                }}
+                placeholder="Select your country"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="city_name"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Primary City</FormLabel>
             <FormControl>
-              <Select
+              <CitySelect
+                countryCode={selectedCountry}
                 value={field.value}
                 onChange={field.onChange}
-                options={cities.map((city) => ({
-                  value: city.id,
-                  label: city.name,
-                }))}
                 placeholder="Select your city"
               />
             </FormControl>

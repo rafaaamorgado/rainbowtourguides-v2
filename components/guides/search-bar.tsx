@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, MapPin, Users } from 'lucide-react';
 import { parseDate, type CalendarDate } from '@internationalized/date';
-import { Combobox } from '@/components/ui/combobox';
+import { CitySearchSelect } from '@/components/form/CitySearchSelect';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Select } from '@/components/ui/select';
@@ -14,6 +14,7 @@ const SEARCH_INPUT_HEIGHT = 'h-12';
 const SEARCH_INPUT_FONT = 'text-base';
 
 interface GuidesSearchBarProps {
+  /** DB cities that have guides (for priority display in search results) */
   cities: City[];
 }
 
@@ -31,8 +32,9 @@ export function GuidesSearchBar({ cities }: GuidesSearchBarProps) {
   );
   const [travelers, setTravelers] = useState(travelersParam);
 
-  const cityOptions = cities.map((city) => ({
-    value: city.slug,
+  // DB cities formatted for the search select (these have active guides)
+  const dbCityOptions = cities.map((city) => ({
+    value: city.name,
     label: `${city.name}, ${city.country_name}`,
   }));
 
@@ -53,10 +55,10 @@ export function GuidesSearchBar({ cities }: GuidesSearchBarProps) {
           <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
             Where
           </label>
-          <Combobox
-            options={[{ value: '', label: 'Any city' }, ...cityOptions]}
+          <CitySearchSelect
             value={selectedCity}
             onChange={setSelectedCity}
+            dbCities={[{ value: '', label: 'Any city' }, ...dbCityOptions]}
             placeholder="Search cities"
             ariaLabel="Select city"
             icon={<MapPin className="h-4 w-4" />}

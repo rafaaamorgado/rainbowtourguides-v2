@@ -6,18 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TRAVELER_INTERESTS } from '@/lib/constants/profile-options';
+import { CountrySelect } from '@/components/form/CountrySelect';
 import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
-type Country = Database['public']['Tables']['countries']['Row'];
 
 interface TravelerProfileFormProps {
   profile: Profile;
-  countries: Country[];
   interests: string[];
   onSubmit: (
     data: TravelerProfileFormData,
@@ -36,7 +34,6 @@ export interface TravelerProfileFormData {
 
 export function TravelerProfileForm({
   profile,
-  countries,
   interests: initialInterests,
   onSubmit,
 }: TravelerProfileFormProps) {
@@ -168,13 +165,9 @@ export function TravelerProfileForm({
 
           <div className="grid gap-2">
             <Label htmlFor="country_of_origin">Country of Origin</Label>
-            <Select
+            <CountrySelect
               value={formData.country_of_origin || ''}
               onChange={(value) => handleChange('country_of_origin', value)}
-              options={countries.map((country) => ({
-                value: country.iso_code,
-                label: country.name,
-              }))}
               placeholder="Select your country"
             />
           </div>

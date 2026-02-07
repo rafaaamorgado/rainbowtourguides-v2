@@ -2,7 +2,8 @@ import { z } from "zod";
 
 export const guideOnboardingSchema = z.object({
     // Step 1: Account & Basics
-    city_id: z.string().uuid("City is required"),
+    city_name: z.string().min(1, "City is required"),
+    country_code: z.string().min(2, "Country is required"),
     display_name: z.string().min(2, "Display name must be at least 2 characters"),
     bio: z.string().min(50, "Bio should be at least 50 characters to build trust"),
 

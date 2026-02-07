@@ -7,13 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PhotoUpload } from '@/components/ui/photo-upload';
 import { CoverUploader } from '@/components/profile/CoverUploader';
@@ -24,16 +18,20 @@ import {
   CURRENCY_OPTIONS,
 } from '@/lib/constants/profile-options';
 import { Loader2, ExternalLink } from 'lucide-react';
+import { CountrySelect } from '@/components/form/CountrySelect';
+import { CitySelect } from '@/components/form/CitySelect';
 import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Guide = Database['public']['Tables']['guides']['Row'];
-type City = Database['public']['Tables']['cities']['Row'];
 
 interface GuideProfileFormProps {
   profile: Profile;
   guide: Guide;
-  cities: City[];
+  /** Initial city name from the DB (for populating the form) */
+  initialCityName: string;
+  /** Initial country ISO code from the DB (for populating the form) */
+  initialCountryCode: string;
   onSubmit: (
     data: GuideProfileFormData,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -48,7 +46,8 @@ export interface GuideProfileFormData {
   display_name: string;
   avatar_url: string | null;
   bio: string | null;
-  city_id: string;
+  city_name: string;
+  country_code: string;
   // Tour Details
   tagline: string | null;
   about: string | null;
@@ -64,7 +63,8 @@ export interface GuideProfileFormData {
 export function GuideProfileForm({
   profile,
   guide,
-  cities,
+  initialCityName,
+  initialCountryCode,
   onSubmit,
   onProfilePhotoUpdate,
 }: GuideProfileFormProps) {
@@ -72,7 +72,8 @@ export function GuideProfileForm({
     display_name: profile.full_name || '',
     avatar_url: profile.avatar_url,
     bio: guide.bio || '',
-    city_id: guide.city_id || '',
+    city_name: initialCityName || '',
+    country_code: initialCountryCode || '',
     tagline: guide.tagline || '',
     about: guide.about || '',
     themes: guide.experience_tags || [],
@@ -239,14 +240,24 @@ export function GuideProfileForm({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="city_id">City</Label>
-          <Select
-            value={formData.city_id}
-            onChange={(value) => handleChange('city_id', value)}
-            options={cities.map((city) => ({
-              value: city.id,
-              label: city.name,
-            }))}
+          <Label>Country</Label>
+          <CountrySelect
+            value={formData.country_code}
+            onChange={(value) => {
+              handleChange('country_code', value);
+              // Reset city when country changes
+              setFormData((prev) => ({ ...prev, country_code: value, city_name: '' }));
+            }}
+            placeholder="Select your country"
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label>City</Label>
+          <CitySelect
+            countryCode={formData.country_code}
+            value={formData.city_name}
+            onChange={(value) => handleChange('city_name', value)}
             placeholder="Select your city"
           />
         </div>

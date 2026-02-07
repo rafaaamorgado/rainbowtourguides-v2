@@ -120,7 +120,7 @@ export default async function GuidesPage() {
       {/* Main Content - Curated Sections */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         {/* Client-side Filtering */}
-        <FilteredView allGuides={guides} allTags={allTags} />
+        <FilteredView allGuides={guides} allTags={allTags} cities={displayCities} />
 
         {/* Top-Rated Guides */}
         <section className="space-y-6">

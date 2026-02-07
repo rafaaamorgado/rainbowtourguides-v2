@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { CityHero } from "@/components/city/city-hero";
 import { CityFilters } from "@/components/city/city-filters";
-import { getCity, getGuidesWithMeta } from "@/lib/data-service";
-import { getMockCity, getMockGuides } from "@/lib/mock-data";
+import { CityComingSoon } from "@/components/city/city-coming-soon";
+import { getCity, getGuidesWithMeta, getCities } from "@/lib/data-service";
+import { getMockCity, getMockGuides, getMockCities } from "@/lib/mock-data";
 import { getCityImageUrl } from "@/lib/city-images";
+import { formatSlug } from "@/lib/utils";
 
 interface CityPageProps {
   params: Promise<{ slug: string }>;
@@ -17,8 +19,12 @@ export default async function CityPage({ params }: CityPageProps) {
 
   const city = (await getCity(slug)) || getMockCity(slug);
 
+  // City not found in DB or mocks — show "Coming Soon" retention page
   if (!city) {
-    notFound();
+    const activeCities = (await getCities()) ?? [];
+    const suggestionCities = activeCities.length > 0 ? activeCities : getMockCities();
+
+    return <CityComingSoon cityName={formatSlug(slug)} cities={suggestionCities} />;
   }
 
   const { data: guidesData = [], error: guidesError } = await getGuidesWithMeta(slug);

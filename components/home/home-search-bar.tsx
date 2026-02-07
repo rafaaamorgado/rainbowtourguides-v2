@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Search, Users } from 'lucide-react';
 import { parseDate, type CalendarDate } from '@internationalized/date';
-import { Autocomplete } from '@/components/ui/autocomplete';
+import { CitySearchSelect } from '@/components/form/CitySearchSelect';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -23,8 +23,9 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
   const [date, setDate] = useState<CalendarDate | null>(null);
   const [travelers, setTravelers] = useState('1');
 
-  const cityOptions = cities.map((c) => ({
-    value: c.slug,
+  // DB cities formatted for the search select (these have active guides)
+  const dbCityOptions = cities.map((c) => ({
+    value: c.name,
     label: `${c.name}, ${c.country_name}`,
   }));
 
@@ -40,7 +41,6 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
     router.push(`/guides${query ? `?${query}` : ''}`);
   };
 
-  const whereLabelId = 'home-search-where';
   const whenLabelId = 'home-search-when';
   const travelersLabelId = 'home-search-travelers';
 
@@ -50,21 +50,19 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
       className="w-full rounded-2xl bg-white/90 backdrop-blur-lg shadow-2xl ring-1 ring-black/5 border border-white/70 p-4 sm:p-6 space-y-4"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr,1.2fr,1fr,auto] gap-3 sm:gap-4">
-        {/* City Autocomplete - Where */}
+        {/* City Search - Where */}
         <div className="space-y-2">
           <label
-            id={whereLabelId}
             className="text-xs font-semibold text-ink-soft uppercase tracking-wider px-1"
           >
             Where
           </label>
-          <Autocomplete
-            options={cityOptions}
+          <CitySearchSelect
             value={city}
             onChange={setCity}
+            dbCities={dbCityOptions}
             placeholder="Search cities"
-            startContent={<MapPin className="h-4 w-4 text-ink-soft" />}
-            ariaLabelledby={whereLabelId}
+            icon={<MapPin className="h-4 w-4 text-ink-soft" />}
             inputClassName={SEARCH_INPUT_FONT}
           />
         </div>

@@ -6,15 +6,17 @@ import { GuideCard } from '@/components/cards/GuideCard';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
-import type { Guide } from '@/lib/mock-data';
+import { CityComingSoon } from '@/components/city/city-coming-soon';
+import type { Guide, City } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 
 interface FilteredViewProps {
   allGuides: Guide[];
   allTags: string[];
+  cities?: City[];
 }
 
-export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
+export function FilteredView({ allGuides, allTags, cities = [] }: FilteredViewProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -42,11 +44,16 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
       );
     }
 
-    // City filter
+    // City filter - match by name (search now sends city names, not slugs)
     if (cityFilter) {
+      const filterLower = cityFilter.toLowerCase();
       result = result.filter((guide) => {
-        const citySlug = guide.city_name.toLowerCase().replace(/\s+/g, '-');
-        return citySlug.includes(cityFilter.toLowerCase());
+        const guideCityName = guide.city_name.toLowerCase();
+        const guideCitySlug = guideCityName.replace(/\s+/g, '-');
+        return (
+          guideCityName.includes(filterLower) ||
+          guideCitySlug.includes(filterLower)
+        );
       });
     }
 
@@ -145,7 +152,9 @@ export function FilteredView({ allGuides, allTags }: FilteredViewProps) {
             </Button>
           </div>
 
-          {filteredGuides.length === 0 ? (
+          {filteredGuides.length === 0 && cityFilter ? (
+            <CityComingSoon cityName={cityFilter} cities={cities} />
+          ) : filteredGuides.length === 0 ? (
             <EmptyState
               title="No guides match your filters"
               description="Try adjusting your search criteria or clearing filters to see more results."

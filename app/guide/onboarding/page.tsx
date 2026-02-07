@@ -19,6 +19,8 @@ import { StepAvailability } from '@/components/guide/onboarding/step-availabilit
 import { StepVerification } from '@/components/guide/onboarding/step-verification';
 import { Progress } from '@/components/ui/progress';
 import { Loader2 } from 'lucide-react';
+import { resolveOrCreateCity } from '@/lib/actions/resolve-city';
+import { getCountryName } from '@/components/form/lib/use-global-locations';
 
 const STEPS = [
   'Basics',
@@ -42,7 +44,8 @@ export default function GuideOnboardingPage() {
     resolver: zodResolver(guideOnboardingSchema),
     defaultValues: {
       display_name: '',
-      city_id: '',
+      city_name: '',
+      country_code: '',
       bio: '',
       lgbtq_alignment: {
         affirms_identity: false,
@@ -92,10 +95,10 @@ export default function GuideOnboardingPage() {
         console.error('❌ [Onboarding] Profile load error:', profileError);
       }
 
-      // Check if guide record exists (draft)
+      // Check if guide record exists (draft) - include city+country for reverse lookup
       const { data: guide, error: guideError } = await (supabase as any)
         .from('guides')
-        .select('*')
+        .select('*, city:cities!guides_city_id_fkey(name, country_code, country_name)')
         .eq('id', user.id)
         .single();
 
@@ -103,10 +106,15 @@ export default function GuideOnboardingPage() {
         console.log('📄 [Onboarding] Loading existing draft:', guide);
         setGuideExists(true);
 
+        // Reverse-map city_id to city_name + country_code for the form
+        const cityName = guide.city?.name || '';
+        const countryCode = guide.city?.country_code || '';
+
         // Populate form with existing data
         form.reset({
           display_name: profile?.full_name || user.email || '',
-          city_id: guide.city_id || '',
+          city_name: cityName,
+          country_code: countryCode,
           bio: guide.bio || '',
           lgbtq_alignment: guide.lgbtq_alignment || {
             affirms_identity: false,
@@ -159,8 +167,24 @@ export default function GuideOnboardingPage() {
       const supabase = createSupabaseBrowserClient();
       if (!supabase) throw new Error('Supabase client not initialized');
 
+      // Resolve city name + country code → city_id (auto-creates if needed)
+      let resolvedCityId: string | null = null;
+      if (data.city_name && data.country_code) {
+        const countryName = getCountryName(data.country_code);
+        const { cityId, error: cityError } = await resolveOrCreateCity(
+          data.city_name,
+          data.country_code,
+          countryName,
+        );
+        if (cityError) {
+          console.warn('⚠️ [Onboarding] City resolution warning:', cityError);
+        } else {
+          resolvedCityId = cityId;
+        }
+      }
+
       const guideData = {
-        city_id: data.city_id || null,
+        city_id: resolvedCityId,
         tagline: data.headline || null,
         bio: data.bio || null,
         about: data.about || null,
@@ -213,7 +237,7 @@ export default function GuideOnboardingPage() {
 
     switch (currentStep) {
       case 0:
-        fieldsToValidate = ['display_name', 'city_id', 'bio'];
+        fieldsToValidate = ['display_name', 'country_code', 'city_name', 'bio'];
         break;
       case 1:
         fieldsToValidate = ['lgbtq_alignment'];
@@ -258,6 +282,29 @@ export default function GuideOnboardingPage() {
       if (!user) throw new Error('Not authenticated');
 
       console.log('🟢 [Onboarding] User ID:', user.id);
+
+      // Ensure city is resolved before final submission
+      if (data.city_name && data.country_code) {
+        const countryName = getCountryName(data.country_code);
+        const { cityId, error: cityError } = await resolveOrCreateCity(
+          data.city_name,
+          data.country_code,
+          countryName,
+        );
+        if (cityError || !cityId) {
+          throw new Error(cityError || 'Failed to resolve city');
+        }
+
+        // Update guide with resolved city_id
+        const { error: cityUpdateError } = await (supabase as any)
+          .from('guides')
+          .update({ city_id: cityId })
+          .eq('id', user.id);
+
+        if (cityUpdateError) {
+          console.warn('⚠️ [Onboarding] City ID update warning:', cityUpdateError);
+        }
+      }
 
       // Save final data one more time
       await saveCurrentStep();

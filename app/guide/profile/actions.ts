@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-helpers";
+import { resolveOrCreateCity } from "@/lib/actions/resolve-city";
+import { Country } from "country-state-city";
 import type { GuideProfileFormData } from "@/components/guide/profile-form";
 
 /** Update only profiles.avatar_url (e.g. after profile photo upload). Revalidates guide profile and public page. */
@@ -50,8 +52,22 @@ export async function updateGuideProfile(
       return { success: false, error: "Name must be at least 2 characters" };
     }
 
-    if (!data.city_id) {
-      return { success: false, error: "Please select a city" };
+    if (!data.city_name || !data.country_code) {
+      return { success: false, error: "Please select a country and city" };
+    }
+
+    // Resolve city name + country code → city_id (auto-creates if needed)
+    const countryInfo = Country.getCountryByCode(data.country_code);
+    const countryName = countryInfo?.name || data.country_code;
+
+    const { cityId, error: cityError } = await resolveOrCreateCity(
+      data.city_name,
+      data.country_code,
+      countryName,
+    );
+
+    if (cityError || !cityId) {
+      return { success: false, error: cityError || "Failed to resolve city" };
     }
 
     // Update profiles table (shared fields)
@@ -79,7 +95,7 @@ export async function updateGuideProfile(
       .from("guides")
       .update({
         bio: data.bio?.trim() || null,
-        city_id: data.city_id,
+        city_id: cityId,
         tagline: data.tagline?.trim() || null,
         about: data.about?.trim() || null,
         experience_tags: data.themes.length > 0 ? data.themes : null,
