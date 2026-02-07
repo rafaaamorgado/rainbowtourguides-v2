@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -129,6 +130,14 @@ export function SignInForm() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
+        <p className="text-right">
+          <Link
+            className="text-sm text-primary underline"
+            href="/auth/forgot-password"
+          >
+            Forgot password?
+          </Link>
+        </p>
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button className="w-full" type="submit" disabled={isSubmitting || isOAuthLoading}>

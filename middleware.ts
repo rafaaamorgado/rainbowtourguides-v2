@@ -66,6 +66,15 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
 
     // =========================================================================
+    // 2b. EMAIL VERIFICATION GATE — Unverified users cannot access protected routes
+    // =========================================================================
+    // /auth/* (including /auth/verify-email, /auth/sign-out) is public, so we never
+    // reach this block for those paths; no need to exclude them here.
+    if (user && !user.email_confirmed_at) {
+        return NextResponse.redirect(new URL('/auth/verify-email', request.url));
+    }
+
+    // =========================================================================
     // 3. GUIDE ROUTES — /guide/*
     // =========================================================================
     if (pathname.startsWith('/guide')) {
