@@ -1,29 +1,32 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { GuideOnboardingData, guideOnboardingSchema } from "@/lib/validations/guide-onboarding";
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { StepBasicInfo } from "@/components/guide/onboarding/step-basic-info";
-import { StepAlignment } from "@/components/guide/onboarding/step-alignment";
-import { StepSpecialties } from "@/components/guide/onboarding/step-specialties";
-import { StepRates } from "@/components/guide/onboarding/step-rates";
-import { StepAvailability } from "@/components/guide/onboarding/step-availability";
-import { StepVerification } from "@/components/guide/onboarding/step-verification";
-import { Progress } from "@/components/ui/progress";
-import { Loader2 } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  GuideOnboardingData,
+  guideOnboardingSchema,
+} from '@/lib/validations/guide-onboarding';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { StepBasicInfo } from '@/components/guide/onboarding/step-basic-info';
+import { StepAlignment } from '@/components/guide/onboarding/step-alignment';
+import { StepSpecialties } from '@/components/guide/onboarding/step-specialties';
+import { StepRates } from '@/components/guide/onboarding/step-rates';
+import { StepAvailability } from '@/components/guide/onboarding/step-availability';
+import { StepVerification } from '@/components/guide/onboarding/step-verification';
+import { Progress } from '@/components/ui/progress';
+import { Loader2 } from 'lucide-react';
 
 const STEPS = [
-  "Basics",
-  "Alignment",
-  "Experience",
-  "Rates",
-  "Availability",
-  "Verification"
+  'Basics',
+  'Alignment',
+  'Experience',
+  'Rates',
+  'Availability',
+  'Verification',
 ];
 
 export default function GuideOnboardingPage() {
@@ -38,29 +41,29 @@ export default function GuideOnboardingPage() {
   const form = useForm<GuideOnboardingData>({
     resolver: zodResolver(guideOnboardingSchema),
     defaultValues: {
-      display_name: "",
-      city_id: "",
-      bio: "",
+      display_name: '',
+      city_id: '',
+      bio: '',
       lgbtq_alignment: {
         affirms_identity: false,
         agrees_conduct: false,
         no_sexual_services: false,
-        why_guiding: "",
-        expectations: "",
+        why_guiding: '',
+        expectations: '',
       },
       specialties: [],
-      languages: ["English"],
-      headline: "",
-      about: "",
+      languages: ['English'],
+      headline: '',
+      about: '',
       base_price_4h: 0,
       base_price_6h: 0,
       base_price_8h: 0,
-      currency: "USD",
-      available_days: ["monday", "tuesday", "wednesday", "thursday", "friday"],
-      typical_start_time: "09:00",
-      typical_end_time: "18:00",
+      currency: 'USD',
+      available_days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      typical_start_time: '09:00',
+      typical_end_time: '18:00',
     },
-    mode: "onChange", // Validate on change to enable Next button check
+    mode: 'onChange', // Validate on change to enable Next button check
   });
 
   // Load existing draft on mount
@@ -69,12 +72,14 @@ export default function GuideOnboardingPage() {
       const supabase = createSupabaseBrowserClient();
       if (!supabase) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       setUserId(user.id);
 
-      console.log("📄 [Onboarding] Loading user data for:", user.id);
+      console.log('📄 [Onboarding] Loading user data for:', user.id);
 
       // Load profile data
       const { data: profile, error: profileError } = await (supabase as any)
@@ -84,7 +89,7 @@ export default function GuideOnboardingPage() {
         .single();
 
       if (profileError) {
-        console.error("❌ [Onboarding] Profile load error:", profileError);
+        console.error('❌ [Onboarding] Profile load error:', profileError);
       }
 
       // Check if guide record exists (draft)
@@ -95,37 +100,43 @@ export default function GuideOnboardingPage() {
         .single();
 
       if (!guideError && guide) {
-        console.log("📄 [Onboarding] Loading existing draft:", guide);
+        console.log('📄 [Onboarding] Loading existing draft:', guide);
         setGuideExists(true);
 
         // Populate form with existing data
         form.reset({
-          display_name: profile?.full_name || user.email || "",
-          city_id: guide.city_id || "",
-          bio: guide.bio || "",
+          display_name: profile?.full_name || user.email || '',
+          city_id: guide.city_id || '',
+          bio: guide.bio || '',
           lgbtq_alignment: guide.lgbtq_alignment || {
             affirms_identity: false,
             agrees_conduct: false,
             no_sexual_services: false,
-            why_guiding: "",
-            expectations: "",
+            why_guiding: '',
+            expectations: '',
           },
           specialties: guide.experience_tags || [],
-          languages: guide.languages || ["English"],
-          headline: guide.tagline || "",
-          about: guide.about || "",
-          base_price_4h: parseFloat(guide.price_4h || "0"),
-          base_price_6h: parseFloat(guide.price_6h || "0"),
-          base_price_8h: parseFloat(guide.price_8h || "0"),
-          currency: guide.currency || "EUR",
-          available_days: guide.available_days || ["monday", "tuesday", "wednesday", "thursday", "friday"],
-          typical_start_time: guide.typical_start_time || "09:00",
-          typical_end_time: guide.typical_end_time || "18:00",
+          languages: guide.languages || ['English'],
+          headline: guide.tagline || '',
+          about: guide.about || '',
+          base_price_4h: parseFloat(guide.price_4h || '0'),
+          base_price_6h: parseFloat(guide.price_6h || '0'),
+          base_price_8h: parseFloat(guide.price_8h || '0'),
+          currency: guide.currency || 'EUR',
+          available_days: guide.available_days || [
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+          ],
+          typical_start_time: guide.typical_start_time || '09:00',
+          typical_end_time: guide.typical_end_time || '18:00',
         });
-        console.log("✅ [Onboarding] Form populated with existing data");
+        console.log('✅ [Onboarding] Form populated with existing data');
       } else {
         // No guide record yet, just set display name from profile
-        console.log("📄 [Onboarding] No existing draft, starting fresh");
+        console.log('📄 [Onboarding] No existing draft, starting fresh');
         if (profile?.full_name) {
           form.setValue('display_name', profile.full_name);
         }
@@ -142,11 +153,11 @@ export default function GuideOnboardingPage() {
     setIsSaving(true);
     const data = form.getValues();
 
-    console.log("💾 [Onboarding] Auto-saving step", currentStep, data);
+    console.log('💾 [Onboarding] Auto-saving step', currentStep, data);
 
     try {
       const supabase = createSupabaseBrowserClient();
-      if (!supabase) throw new Error("Supabase client not initialized");
+      if (!supabase) throw new Error('Supabase client not initialized');
 
       const guideData = {
         city_id: data.city_id || null,
@@ -158,7 +169,7 @@ export default function GuideOnboardingPage() {
         price_4h: data.base_price_4h?.toString() || null,
         price_6h: data.base_price_6h?.toString() || null,
         price_8h: data.base_price_8h?.toString() || null,
-        currency: data.currency || "EUR",
+        currency: data.currency || 'EUR',
         available_days: data.available_days || [],
         typical_start_time: data.typical_start_time || null,
         typical_end_time: data.typical_end_time || null,
@@ -169,7 +180,7 @@ export default function GuideOnboardingPage() {
 
       if (guideExists) {
         // Update existing record
-        console.log("💾 [Onboarding] Updating existing guide...");
+        console.log('💾 [Onboarding] Updating existing guide...');
         const { error } = await (supabase as any)
           .from('guides')
           .update(guideData)
@@ -178,7 +189,7 @@ export default function GuideOnboardingPage() {
         if (error) throw error;
       } else {
         // Create new record
-        console.log("💾 [Onboarding] Creating new guide...");
+        console.log('💾 [Onboarding] Creating new guide...');
         const { error } = await (supabase as any)
           .from('guides')
           .insert({ id: userId, ...guideData });
@@ -187,9 +198,9 @@ export default function GuideOnboardingPage() {
         setGuideExists(true);
       }
 
-      console.log("✅ [Onboarding] Auto-save successful");
+      console.log('✅ [Onboarding] Auto-save successful');
     } catch (err: any) {
-      console.error("❌ [Onboarding] Auto-save error:", err);
+      console.error('❌ [Onboarding] Auto-save error:', err);
       // Don't block progression on save error
     } finally {
       setIsSaving(false);
@@ -201,10 +212,18 @@ export default function GuideOnboardingPage() {
     let fieldsToValidate: (keyof GuideOnboardingData)[] = [];
 
     switch (currentStep) {
-      case 0: fieldsToValidate = ['display_name', 'city_id', 'bio']; break;
-      case 1: fieldsToValidate = ['lgbtq_alignment']; break;
-      case 2: fieldsToValidate = ['specialties', 'languages', 'headline', 'about']; break;
-      case 3: fieldsToValidate = ['base_price_4h', 'currency']; break;
+      case 0:
+        fieldsToValidate = ['display_name', 'city_id', 'bio'];
+        break;
+      case 1:
+        fieldsToValidate = ['lgbtq_alignment'];
+        break;
+      case 2:
+        fieldsToValidate = ['specialties', 'languages', 'headline', 'about'];
+        break;
+      case 3:
+        fieldsToValidate = ['base_price_4h', 'currency'];
+        break;
       // ... allow loose validation for optional steps or handle explicitly
     }
 
@@ -212,7 +231,7 @@ export default function GuideOnboardingPage() {
     if (isValid) {
       // Auto-save before moving to next step
       await saveCurrentStep();
-      
+
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
       window.scrollTo(0, 0);
     }
@@ -227,64 +246,68 @@ export default function GuideOnboardingPage() {
     setIsSubmitting(true);
     setError(null);
 
-    console.log("🟢 [Onboarding] Final submission with data:", data);
+    console.log('🟢 [Onboarding] Final submission with data:', data);
 
     try {
       const supabase = createSupabaseBrowserClient();
-      if (!supabase) throw new Error("Supabase client failed to initialize");
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!supabase) throw new Error('Supabase client failed to initialize');
 
-      console.log("🟢 [Onboarding] User ID:", user.id);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      console.log('🟢 [Onboarding] User ID:', user.id);
 
       // Save final data one more time
       await saveCurrentStep();
 
       // Update status from 'draft' to 'pending' (ready for admin review)
-      console.log("🟢 [Onboarding] Submitting for review...");
-      
+      console.log('🟢 [Onboarding] Submitting for review...');
+
       const { error: statusError } = await (supabase as any)
         .from('guides')
-        .update({ 
+        .update({
           status: 'pending',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
 
       if (statusError) {
-        console.error("❌ [Onboarding] Status update error:", statusError);
+        console.error('❌ [Onboarding] Status update error:', statusError);
         throw statusError;
       }
 
       // Update profile display name if provided
       if (data.display_name && data.display_name !== user.email) {
-        console.log("🟢 [Onboarding] Updating profile full_name to:", data.display_name);
-        
+        console.log(
+          '🟢 [Onboarding] Updating profile full_name to:',
+          data.display_name,
+        );
+
         const { error: profileError } = await (supabase as any)
           .from('profiles')
           .update({ full_name: data.display_name })
           .eq('id', user.id);
 
         if (profileError) {
-          console.warn("⚠️ [Onboarding] Profile update warning:", profileError);
+          console.warn('⚠️ [Onboarding] Profile update warning:', profileError);
         }
       }
 
-      console.log("✅ [Onboarding] Application submitted for review!");
-      
+      console.log('✅ [Onboarding] Application submitted for review!');
+
       // Dispatch event to update UserMenu
       window.dispatchEvent(new Event('profile-updated'));
-      
+
       // Small delay to ensure DB commit
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       router.push('/guide/dashboard');
       router.refresh();
-
     } catch (err: any) {
-      console.error("❌ [Onboarding] Error:", err);
-      setError(err.message || "Failed to submit application");
+      console.error('❌ [Onboarding] Error:', err);
+      setError(err.message || 'Failed to submit application');
     } finally {
       setIsSubmitting(false);
     }
@@ -302,7 +325,10 @@ export default function GuideOnboardingPage() {
             </div>
           )}
         </div>
-        <Progress value={((currentStep + 1) / STEPS.length) * 100} className="h-2" />
+        <Progress
+          value={((currentStep + 1) / STEPS.length) * 100}
+          className="h-2"
+        />
         <div className="text-sm text-muted-foreground text-right">
           Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep]}
         </div>
@@ -315,7 +341,6 @@ export default function GuideOnboardingPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-
           {currentStep === 0 && <StepBasicInfo form={form} />}
           {currentStep === 1 && <StepAlignment form={form} />}
           {currentStep === 2 && <StepSpecialties form={form} />}
@@ -332,7 +357,7 @@ export default function GuideOnboardingPage() {
           <div className="flex justify-between pt-6 border-t">
             <Button
               type="button"
-              variant="outline"
+              variant="bordered"
               onClick={prevStep}
               disabled={currentStep === 0 || isSubmitting || isSaving}
             >
@@ -347,7 +372,7 @@ export default function GuideOnboardingPage() {
                     Saving...
                   </>
                 ) : (
-                  "Next Step"
+                  'Next Step'
                 )}
               </Button>
             ) : (
@@ -358,7 +383,7 @@ export default function GuideOnboardingPage() {
                     Submitting...
                   </>
                 ) : (
-                  "Submit for Review"
+                  'Submit for Review'
                 )}
               </Button>
             )}

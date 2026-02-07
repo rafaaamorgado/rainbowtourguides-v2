@@ -106,7 +106,7 @@ export function AlertDialogCancel({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <Button variant="outline" onClick={onClick} className={className}>
+    <Button variant="bordered" onClick={onClick} className={className}>
       {children}
     </Button>
   );
@@ -119,7 +119,7 @@ export function AlertDialogAction({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <Button variant="default" onClick={onClick} className={className}>
+    <Button variant="solid" onClick={onClick} className={className}>
       {children}
     </Button>
   );

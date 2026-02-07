@@ -194,7 +194,7 @@ export function ChatWindow({
             }}
           />
           <Button
-            size="icon"
+            size="sm"
             onClick={handleSendMessage}
             disabled={isLoading || !newMessage.trim()}
           >

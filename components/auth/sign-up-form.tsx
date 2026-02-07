@@ -1,27 +1,27 @@
 'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
-} from "@/lib/supabase-browser";
-import { getBaseUrl } from "@/lib/url-helpers";
-import type { ProfileRole, Database } from "@/types/database";
+} from '@/lib/supabase-browser';
+import { getBaseUrl } from '@/lib/url-helpers';
+import type { ProfileRole, Database } from '@/types/database';
 
 type SignUpFormProps = {
   initialRole?: ProfileRole;
 };
 
-export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
+export function SignUpForm({ initialRole = 'traveler' }: SignUpFormProps) {
   const router = useRouter();
   const isConfigured = isSupabaseConfiguredOnClient();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOAuthLoading, setIsOAuthLoading] = useState(false);
@@ -32,7 +32,7 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
 
     const supabase = createSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase client is not configured.");
+      setError('Supabase client is not configured.');
       return;
     }
 
@@ -56,18 +56,18 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
     const userId = data.user?.id;
     if (!userId) {
       setIsSubmitting(false);
-      setError("No user returned from Supabase. Please check your email for confirmation.");
+      setError(
+        'No user returned from Supabase. Please check your email for confirmation.',
+      );
       return;
     }
 
     // Profile is created automatically by database trigger
     // verifying user creation was success is enough
 
-
     // Redirect based on role - new users go to onboarding
-    const redirectPath = initialRole === "guide"
-      ? "/guide/onboarding"
-      : "/traveler/onboarding";
+    const redirectPath =
+      initialRole === 'guide' ? '/guide/onboarding' : '/traveler/onboarding';
     router.replace(redirectPath);
     router.refresh();
   };
@@ -78,7 +78,7 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
 
     const supabase = createSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase client is not configured.");
+      setError('Supabase client is not configured.');
       setIsOAuthLoading(false);
       return;
     }
@@ -106,7 +106,8 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
   if (!isConfigured) {
     return (
       <p className="text-sm text-muted-foreground">
-        Supabase client is not configured. Check your NEXT_PUBLIC_SUPABASE_* env vars.
+        Supabase client is not configured. Check your NEXT_PUBLIC_SUPABASE_* env
+        vars.
       </p>
     );
   }
@@ -117,7 +118,12 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
         <label className="text-sm font-medium" htmlFor="name">
           Name
         </label>
-        <Input id="name" required value={name} onChange={(event) => setName(event.target.value)} />
+        <Input
+          id="name"
+          required
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="email">
@@ -145,8 +151,16 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
         />
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <Button className="w-full" type="submit" disabled={isSubmitting || isOAuthLoading}>
-        {isSubmitting ? "Creating account..." : initialRole === "guide" ? "Sign up as Guide" : "Create account"}
+      <Button
+        className="w-full"
+        type="submit"
+        disabled={isSubmitting || isOAuthLoading}
+      >
+        {isSubmitting
+          ? 'Creating account...'
+          : initialRole === 'guide'
+            ? 'Sign up as Guide'
+            : 'Create account'}
       </Button>
 
       <div className="relative">
@@ -162,7 +176,7 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
 
       <Button
         type="button"
-        variant="outline"
+        variant="bordered"
         className="w-full"
         onClick={handleGoogleSignUp}
         disabled={isSubmitting || isOAuthLoading}
@@ -185,7 +199,7 @@ export function SignUpForm({ initialRole = "traveler" }: SignUpFormProps) {
             fill="#EA4335"
           />
         </svg>
-        {isOAuthLoading ? "Redirecting..." : "Continue with Google"}
+        {isOAuthLoading ? 'Redirecting...' : 'Continue with Google'}
       </Button>
     </form>
   );

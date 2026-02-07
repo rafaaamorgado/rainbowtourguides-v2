@@ -1,23 +1,22 @@
-import type { Metadata } from "next";
-import { getCitiesWithMeta } from "@/lib/data-service";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ClientDebug } from "@/components/dev-debug";
-import { CitiesContent } from "@/app/cities/cities-content";
+import type { Metadata } from 'next';
+import { getCitiesWithMeta } from '@/lib/data-service';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ClientDebug } from '@/components/dev-debug';
+import { CitiesContent } from '@/app/cities/cities-content';
 
 export const metadata: Metadata = {
-  title: "Explore Cities - Rainbow Tour Guides",
+  title: 'Explore Cities - Rainbow Tour Guides',
   description:
-    "Discover trusted LGBTQ+ local guides in cities worldwide. Safe, authentic travel experiences in curated destinations.",
+    'Discover trusted LGBTQ+ local guides in cities worldwide. Safe, authentic travel experiences in curated destinations.',
   openGraph: {
-    title: "Explore Cities - Rainbow Tour Guides",
-    description:
-      "Discover trusted LGBTQ+ local guides in cities worldwide.",
-    type: "website",
+    title: 'Explore Cities - Rainbow Tour Guides',
+    description: 'Discover trusted LGBTQ+ local guides in cities worldwide.',
+    type: 'website',
   },
 };
 
 // Supabase usage requires dynamic rendering so cookies/env are available at runtime
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * CitiesPage - Server Component for cities listing
@@ -25,7 +24,7 @@ export const dynamic = "force-dynamic";
 export default async function CitiesPage() {
   // Fetch cities from data service
   const { data: cities, error, debug } = await getCitiesWithMeta();
-  const showDebugText = process.env.NODE_ENV !== "production";
+  const showDebugText = process.env.NODE_ENV !== 'production';
   const enableClientDebug = process.env.NODE_ENV !== 'production';
 
   if (error) {
@@ -35,20 +34,16 @@ export default async function CitiesPage() {
           <h2 className="text-2xl font-semibold text-red-700">
             Unable to load cities
           </h2>
-          <p className="text-sm text-red-700">
-            {error}
-          </p>
+          <p className="text-sm text-red-700">{error}</p>
           {showDebugText && (
             <p className="text-xs text-red-600">
-              Supabase URL present: {debug?.hasUrl ? "yes" : "no"} | Anon key present: {debug?.hasAnonKey ? "yes" : "no"}
+              Supabase URL present: {debug?.hasUrl ? 'yes' : 'no'} | Anon key
+              present: {debug?.hasAnonKey ? 'yes' : 'no'}
             </p>
           )}
         </div>
         {enableClientDebug && (
-          <ClientDebug
-            label="CitiesPageError"
-            payload={{ error, debug }}
-          />
+          <ClientDebug label="CitiesPageError" payload={{ error, debug }} />
         )}
       </div>
     );
@@ -62,7 +57,7 @@ export default async function CitiesPage() {
           title="No cities yet"
           description="We're building our network of destinations. Check back soon!"
           icon="map"
-          variant="default"
+          variant="solid"
         />
       </div>
     );

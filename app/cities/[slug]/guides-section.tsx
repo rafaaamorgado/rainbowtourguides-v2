@@ -183,7 +183,7 @@ export function GuidesSection({ guides, cityName }: GuidesSectionProps) {
             <div className="flex items-end">
               {hasActiveFilters && (
                 <Button
-                  variant="outline"
+                  variant="bordered"
                   onClick={clearFilters}
                   className="w-full"
                 >

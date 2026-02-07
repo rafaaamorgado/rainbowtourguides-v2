@@ -491,7 +491,7 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
                   <Button
                     onClick={() => setDeclineDialogOpen(true)}
                     disabled={actionLoading}
-                    variant="outline"
+                    variant="bordered"
                     className="w-full border-red-200 text-red-600 hover:bg-red-50"
                     size="lg"
                   >
@@ -500,7 +500,7 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
                   </Button>
                 </>
               ) : isMessagingEnabled(booking.status) ? (
-                <Button asChild variant="outline" className="w-full" size="lg">
+                <Button asChild variant="bordered" className="w-full" size="lg">
                   <Link href={`/guide/messages?booking=${booking.id}`}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Message Traveler

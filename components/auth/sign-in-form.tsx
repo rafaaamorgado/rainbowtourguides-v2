@@ -1,22 +1,22 @@
 'use client';
 
-import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   createSupabaseBrowserClient,
   isSupabaseConfiguredOnClient,
-} from "@/lib/supabase-browser";
-import { getBaseUrl } from "@/lib/url-helpers";
+} from '@/lib/supabase-browser';
+import { getBaseUrl } from '@/lib/url-helpers';
 
 export function SignInForm() {
   const router = useRouter();
   const isConfigured = isSupabaseConfiguredOnClient();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOAuthLoading, setIsOAuthLoading] = useState(false);
@@ -27,16 +27,18 @@ export function SignInForm() {
 
     const supabase = createSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase client is not configured.");
+      setError('Supabase client is not configured.');
       return;
     }
 
     setIsSubmitting(true);
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword(
+      {
+        email,
+        password,
+      },
+    );
 
     if (signInError) {
       setIsSubmitting(false);
@@ -46,19 +48,20 @@ export function SignInForm() {
 
     // Fetch profile to get role for redirect
     if (data.user) {
-      const { data: profile } = await supabase
+      const { data: profile } = (await supabase
         .from('profiles')
         .select('role')
         .eq('id', data.user.id)
-        .single() as { data: { role: string } | null };
+        .single()) as { data: { role: string } | null };
 
       // Redirect based on role
       const role = profile?.role;
-      const redirectPath = role === 'guide'
-        ? '/guide/dashboard'
-        : role === 'admin'
-        ? '/admin'
-        : '/traveler/dashboard';
+      const redirectPath =
+        role === 'guide'
+          ? '/guide/dashboard'
+          : role === 'admin'
+            ? '/admin'
+            : '/traveler/dashboard';
 
       // Use hard redirect to ensure session cookies are properly sent
       window.location.href = redirectPath;
@@ -74,7 +77,7 @@ export function SignInForm() {
 
     const supabase = createSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase client is not configured.");
+      setError('Supabase client is not configured.');
       setIsOAuthLoading(false);
       return;
     }
@@ -100,7 +103,8 @@ export function SignInForm() {
   if (!isConfigured) {
     return (
       <p className="text-sm text-muted-foreground">
-        Supabase client is not configured. Check your NEXT_PUBLIC_SUPABASE_* env vars.
+        Supabase client is not configured. Check your NEXT_PUBLIC_SUPABASE_* env
+        vars.
       </p>
     );
   }
@@ -140,8 +144,12 @@ export function SignInForm() {
         </p>
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <Button className="w-full" type="submit" disabled={isSubmitting || isOAuthLoading}>
-        {isSubmitting ? "Signing in..." : "Sign in"}
+      <Button
+        className="w-full"
+        type="submit"
+        disabled={isSubmitting || isOAuthLoading}
+      >
+        {isSubmitting ? 'Signing in...' : 'Sign in'}
       </Button>
 
       <div className="relative">
@@ -157,7 +165,7 @@ export function SignInForm() {
 
       <Button
         type="button"
-        variant="outline"
+        variant="bordered"
         className="w-full"
         onClick={handleGoogleSignIn}
         disabled={isSubmitting || isOAuthLoading}
@@ -180,7 +188,7 @@ export function SignInForm() {
             fill="#EA4335"
           />
         </svg>
-        {isOAuthLoading ? "Redirecting..." : "Continue with Google"}
+        {isOAuthLoading ? 'Redirecting...' : 'Continue with Google'}
       </Button>
     </form>
   );

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 
 interface GuideAboutProps {
   name: string;
@@ -9,7 +9,12 @@ interface GuideAboutProps {
   interests?: string[] | null;
 }
 
-export function GuideAbout({ name, bio, languages = [], interests = [] }: GuideAboutProps) {
+export function GuideAbout({
+  name,
+  bio,
+  languages = [],
+  interests = [],
+}: GuideAboutProps) {
   const languageList = languages ?? [];
   const interestList = interests ?? [];
 
@@ -28,7 +33,11 @@ export function GuideAbout({ name, bio, languages = [], interests = [] }: GuideA
           <h3 className="text-lg font-semibold text-ink">Languages</h3>
           <div className="flex flex-wrap gap-2">
             {languageList.map((lang) => (
-              <Badge key={lang} variant="secondary" className="rounded-full px-3 py-1">
+              <Badge
+                key={lang}
+                variant="secondary"
+                className="rounded-full px-3 py-1"
+              >
                 {lang}
               </Badge>
             ))}
@@ -41,8 +50,12 @@ export function GuideAbout({ name, bio, languages = [], interests = [] }: GuideA
           <h3 className="text-lg font-semibold text-ink">Interests</h3>
           <div className="flex flex-wrap gap-2">
             {interestList.map((tag) => (
-              <Badge key={tag} variant="outline" className="rounded-full px-3 py-1">
-                {tag.replace(/-/g, " ")}
+              <Badge
+                key={tag}
+                variant="outline"
+                className="rounded-full px-3 py-1"
+              >
+                {tag.replace(/-/g, ' ')}
               </Badge>
             ))}
           </div>

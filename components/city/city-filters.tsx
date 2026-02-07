@@ -182,13 +182,13 @@ export function CityFilters({
               title={`No verified guides yet in ${cityName}`}
               description="We're onboarding locals now. Browse all guides or explore other cities."
               icon="users"
-              variant="default"
+              variant="solid"
             />
             <div className="mt-4 flex gap-3">
               <Button asChild>
                 <Link href="/guides">View all guides</Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="bordered" asChild>
                 <Link href="/cities">Browse cities</Link>
               </Button>
             </div>
@@ -199,11 +199,11 @@ export function CityFilters({
               title="No guides match your filters"
               description="Try clearing filters or exploring nearby cities."
               icon="users"
-              variant="default"
+              variant="solid"
             />
             <div className="mt-4">
               <Button
-                variant="outline"
+                variant="bordered"
                 size="sm"
                 onClick={() => {
                   setQuery('');

@@ -1,10 +1,10 @@
-import * as React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Star, Zap } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { getStoragePublicUrl } from "@/lib/storage-helpers";
+import * as React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Star, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { getStoragePublicUrl } from '@/lib/storage-helpers';
 
 export interface GuideCardProps {
   guide: {
@@ -29,25 +29,25 @@ export interface GuideCardProps {
     instant_book?: boolean;
     currency?: string;
   };
-  variant?: "default" | "compact";
+  variant?: 'default' | 'compact';
 }
 
 /**
  * GuideCard - Premium guide card component matching Brand Style Guide V2
- * 
+ *
  * Features:
  * - Premium, minimal design with subtle pride details
  * - Smooth hover animations
  * - Verified and instant book badges
  * - Responsive and mobile-optimized
- * 
+ *
  * @example
  * <GuideCard guide={guide} />
  * <GuideCard guide={guide} variant="compact" />
  */
 export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
-  ({ guide, variant = "default" }, ref) => {
-    const isCompact = variant === "compact";
+  ({ guide, variant = 'default' }, ref) => {
+    const isCompact = variant === 'compact';
 
     // Normalize data fields that might come in different formats
     const rating = guide.rating ?? 0;
@@ -60,40 +60,43 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
 
     // Alternate tag colors for subtle visual interest
     const getTagBg = (index: number) => {
-      const colors = ["bg-pride-lilac/30", "bg-pride-mint/30", "bg-pride-lilac/30"];
+      const colors = [
+        'bg-pride-lilac/30',
+        'bg-pride-mint/30',
+        'bg-pride-lilac/30',
+      ];
       return colors[index % colors.length];
     };
 
     // Standardize avatar URL logic
     // Prefer avatar_url, fallback to photo_url, then placeholder
     const avatar = guide.avatar_url ?? guide.photo_url;
-    const photo = getStoragePublicUrl(avatar, "guide-photos") || "/placeholder-avatar.svg";
+    const photo =
+      getStoragePublicUrl(avatar, 'guide-photos') || '/placeholder-avatar.svg';
 
     // Handle price display logic
     // Some sources provide price_4h (number), others provide hourly_rate (string)
-    const price = guide.price_4h ?? Number(guide.hourly_rate ?? guide.base_price_4h ?? 0);
-    const currency = guide.currency === "EUR" ? "€" : "$"; // Simple currency logic
+    const price =
+      guide.price_4h ?? Number(guide.hourly_rate ?? guide.base_price_4h ?? 0);
+    const currency = guide.currency === 'EUR' ? '€' : '$'; // Simple currency logic
 
     // Handle Verified status
     const isVerified = guide.is_verified ?? guide.verified ?? false;
 
     // Handle taglines/bio
-    const description = guide.tagline ?? guide.bio ?? "";
+    const description = guide.tagline ?? guide.bio ?? '';
 
     // Handle slug (fallback to id)
     const href = `/guides/${guide.slug || guide.id}`;
 
     return (
       <div ref={ref}>
-        <Link
-          href={href}
-          className="block group cursor-pointer"
-        >
+        <Link href={href} className="block group cursor-pointer">
           <div
             className={cn(
-              "bg-panel-light border border-slate-200 rounded-2xl shadow-md hover:shadow-glass",
-              "transition-all duration-300 overflow-hidden",
-              "hover:-translate-y-0.5"
+              'bg-panel-light border border-slate-200 rounded-2xl shadow-md hover:shadow-glass',
+              'transition-all duration-300 overflow-hidden',
+              'hover:-translate-y-0.5',
             )}
           >
             {/* Photo Section */}
@@ -116,12 +119,12 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
             </div>
 
             {/* Content Section */}
-            <div className={cn("p-6 space-y-3", isCompact && "p-4 space-y-2")}>
+            <div className={cn('p-6 space-y-3', isCompact && 'p-4 space-y-2')}>
               {/* Name */}
               <h3
                 className={cn(
-                  "font-semibold text-ink mb-1 group-hover:text-brand transition-colors",
-                  isCompact ? "text-lg" : "text-xl"
+                  'font-semibold text-ink mb-1 group-hover:text-brand transition-colors',
+                  isCompact ? 'text-lg' : 'text-xl',
                 )}
               >
                 {guide.name}
@@ -140,10 +143,10 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
                   <Star
                     key={i}
                     className={cn(
-                      "h-4 w-4",
+                      'h-4 w-4',
                       i < Math.floor(rating)
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-slate-300"
+                        ? 'text-yellow-400 fill-yellow-400'
+                        : 'text-slate-300',
                     )}
                   />
                 ))}
@@ -167,8 +170,8 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
                       key={tag}
                       variant="outline"
                       className={cn(
-                        "text-xs px-3 py-1 rounded-full border-0 font-medium text-slate-700",
-                        getTagBg(index)
+                        'text-xs px-3 py-1 rounded-full border-0 font-medium text-slate-700',
+                        getTagBg(index),
                       )}
                     >
                       {tag}
@@ -182,7 +185,8 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
                 <div>
                   <p className="text-xs text-ink-soft mb-0.5">From</p>
                   <p className="text-lg font-semibold text-ink">
-                    {currency}{price}
+                    {currency}
+                    {price}
                   </p>
                 </div>
 
@@ -201,19 +205,19 @@ export const GuideCard = React.forwardRef<HTMLDivElement, GuideCardProps>(
         </Link>
       </div>
     );
-  }
+  },
 );
 
-GuideCard.displayName = "GuideCard";
+GuideCard.displayName = 'GuideCard';
 
 /**
  * GuideCardSkeleton - Loading skeleton for guide card
  */
 export const GuideCardSkeleton = React.forwardRef<
   HTMLDivElement,
-  { variant?: "default" | "compact" }
->(({ variant = "default" }, ref) => {
-  const isCompact = variant === "compact";
+  { variant?: 'default' | 'compact' }
+>(({ variant = 'default' }, ref) => {
+  const isCompact = variant === 'compact';
 
   return (
     <div
@@ -224,12 +228,15 @@ export const GuideCardSkeleton = React.forwardRef<
       <div className="relative aspect-square bg-slate-200 animate-pulse rounded-t-2xl" />
 
       {/* Content skeleton */}
-      <div className={cn("p-6 space-y-3", isCompact && "p-4 space-y-2")}>
+      <div className={cn('p-6 space-y-3', isCompact && 'p-4 space-y-2')}>
         <div className="h-6 w-3/4 bg-slate-200 rounded animate-pulse" />
         <div className="h-4 w-1/2 bg-slate-200 rounded animate-pulse" />
         <div className="flex gap-1 mb-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-4 w-4 bg-slate-200 rounded animate-pulse" />
+            <div
+              key={i}
+              className="h-4 w-4 bg-slate-200 rounded animate-pulse"
+            />
           ))}
         </div>
         {!isCompact && (
@@ -251,7 +258,7 @@ export const GuideCardSkeleton = React.forwardRef<
   );
 });
 
-GuideCardSkeleton.displayName = "GuideCardSkeleton";
+GuideCardSkeleton.displayName = 'GuideCardSkeleton';
 
 /**
  * GuideCardGrid - Grid container for guide cards
@@ -263,8 +270,8 @@ export const GuideCardGrid = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
-      className
+      'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6',
+      className,
     )}
     {...props}
   >
@@ -272,4 +279,4 @@ export const GuideCardGrid = React.forwardRef<
   </div>
 ));
 
-GuideCardGrid.displayName = "GuideCardGrid";
+GuideCardGrid.displayName = 'GuideCardGrid';

@@ -1,12 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 interface TravelerSettingsFormProps {
   initialData: {
@@ -15,8 +21,12 @@ interface TravelerSettingsFormProps {
     email_notifications: boolean;
     email: string;
   };
-  onSubmit: (data: TravelerSettingsFormData) => Promise<{ success: boolean; error?: string }>;
-  onPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    data: TravelerSettingsFormData,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onPasswordReset: (
+    email: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface TravelerSettingsFormData {
@@ -31,7 +41,7 @@ export function TravelerSettingsForm({
   onPasswordReset,
 }: TravelerSettingsFormProps) {
   const [formData, setFormData] = useState<TravelerSettingsFormData>({
-    full_name: initialData.full_name || "",
+    full_name: initialData.full_name || '',
     is_public: initialData.is_public ?? true,
     email_notifications: initialData.email_notifications ?? true,
   });
@@ -42,7 +52,10 @@ export function TravelerSettingsForm({
   const [success, setSuccess] = useState(false);
   const [passwordResetSuccess, setPasswordResetSuccess] = useState(false);
 
-  const handleChange = (field: keyof TravelerSettingsFormData, value: string | boolean) => {
+  const handleChange = (
+    field: keyof TravelerSettingsFormData,
+    value: string | boolean,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
     setSuccess(false);
@@ -61,10 +74,12 @@ export function TravelerSettingsForm({
         // Dispatch event to update header
         window.dispatchEvent(new Event('profile-updated'));
       } else {
-        setError(result.error || "Failed to update settings");
+        setError(result.error || 'Failed to update settings');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -80,10 +95,12 @@ export function TravelerSettingsForm({
       if (result.success) {
         setPasswordResetSuccess(true);
       } else {
-        setError(result.error || "Failed to send password reset email");
+        setError(result.error || 'Failed to send password reset email');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred',
+      );
     } finally {
       setIsResettingPassword(false);
     }
@@ -113,7 +130,9 @@ export function TravelerSettingsForm({
       <Card>
         <CardHeader>
           <CardTitle>Identity</CardTitle>
-          <CardDescription>Manage your display name and profile information.</CardDescription>
+          <CardDescription>
+            Manage your display name and profile information.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
@@ -121,7 +140,7 @@ export function TravelerSettingsForm({
             <Input
               id="full_name"
               value={formData.full_name}
-              onChange={(e) => handleChange("full_name", e.target.value)}
+              onChange={(e) => handleChange('full_name', e.target.value)}
               placeholder="Your name"
               required
             />
@@ -133,7 +152,9 @@ export function TravelerSettingsForm({
       <Card>
         <CardHeader>
           <CardTitle>Privacy</CardTitle>
-          <CardDescription>Control your profile visibility and privacy settings.</CardDescription>
+          <CardDescription>
+            Control your profile visibility and privacy settings.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -146,7 +167,7 @@ export function TravelerSettingsForm({
             <Switch
               id="is_public"
               checked={formData.is_public}
-              onCheckedChange={(checked) => handleChange("is_public", checked)}
+              onCheckedChange={(checked) => handleChange('is_public', checked)}
             />
           </div>
         </CardContent>
@@ -156,20 +177,25 @@ export function TravelerSettingsForm({
       <Card>
         <CardHeader>
           <CardTitle>Notifications</CardTitle>
-          <CardDescription>Manage your email notification preferences.</CardDescription>
+          <CardDescription>
+            Manage your email notification preferences.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="email_notifications">Email Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Receive email updates about bookings, messages, and platform news.
+                Receive email updates about bookings, messages, and platform
+                news.
               </p>
             </div>
             <Switch
               id="email_notifications"
               checked={formData.email_notifications}
-              onCheckedChange={(checked) => handleChange("email_notifications", checked)}
+              onCheckedChange={(checked) =>
+                handleChange('email_notifications', checked)
+              }
             />
           </div>
         </CardContent>
@@ -179,19 +205,22 @@ export function TravelerSettingsForm({
       <Card>
         <CardHeader>
           <CardTitle>Security</CardTitle>
-          <CardDescription>Manage your account security settings.</CardDescription>
+          <CardDescription>
+            Manage your account security settings.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Password</Label>
               <p className="text-sm text-muted-foreground">
-                Change your password by clicking the button below. A reset link will be sent to your email.
+                Change your password by clicking the button below. A reset link
+                will be sent to your email.
               </p>
             </div>
             <Button
               type="button"
-              variant="outline"
+              variant="bordered"
               onClick={handlePasswordReset}
               disabled={isResettingPassword}
             >
@@ -201,7 +230,7 @@ export function TravelerSettingsForm({
                   Sending...
                 </>
               ) : (
-                "Change Password"
+                'Change Password'
               )}
             </Button>
           </div>
@@ -217,7 +246,7 @@ export function TravelerSettingsForm({
               Saving...
             </>
           ) : (
-            "Save Changes"
+            'Save Changes'
           )}
         </Button>
       </div>

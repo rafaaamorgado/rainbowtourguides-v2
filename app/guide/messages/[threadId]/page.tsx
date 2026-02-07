@@ -47,7 +47,7 @@ export default async function GuideMessageThreadPage({ params }: PageProps) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" size="icon">
+          <Button asChild variant="ghost" size="sm">
             <Link href="/guide/messages">
               <ArrowLeft className="h-4 w-4" />
             </Link>
@@ -69,7 +69,7 @@ export default async function GuideMessageThreadPage({ params }: PageProps) {
               needs to complete payment first.
             </p>
           </div>
-          <Button asChild variant="outline">
+          <Button asChild variant="bordered">
             <Link href="/guide/bookings">View Bookings</Link>
           </Button>
         </div>
@@ -98,7 +98,7 @@ export default async function GuideMessageThreadPage({ params }: PageProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon">
+        <Button asChild variant="ghost" size="sm">
           <Link href="/guide/messages">
             <ArrowLeft className="h-4 w-4" />
           </Link>

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ErrorState } from "@/components/ui/error-state";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ErrorState } from '@/components/ui/error-state';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function GuideProfileError({
   error,
@@ -21,7 +21,7 @@ export default function GuideProfileError({
           variant="card"
         />
         <div className="pt-4">
-          <Button asChild variant="outline">
+          <Button asChild variant="bordered">
             <Link href="/guides">Browse all guides</Link>
           </Button>
         </div>

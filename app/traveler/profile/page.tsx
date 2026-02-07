@@ -41,11 +41,19 @@ export default async function TravelerProfilePage() {
       <div className="bg-white rounded-2xl border border-slate-200 p-8 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-ink">My Profile</h1>
-            <p className="text-muted-foreground">Manage your personal information and photos.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-ink">
+              My Profile
+            </h1>
+            <p className="text-muted-foreground">
+              Manage your personal information and photos.
+            </p>
           </div>
-          <Link href={`/travelers/${user.id}`} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" type="button">
+          <Link
+            href={`/travelers/${user.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="bordered" type="button">
               <Eye className="mr-2 h-4 w-4" />
               View Public Profile
             </Button>
@@ -55,17 +63,15 @@ export default async function TravelerProfilePage() {
         {/* Cover Image (full width) */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Cover Image</label>
-          <CoverUploader
-            currentCoverUrl={profile.cover_url}
-            userId={user.id}
-          />
+          <CoverUploader currentCoverUrl={profile.cover_url} userId={user.id} />
         </div>
 
         {/* Profile Photo (single source; can replace Google Avatar) */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Profile Photo</label>
           <p className="text-sm text-muted-foreground mb-2">
-            Your main photo visible to guides. You can replace a Google sign-in avatar here.
+            Your main photo visible to guides. You can replace a Google sign-in
+            avatar here.
           </p>
           <AvatarUploader
             currentAvatarUrl={profile.avatar_url}

@@ -57,7 +57,7 @@ export function BookingForm({ onSubmit, guideName }: BookingFormProps) {
         </div>
         <Button
           asChild
-          variant="outline"
+          variant="bordered"
           className="w-full border-green-300 dark:border-green-700"
         >
           <Link href="/traveler/bookings">View my bookings</Link>

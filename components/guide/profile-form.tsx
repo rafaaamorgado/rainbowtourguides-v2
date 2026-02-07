@@ -178,7 +178,7 @@ export function GuideProfileForm({
         </div>
         {guide.slug && (
           <Link href={`/guides/${guide.slug}`} target="_blank">
-            <Button variant="outline" type="button">
+            <Button variant="bordered" type="button">
               <ExternalLink className="mr-2 h-4 w-4" />
               View Public Profile
             </Button>
@@ -211,7 +211,8 @@ export function GuideProfileForm({
       <div className="space-y-2 mb-6">
         <Label className="text-sm font-medium">Profile Photo</Label>
         <p className="text-sm text-muted-foreground mb-2">
-          This is your main photo shown on your public profile and in the dashboard.
+          This is your main photo shown on your public profile and in the
+          dashboard.
         </p>
         <PhotoUpload
           variant="avatar"

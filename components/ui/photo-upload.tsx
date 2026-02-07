@@ -219,7 +219,7 @@ export function PhotoUpload({
           <div className="flex items-center gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="bordered"
               size="sm"
               disabled={disabled || isUploading}
               onClick={() => fileInputRef.current?.click()}
