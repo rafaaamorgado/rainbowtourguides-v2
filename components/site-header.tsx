@@ -16,7 +16,7 @@ export function SiteHeader() {
             alt="Rainbow Tour Guides"
             width={160}
             height={40}
-            className="h-8 w-auto sm:h-8"
+            className="h-[2.4rem] w-auto sm:h-[2.4rem]"
             priority
           />
         </Link>
