@@ -63,12 +63,10 @@ export function DatePicker({
   return (
     <HeroUIDatePicker
       id={id}
-      // @ts-expect-error - HeroUI DatePicker type compatibility with CalendarDate
       value={value}
       onChange={onChange}
       minValue={defaultMinValue}
       maxValue={maxValue}
-      // @ts-expect-error - HeroUI DatePicker type compatibility with CalendarDate
       placeholderValue={defaultPlaceholderValue}
       granularity={granularity}
       showMonthAndYearPickers={showMonthAndYearPickers}

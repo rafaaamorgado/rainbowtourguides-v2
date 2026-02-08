@@ -1,5 +1,27 @@
 import { z } from "zod";
 
+/**
+ * Validation: accepts a non-empty URL string or null/undefined.
+ * Used for optional document upload fields.
+ */
+const optionalUrl = z
+    .string()
+    .url("Must be a valid URL")
+    .nullish()
+    .or(z.literal(""));
+
+/**
+ * Validation: requires a valid URL. Used for mandatory document uploads
+ * that must be present before the guide can submit for review.
+ */
+const requiredUrl = z.string().url("Must be a valid URL").min(1, "Required");
+
+/**
+ * Validation: optional social handle / link.
+ * We accept anything non-empty; specific format varies per platform.
+ */
+const optionalSocial = z.string().nullish().or(z.literal(""));
+
 export const guideOnboardingSchema = z.object({
     // Step 1: Account & Basics
     city_name: z.string().min(1, "City is required"),
@@ -33,6 +55,30 @@ export const guideOnboardingSchema = z.object({
     available_days: z.array(z.string()).optional(),
     typical_start_time: z.string().optional(),
     typical_end_time: z.string().optional(),
+
+    // Step 6: Verification — Contact & Documents
+    phone_number: z
+        .string()
+        .min(7, "Phone number must be at least 7 characters")
+        .max(20, "Phone number is too long"),
+    id_document_url: requiredUrl,
+    proof_of_address_url: optionalUrl,
+
+    // Step 6: Verification — Social Links (all optional)
+    social_instagram: optionalSocial,
+    social_facebook: optionalSocial,
+    social_twitter: optionalSocial,
+    social_whatsapp: optionalSocial,
+    social_telegram: optionalSocial,
+    social_zalo: optionalSocial,
 });
 
 export type GuideOnboardingData = z.infer<typeof guideOnboardingSchema>;
+
+/**
+ * Partial schema for saving drafts — every top-level field is optional
+ * so guides can save progress before completing all required fields.
+ */
+export const guideOnboardingDraftSchema = guideOnboardingSchema.partial();
+
+export type GuideOnboardingDraftData = z.infer<typeof guideOnboardingDraftSchema>;

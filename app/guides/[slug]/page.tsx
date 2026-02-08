@@ -186,6 +186,40 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
     notFound();
   }
 
+  // ── Visibility gate ──────────────────────────────────────────────
+  // Non-approved guides are hidden from the public. Only the guide
+  // themselves or an admin may view a non-approved profile.
+  if (guide.status !== 'approved') {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    let isAllowed = false;
+
+    if (user) {
+      // Allow if the viewer IS the guide
+      if (user.id === guide.id) {
+        isAllowed = true;
+      } else {
+        // Allow if the viewer is an admin
+        const { data: viewerProfile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if ((viewerProfile as any)?.role === 'admin') {
+          isAllowed = true;
+        }
+      }
+    }
+
+    if (!isAllowed) {
+      notFound();
+    }
+  }
+  // ── End visibility gate ──────────────────────────────────────────
+
   const fullName = guide.profile?.full_name || 'Local Guide';
   const verified = guide.status === 'approved';
 
