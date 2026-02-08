@@ -10,6 +10,7 @@ const ALLOWED_PRESETS = [
   'avatar_preset',
   'cover_preset',
   'profile_images_preset',
+  'verification_docs_preset',
 ] as const;
 
 type UploadPreset = (typeof ALLOWED_PRESETS)[number];
@@ -41,6 +42,8 @@ function getDefaultFolder(preset: UploadPreset, userId: string): string {
       return `users/covers/${userId}`;
     case 'profile_images_preset':
       return `users/profile_images/${userId}`;
+    case 'verification_docs_preset':
+      return `users/verification_docs/${userId}`;
   }
 }
 
@@ -53,6 +56,7 @@ function isValidFolder(folder: string, userId: string): boolean {
     `users/avatars/${userId}`,
     `users/covers/${userId}`,
     `users/profile_images/${userId}`,
+    `users/verification_docs/${userId}`,
   ];
 
   return allowedPatterns.includes(folder);

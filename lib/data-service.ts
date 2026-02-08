@@ -196,12 +196,12 @@ export async function getCitiesWithMeta(): Promise<FetchResult<City>> {
     cities, // Log actual data
   );
 
-  // Count guides per city from joined rows (RLS already enforces public visibility)
+  // Count guides per city from joined rows
   const citiesWithCounts = (cities || []).map((city: any) => {
     const allGuides = city.guides || [];
-    // Support both status field (enum) and approved field (boolean)
+    // Only count guides with status 'approved'
     const approvedGuides = allGuides.filter(
-      (g: any) => g.status === 'approved' || g.approved === true,
+      (g: any) => g.status === 'approved',
     );
 
     // Database data: guides fetched from DB
@@ -271,8 +271,7 @@ export async function getCity(slug: string): Promise<City | undefined> {
     .from('guides')
     .select('*', { count: 'exact', head: true })
     .eq('city_id', cityData.id)
-    // Support both status field and approved field
-    .or('status.eq.approved,approved.eq.true');
+    .eq('status', 'approved');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return adaptCityFromDB(cityData, cityData.country as any, count || 0);
@@ -370,7 +369,7 @@ export async function getGuidesWithMeta(
     cityId = (city as any)?.id;
   }
 
-  // Build query with profile and city joins
+  // Build query with profile and city joins — PUBLIC only: approved guides
   let query = supabase.from('guides').select(
     `
       id,
@@ -406,6 +405,9 @@ export async function getGuidesWithMeta(
       )
     `,
   );
+
+  // Only show approved guides on public pages
+  query = query.eq('status', 'approved');
 
   if (cityId) {
     query = query.eq('city_id', cityId);
@@ -600,8 +602,7 @@ export async function searchGuides(query: string): Promise<Guide[]> {
       )
     `,
     )
-    // Support both status field and approved field
-    .or('status.eq.approved,approved.eq.true')
+    .eq('status', 'approved')
     .or(
       `bio.ilike.${searchTerm},headline.ilike.${searchTerm},experience_tags.cs.{${query}}`,
     );
@@ -712,8 +713,7 @@ export async function getTopGuides(limit: number = 10): Promise<Guide[]> {
       )
     `,
     )
-    // Support both status field and approved field
-    .or('status.eq.approved,approved.eq.true');
+    .eq('status', 'approved');
 
   if (error || !guides) {
     logError('SELECT', 'guides', error);

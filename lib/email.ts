@@ -1,6 +1,9 @@
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
+/** Admin notification email for new guide applications. */
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || "admin@rainbowtourguides.com";
+
 /** Verified sender for production. Override via EMAIL_FROM env var if needed. */
 const DEFAULT_EMAIL_FROM = "Rainbow Tour Guides <hello@rainbowtourguides.com>";
 
@@ -254,6 +257,159 @@ export async function sendBookingPaidEmail({
     } catch (error) {
       // Don't break the main flow if email fails
     }
+  }
+}
+
+/**
+ * Send "Welcome to the Team" email to guide after admin approval.
+ */
+export async function sendGuideApprovedEmail({
+  guideUserId,
+  guideName,
+}: {
+  guideUserId: string;
+  guideName: string;
+}): Promise<void> {
+  const email = await getUserEmail(guideUserId);
+  if (!email) return;
+
+  const client = getResendClient();
+  if (!client) return;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rainbowtourguides.com";
+
+  try {
+    await client.emails.send({
+      from: getEmailFrom(),
+      to: email,
+      subject: "Welcome to Rainbow Tour Guides!",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #16a34a;">You're Approved!</h2>
+          <p>Hi ${guideName},</p>
+          <p>Great news — your guide application has been <strong>approved</strong>! Your profile is now live on Rainbow Tour Guides, and travelers can start booking you.</p>
+          <p>Here's what you can do next:</p>
+          <ul>
+            <li>Check your <a href="${siteUrl}/guide/dashboard">Dashboard</a> for new bookings</li>
+            <li>Make sure your <a href="${siteUrl}/guide/availability">Availability</a> is up to date</li>
+            <li>Share your profile link with potential travelers</li>
+          </ul>
+          <p style="margin-top: 24px;">
+            <a href="${siteUrl}/guide/dashboard"
+               style="display: inline-block; padding: 12px 24px; background-color: #16a34a; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+              Go to Dashboard
+            </a>
+          </p>
+          <p style="margin-top: 30px; color: #666; font-size: 14px;">Welcome to the team! If you have any questions, reply to this email.</p>
+        </div>
+      `,
+    });
+  } catch {
+    // Don't break the main flow if email fails
+  }
+}
+
+/**
+ * Send "Application Update" email to guide after admin rejection.
+ */
+export async function sendGuideRejectedEmail({
+  guideUserId,
+  guideName,
+  reason,
+}: {
+  guideUserId: string;
+  guideName: string;
+  reason?: string;
+}): Promise<void> {
+  const email = await getUserEmail(guideUserId);
+  if (!email) return;
+
+  const client = getResendClient();
+  if (!client) return;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rainbowtourguides.com";
+  const reasonBlock = reason
+    ? `<div style="margin: 16px 0; padding: 12px 16px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;"><strong>Feedback:</strong> ${reason}</div>`
+    : "";
+
+  try {
+    await client.emails.send({
+      from: getEmailFrom(),
+      to: email,
+      subject: "Application Update - Rainbow Tour Guides",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Application Update</h2>
+          <p>Hi ${guideName},</p>
+          <p>Thank you for applying to be a guide on Rainbow Tour Guides. After reviewing your application, we weren't able to approve it at this time.</p>
+          ${reasonBlock}
+          <p>You're welcome to update your application and resubmit:</p>
+          <p style="margin-top: 24px;">
+            <a href="${siteUrl}/guide/onboarding"
+               style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+              Edit & Resubmit
+            </a>
+          </p>
+          <p style="margin-top: 30px; color: #666; font-size: 14px;">If you have questions, reply to this email and our team will be happy to help.</p>
+        </div>
+      `,
+    });
+  } catch {
+    // Don't break the main flow if email fails
+  }
+}
+
+/**
+ * Send notification to admin when a new guide submits their application.
+ * This is a fire-and-forget email — failures are silently ignored.
+ */
+export async function sendNewGuideApplicationEmail({
+  guideName,
+  guideEmail,
+  cityName,
+}: {
+  guideName: string;
+  guideEmail?: string;
+  cityName?: string;
+}): Promise<void> {
+  const client = getResendClient();
+  if (!client) {
+    return; // No-op if Resend not configured
+  }
+
+  const location = cityName || "an unspecified city";
+
+  try {
+    await client.emails.send({
+      from: getEmailFrom(),
+      to: ADMIN_EMAIL,
+      subject: `New Guide Application: ${guideName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>New Guide Application</h2>
+          <p>A new guide has submitted their application for review.</p>
+          <table style="border-collapse: collapse; width: 100%; margin-top: 16px;">
+            <tr>
+              <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: bold;">Name</td>
+              <td style="padding: 8px 12px; border: 1px solid #ddd;">${guideName}</td>
+            </tr>
+            ${guideEmail ? `<tr><td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: bold;">Email</td><td style="padding: 8px 12px; border: 1px solid #ddd;">${guideEmail}</td></tr>` : ""}
+            <tr>
+              <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: bold;">Location</td>
+              <td style="padding: 8px 12px; border: 1px solid #ddd;">${location}</td>
+            </tr>
+          </table>
+          <p style="margin-top: 24px;">
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://rainbowtourguides.com"}/admin/guides"
+               style="display: inline-block; padding: 12px 24px; background-color: #dc2626; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+              Review Application
+            </a>
+          </p>
+        </div>
+      `,
+    });
+  } catch (error) {
+    // Don't break the main flow if email fails
   }
 }
 

@@ -16,10 +16,12 @@ import { StepAlignment } from '@/components/guide/onboarding/step-alignment';
 import { StepSpecialties } from '@/components/guide/onboarding/step-specialties';
 import { StepRates } from '@/components/guide/onboarding/step-rates';
 import { StepAvailability } from '@/components/guide/onboarding/step-availability';
-import { StepVerification } from '@/components/guide/onboarding/step-verification';
+import { StepVerificationDocs } from '@/components/guide/onboarding/step-verification-docs';
+import { StepSocials } from '@/components/guide/onboarding/step-socials';
 import { Progress } from '@/components/ui/progress';
 import { Loader2 } from 'lucide-react';
 import { resolveOrCreateCity } from '@/lib/actions/resolve-city';
+import { notifyAdminNewGuide } from '@/lib/actions/notify-admin-new-guide';
 import { getCountryName } from '@/components/form/lib/use-global-locations';
 
 const STEPS = [
@@ -28,7 +30,8 @@ const STEPS = [
   'Experience',
   'Rates',
   'Availability',
-  'Verification',
+  'Documents',
+  'Contact & Socials',
 ];
 
 export default function GuideOnboardingPage() {
@@ -65,6 +68,17 @@ export default function GuideOnboardingPage() {
       available_days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
       typical_start_time: '09:00',
       typical_end_time: '18:00',
+      // Verification — Contact & Documents
+      phone_number: '',
+      id_document_url: '',
+      proof_of_address_url: '',
+      // Social Links
+      social_instagram: '',
+      social_facebook: '',
+      social_twitter: '',
+      social_whatsapp: '',
+      social_telegram: '',
+      social_zalo: '',
     },
     mode: 'onChange', // Validate on change to enable Next button check
   });
@@ -95,10 +109,14 @@ export default function GuideOnboardingPage() {
         console.error('❌ [Onboarding] Profile load error:', profileError);
       }
 
-      // Check if guide record exists (draft) - include city+country for reverse lookup
+      // Check if guide record exists (draft) — include city + country for reverse lookup.
+      // Join through to the countries table so we can recover country_code even
+      // when the denormalized cities.country_code column is null.
       const { data: guide, error: guideError } = await (supabase as any)
         .from('guides')
-        .select('*, city:cities!guides_city_id_fkey(name, country_code, country_name)')
+        .select(
+          '*, city:cities!guides_city_id_fkey(name, country_code, country_name, country:countries!cities_country_id_fkey(iso_code, name))',
+        )
         .eq('id', user.id)
         .single();
 
@@ -106,9 +124,14 @@ export default function GuideOnboardingPage() {
         console.log('📄 [Onboarding] Loading existing draft:', guide);
         setGuideExists(true);
 
-        // Reverse-map city_id to city_name + country_code for the form
+        // Reverse-map city_id → city_name + country_code for the form.
+        // Prefer the denormalized cities.country_code; fall back to the
+        // countries join when it's null (legacy rows).
         const cityName = guide.city?.name || '';
-        const countryCode = guide.city?.country_code || '';
+        const countryCode =
+          guide.city?.country_code ||
+          guide.city?.country?.iso_code ||
+          '';
 
         // Populate form with existing data
         form.reset({
@@ -140,6 +163,17 @@ export default function GuideOnboardingPage() {
           ],
           typical_start_time: guide.typical_start_time || '09:00',
           typical_end_time: guide.typical_end_time || '18:00',
+          // Verification documents & contact
+          phone_number: guide.phone_number || '',
+          id_document_url: guide.id_document_url || '',
+          proof_of_address_url: guide.proof_of_address_url || '',
+          // Social links
+          social_instagram: guide.social_instagram || '',
+          social_facebook: guide.social_facebook || '',
+          social_twitter: guide.social_twitter || '',
+          social_whatsapp: guide.social_whatsapp || '',
+          social_telegram: guide.social_telegram || '',
+          social_zalo: guide.social_zalo || '',
         });
         console.log('✅ [Onboarding] Form populated with existing data');
       } else {
@@ -183,8 +217,10 @@ export default function GuideOnboardingPage() {
         }
       }
 
-      const guideData = {
-        city_id: resolvedCityId,
+      // Only include city_id if we successfully resolved one;
+      // otherwise leave the existing value untouched.
+      const guideData: Record<string, any> = {
+        ...(resolvedCityId ? { city_id: resolvedCityId } : {}),
         tagline: data.headline || null,
         bio: data.bio || null,
         about: data.about || null,
@@ -198,6 +234,17 @@ export default function GuideOnboardingPage() {
         typical_start_time: data.typical_start_time || null,
         typical_end_time: data.typical_end_time || null,
         lgbtq_alignment: data.lgbtq_alignment || null,
+        // Verification documents & contact
+        phone_number: data.phone_number || null,
+        id_document_url: data.id_document_url || null,
+        proof_of_address_url: data.proof_of_address_url || null,
+        // Social links
+        social_instagram: data.social_instagram || null,
+        social_facebook: data.social_facebook || null,
+        social_twitter: data.social_twitter || null,
+        social_whatsapp: data.social_whatsapp || null,
+        social_telegram: data.social_telegram || null,
+        social_zalo: data.social_zalo || null,
         status: 'draft', // Save as draft until final submission
         approved: false,
       };
@@ -224,7 +271,17 @@ export default function GuideOnboardingPage() {
 
       console.log('✅ [Onboarding] Auto-save successful');
     } catch (err: any) {
-      console.error('❌ [Onboarding] Auto-save error:', err);
+      // Extract meaningful error info — Supabase PostgrestError objects
+      // don't stringify well with console.error alone.
+      const errMsg = err?.message || '';
+      const errDetails = err?.details || '';
+      const errHint = err?.hint || '';
+      const errCode = err?.code || '';
+      console.error(
+        '❌ [Onboarding] Auto-save error:',
+        JSON.stringify({ message: errMsg, details: errDetails, hint: errHint, code: errCode }, null, 2),
+        err,
+      );
       // Don't block progression on save error
     } finally {
       setIsSaving(false);
@@ -248,7 +305,15 @@ export default function GuideOnboardingPage() {
       case 3:
         fieldsToValidate = ['base_price_4h', 'currency'];
         break;
-      // ... allow loose validation for optional steps or handle explicitly
+      case 4:
+        // Availability — optional fields, no hard validation
+        break;
+      case 5:
+        fieldsToValidate = ['id_document_url'];
+        break;
+      case 6:
+        fieldsToValidate = ['phone_number'];
+        break;
     }
 
     const isValid = await form.trigger(fieldsToValidate);
@@ -325,6 +390,13 @@ export default function GuideOnboardingPage() {
         throw statusError;
       }
 
+      // Notify admin about new application (fire-and-forget)
+      notifyAdminNewGuide({
+        guideName: data.display_name || 'Unknown',
+        guideEmail: user.email ?? undefined,
+        cityName: data.city_name || undefined,
+      });
+
       // Update profile display name if provided
       if (data.display_name && data.display_name !== user.email) {
         console.log(
@@ -353,8 +425,9 @@ export default function GuideOnboardingPage() {
       router.push('/guide/dashboard');
       router.refresh();
     } catch (err: any) {
-      console.error('❌ [Onboarding] Error:', err);
-      setError(err.message || 'Failed to submit application');
+      const errMsg = err?.message || err?.details || JSON.stringify(err) || 'Unknown error';
+      console.error('❌ [Onboarding] Submission error:', errMsg, err);
+      setError(errMsg || 'Failed to submit application');
     } finally {
       setIsSubmitting(false);
     }
@@ -393,7 +466,8 @@ export default function GuideOnboardingPage() {
           {currentStep === 2 && <StepSpecialties form={form} />}
           {currentStep === 3 && <StepRates form={form} />}
           {currentStep === 4 && <StepAvailability form={form} />}
-          {currentStep === 5 && <StepVerification form={form} />}
+          {currentStep === 5 && <StepVerificationDocs form={form} />}
+          {currentStep === 6 && <StepSocials form={form} />}
 
           {error && (
             <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">
@@ -430,7 +504,7 @@ export default function GuideOnboardingPage() {
                     Submitting...
                   </>
                 ) : (
-                  'Submit for Review'
+                  'Submit Application'
                 )}
               </Button>
             )}

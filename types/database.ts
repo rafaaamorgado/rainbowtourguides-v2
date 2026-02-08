@@ -36,7 +36,6 @@ type CitiesTable = {
     name: string;
     slug: string;
     is_active: boolean;
-    is_featured: boolean;
     hero_image_url: string | null;
     hero_image_path: string | null;
     hero_image_backup_url: string | null;
@@ -56,7 +55,6 @@ type CitiesTable = {
     name: string;
     slug: string;
     is_active?: boolean;
-    is_featured?: boolean;
     hero_image_url?: string | null;
     hero_image_path?: string | null;
     hero_image_backup_url?: string | null;
@@ -162,6 +160,21 @@ type GuidesTable = {
     currency: string | null;
     status: GuideStatus;
     slug: string | null;
+    // Verification documents & contact
+    id_document_url: string | null;
+    proof_of_address_url: string | null;
+    phone_number: string | null;
+    // Social links
+    social_instagram: string | null;
+    social_facebook: string | null;
+    social_twitter: string | null;
+    social_whatsapp: string | null;
+    social_telegram: string | null;
+    social_zalo: string | null;
+    // Admin
+    admin_notes: string | null;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
     created_at: string;
     updated_at: string;
   };
@@ -189,6 +202,21 @@ type GuidesTable = {
     currency?: string | null;
     status?: GuideStatus;
     slug?: string | null;
+    // Verification documents & contact
+    id_document_url?: string | null;
+    proof_of_address_url?: string | null;
+    phone_number?: string | null;
+    // Social links
+    social_instagram?: string | null;
+    social_facebook?: string | null;
+    social_twitter?: string | null;
+    social_whatsapp?: string | null;
+    social_telegram?: string | null;
+    social_zalo?: string | null;
+    // Admin
+    admin_notes?: string | null;
+    reviewed_by?: string | null;
+    reviewed_at?: string | null;
     created_at?: string;
     updated_at?: string;
   };

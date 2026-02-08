@@ -19,7 +19,8 @@
 export type UploadPreset =
   | 'avatar_preset'
   | 'cover_preset'
-  | 'profile_images_preset';
+  | 'profile_images_preset'
+  | 'verification_docs_preset';
 
 /**
  * Signature response from /api/cloudinary/sign
@@ -85,6 +86,7 @@ const SIZE_LIMITS: Record<UploadPreset, number> = {
   avatar_preset: 5 * 1024 * 1024, // 5MB for avatars
   cover_preset: 10 * 1024 * 1024, // 10MB for covers
   profile_images_preset: 10 * 1024 * 1024, // 10MB for profile images
+  verification_docs_preset: 10 * 1024 * 1024, // 10MB for verification docs
 };
 
 /**
@@ -94,6 +96,7 @@ const SIZE_LIMIT_LABELS: Record<UploadPreset, string> = {
   avatar_preset: '5MB',
   cover_preset: '10MB',
   profile_images_preset: '10MB',
+  verification_docs_preset: '10MB',
 };
 
 // ============================================================================
@@ -142,6 +145,7 @@ function validatePreset(preset: string): asserts preset is UploadPreset {
     'avatar_preset',
     'cover_preset',
     'profile_images_preset',
+    'verification_docs_preset',
   ];
 
   if (!validPresets.includes(preset as UploadPreset)) {
@@ -375,4 +379,11 @@ export async function uploadCover(file: File): Promise<UploadResponse> {
  */
 export async function uploadProfileImage(file: File): Promise<UploadResponse> {
   return uploadImageSigned({ file, preset: 'profile_images_preset' });
+}
+
+/**
+ * Upload a verification document (max 10MB)
+ */
+export async function uploadVerificationDoc(file: File): Promise<UploadResponse> {
+  return uploadImageSigned({ file, preset: 'verification_docs_preset' });
 }

@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@heroui/react": "^2.7.11",
+    "@heroui/button": "^2.2.30",
+    "@heroui/dropdown": "^2.3.30",
+    "@heroui/react": "^2.8.8",
     "@heroui/theme": "^2.4.17",
+    "@heroui/toast": "^2.0.20",
     "@hookform/resolvers": "^5.2.2",
     "@internationalized/date": "^3.10.1",
     "@radix-ui/react-accordion": "^1.2.12",

@@ -75,7 +75,32 @@ export async function middleware(request: NextRequest) {
     }
 
     // =========================================================================
-    // 3. GUIDE ROUTES — /guide/*
+    // 3. ADMIN ROUTES — /admin/*
+    // =========================================================================
+    if (pathname.startsWith('/admin')) {
+        if (!user) {
+            return NextResponse.redirect(
+                new URL('/auth/sign-in?redirect=/admin', request.url)
+            );
+        }
+
+        // Single profile query
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') {
+            // Non-admins are bounced to the homepage
+            return NextResponse.redirect(new URL('/', request.url));
+        }
+
+        return response;
+    }
+
+    // =========================================================================
+    // 4. GUIDE ROUTES — /guide/*
     // =========================================================================
     if (pathname.startsWith('/guide')) {
         if (!user) {
@@ -103,7 +128,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // =========================================================================
-    // 4. TRAVELER ROUTES — /traveler/*
+    // 5. TRAVELER ROUTES — /traveler/*
     // =========================================================================
     if (pathname.startsWith('/traveler')) {
         if (!user) {
@@ -131,7 +156,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // =========================================================================
-    // 5. OTHER PROTECTED ROUTES (e.g., /account, /messages)
+    // 6. OTHER PROTECTED ROUTES (e.g., /account, /messages)
     // =========================================================================
     // These require login but not a specific role
     if (!user) {

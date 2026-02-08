@@ -21,6 +21,7 @@ export {
   uploadAvatar,
   uploadCover,
   uploadProfileImage,
+  uploadVerificationDoc,
   type UploadPreset,
   type UploadResult,
   type UploadError,
