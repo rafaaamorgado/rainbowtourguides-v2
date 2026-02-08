@@ -42,7 +42,7 @@
     "react-dom": "19.2.0",
     "react-hook-form": "^7.71.1",
     "resend": "^4.0.0",
-    "stripe": "^17.0.0",
+    "stripe": "^17.7.0",
     "swiper": "^12.1.0",
     "tailwind-merge": "^2.5.2",
     "yet-another-react-lightbox": "^3.28.0",
