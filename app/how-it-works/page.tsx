@@ -87,7 +87,7 @@ export default function HowItWorksPage() {
         </div>
 
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div className="max-w-7xl mx-auto grid gap-12 lg:grid-cols-2 lg:items-center">
             <div className="space-y-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-1.5 text-sm font-semibold text-brand shadow-sm">
                 <Sparkles className="h-4 w-4" />
@@ -121,7 +121,7 @@ export default function HowItWorksPage() {
             </div>
 
             <div className="relative">
-              <div className="relative isolate overflow-hidden rounded-[30px] border border-slate-200 shadow-2xl aspect-[5/4]">
+              <div className="relative isolate overflow-hidden rounded-[30px] border border-slate-200 shadow-2xl aspect-[4/3] sm:aspect-[16/9] lg:aspect-[5/4]">
                 <Image
                   src="/images/how-it-works/how-it-works-hero.png"
                   alt="Community hero"
@@ -129,8 +129,6 @@ export default function HowItWorksPage() {
                   className="object-cover object-center -z-10"
                   priority
                 />
-                <div className="absolute inset-0 bg-black/50" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-slate-900/10 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
                   <p className="text-xs uppercase tracking-[0.12em] text-white/80 mb-1">
                     Built for confidence

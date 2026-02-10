@@ -14,9 +14,9 @@ export function SiteHeader() {
           <Image
             src="/images/rtg-logo.png"
             alt="Rainbow Tour Guides"
-            width={160}
-            height={40}
-            className="h-[2.4rem] w-auto sm:h-[2.4rem]"
+            width={192}
+            height={48}
+            className="h-[2.88rem] w-auto sm:h-[2.88rem]"
             priority
           />
         </Link>
