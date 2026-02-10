@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  Search,
   Shield,
   Sparkles,
   CheckCircle,
@@ -12,7 +11,6 @@ import {
   DollarSign,
   Globe,
   ArrowRight,
-  type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -29,8 +27,8 @@ const TRAVELER_STEPS: {
   description: string;
   bullets: string[];
   imageSrc: string;
-  icon: LucideIcon;
-  visualGradient: string;
+  imageBadge: string;
+  imageCopy: string;
 }[] = [
   {
     step: '1',
@@ -43,8 +41,8 @@ const TRAVELER_STEPS: {
       'Read verified reviews',
     ],
     imageSrc: '/images/how-it-works/step-find.png',
-    icon: Search,
-    visualGradient: 'from-brand/95 via-brand/80 to-pink-500/90',
+    imageBadge: 'Match by vibe',
+    imageCopy: 'Choose guides by language, interests, and style before you book.',
   },
   {
     step: '2',
@@ -57,8 +55,8 @@ const TRAVELER_STEPS: {
       'Direct messaging with your guide',
     ],
     imageSrc: '/images/how-it-works/step-book.png',
-    icon: Shield,
-    visualGradient: 'from-emerald-500/90 via-teal-500/85 to-brand/80',
+    imageBadge: 'Book securely',
+    imageCopy: 'Pay safely on-platform and coordinate every detail directly.',
   },
   {
     step: '3',
@@ -71,8 +69,8 @@ const TRAVELER_STEPS: {
       'Share your experience',
     ],
     imageSrc: '/images/how-it-works/step-explore.png',
-    icon: Sparkles,
-    visualGradient: 'from-fuchsia-500/90 via-rose-500/85 to-orange-400/90',
+    imageBadge: 'Travel confidently',
+    imageCopy: 'Enjoy curated queer-friendly spots and authentic local moments.',
   },
 ];
 
@@ -163,81 +161,66 @@ export default function HowItWorksPage() {
             </p>
           </div>
 
-          <div className="space-y-8 sm:space-y-10 lg:space-y-12">
+          <div className="space-y-8 sm:space-y-10">
             {TRAVELER_STEPS.map((step, index) => {
-              const Icon = step.icon;
-              const isTextFirst = index % 2 === 0;
+              const isImageFirst = index % 2 === 0;
 
               return (
-                <div
+                <Card
                   key={step.title}
-                  className="grid gap-5 sm:gap-6 lg:gap-10 lg:grid-cols-2 lg:items-stretch"
+                  className="overflow-hidden border border-slate-200 bg-white shadow-[0_24px_60px_-42px_rgba(15,23,42,0.65)]"
                 >
-                  <Card
-                    className={`p-6 sm:p-8 bg-white border border-slate-200 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.55)] ${
-                      isTextFirst ? 'lg:order-1' : 'lg:order-2'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="h-12 w-12 rounded-2xl bg-brand text-white flex items-center justify-center font-bold text-lg shadow-md">
-                        {step.step}
-                      </div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-brand/80">
-                        Step {step.step}
-                      </p>
-                    </div>
-
-                    <div className="relative w-full aspect-[4/3] mb-6 rounded-lg overflow-hidden shadow-md">
+                  <div className="grid lg:grid-cols-2 lg:items-stretch">
+                    <div
+                      className={`relative min-h-[260px] sm:min-h-[320px] ${
+                        isImageFirst ? 'lg:order-1' : 'lg:order-2'
+                      }`}
+                    >
                       <Image
                         src={step.imageSrc}
-                        alt="Step illustration"
+                        alt={`${step.title} illustration`}
                         fill
                         className="object-cover object-center"
                       />
-                    </div>
-                    <h3 className="text-3xl sm:text-4xl font-black text-ink tracking-tight mb-4">
-                      {step.title}
-                    </h3>
-                    <p className="text-base sm:text-lg text-ink-soft leading-relaxed mb-6">
-                      {step.description}
-                    </p>
-                    <ul className="space-y-2.5 text-sm sm:text-base text-ink-soft">
-                      {step.bullets.map((bullet) => (
-                        <li key={bullet} className="flex items-start gap-2.5">
-                          <CheckCircle className="w-5 h-5 text-brand mt-0.5 flex-shrink-0" />
-                          <span>{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </Card>
-
-                  <div
-                    className={`relative rounded-3xl border border-slate-200 overflow-hidden min-h-[260px] sm:min-h-[320px] shadow-[0_22px_60px_-38px_rgba(15,23,42,0.6)] ${
-                      isTextFirst ? 'lg:order-2' : 'lg:order-1'
-                    }`}
-                  >
-                    <div
-                      className={`absolute inset-0 bg-gradient-to-br ${step.visualGradient}`}
-                    />
-                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.08]" />
-                    <div className="absolute right-6 top-4 text-[7rem] sm:text-[8rem] leading-none font-black text-white/20">
-                      {step.step}
-                    </div>
-                    <div className="relative h-full p-8 sm:p-10 flex items-end">
-                      <div className="w-full rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
-                        <div className="h-16 w-16 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-4">
-                          <Icon className="h-10 w-10" />
-                        </div>
-                        <p className="text-lg font-bold text-white">
-                          {step.title}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/45 via-slate-900/10 to-transparent" />
+                      <div className="absolute left-5 top-5 inline-flex items-center rounded-full border border-white/35 bg-slate-900/35 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                        Step {step.step}
+                      </div>
+                      <div className="absolute left-5 right-5 bottom-5 rounded-2xl border border-white/30 bg-slate-900/35 p-4 backdrop-blur-md">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80">
+                          {step.imageBadge}
                         </p>
-                        <p className="text-sm text-white/85 mt-1">
-                          {step.bullets[0]}
+                        <p className="mt-1 text-sm font-semibold leading-snug text-white sm:text-base">
+                          {step.imageCopy}
                         </p>
                       </div>
                     </div>
+
+                    <div
+                      className={`p-6 sm:p-8 lg:p-10 ${
+                        isImageFirst ? 'lg:order-2' : 'lg:order-1'
+                      }`}
+                    >
+                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand/80">
+                        Step {step.step}
+                      </p>
+                      <h3 className="mt-2 text-3xl sm:text-4xl font-black text-ink tracking-tight">
+                        {step.title}
+                      </h3>
+                      <p className="mt-4 text-base sm:text-lg text-ink-soft leading-relaxed">
+                        {step.description}
+                      </p>
+                      <ul className="mt-6 space-y-2.5 text-sm sm:text-base text-ink-soft">
+                        {step.bullets.map((bullet) => (
+                          <li key={bullet} className="flex items-start gap-2.5">
+                            <CheckCircle className="w-5 h-5 text-brand mt-0.5 flex-shrink-0" />
+                            <span>{bullet}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>

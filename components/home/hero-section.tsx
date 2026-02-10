@@ -16,10 +16,22 @@ interface HeroSectionProps {
 }
 
 const containerClasses = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8";
-const heroImages = [
-  "/images/home/carousel/hero-1.png",
-  "/images/home/carousel/hero-2.png",
-  "/images/home/carousel/hero-3.png",
+const heroSlides = [
+  {
+    src: "/images/home/carousel/hero-1.png",
+    eyebrow: "Verified Guides",
+    copy: "Identity-checked LGBTQ+ locals who prioritize comfort, safety, and authenticity.",
+  },
+  {
+    src: "/images/home/carousel/hero-2.png",
+    eyebrow: "Secure Booking",
+    copy: "Protected payments and direct messaging keep every detail clear before you arrive.",
+  },
+  {
+    src: "/images/home/carousel/hero-3.png",
+    eyebrow: "Inclusive Experiences",
+    copy: "Discover queer-friendly neighborhoods, culture, and nightlife with local confidence.",
+  },
 ];
 
 export function HeroSection({ cities, totalGuides }: HeroSectionProps) {
@@ -105,52 +117,31 @@ function HeroTop({ avatarFallbacks, cityCount, totalGuides }: HeroTopProps) {
             loop={true}
             className="absolute inset-0 w-full h-full -z-10"
           >
-            {heroImages.map((src, index) => (
+            {heroSlides.map((slide, index) => (
               <SwiperSlide
-                key={src}
+                key={slide.src}
                 className="relative"
               >
                 <Image
-                  src={src}
+                  src={slide.src}
                   fill
                   className="object-cover object-center"
                   priority={index === 0}
                   alt="Hero background"
                 />
-                <div className="absolute inset-0 bg-black/40" />
+                <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6">
+                  <div className="rounded-3xl border border-white/35 bg-slate-900/35 px-5 py-4 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.95)] backdrop-blur-md sm:px-6">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/80 sm:text-xs">
+                      {slide.eyebrow}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold leading-snug text-white sm:text-xl">
+                      {slide.copy}
+                    </p>
+                  </div>
+                </div>
               </SwiperSlide>
             ))}
           </Swiper>
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-slate-900/10 to-transparent" />
-
-          {/* Overlay content */}
-          <div className="absolute bottom-6 left-6 right-6 grid gap-3 text-white">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm text-white/80">Safety first</p>
-                <p className="font-semibold">Guides vetted by our community</p>
-              </div>
-            </div>
-            <div className="h-px bg-white/20" />
-            <div className="flex items-center justify-between text-sm text-white/80">
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
-                Real-time availability
-              </div>
-              <div className="flex items-center gap-2">
-                {[0, 1, 2].map((dot) => (
-                  <span
-                    key={dot}
-                    className="h-2 w-2 rounded-full bg-white/70"
-                    aria-hidden
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
