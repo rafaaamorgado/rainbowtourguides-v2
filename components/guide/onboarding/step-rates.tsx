@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface StepRatesProps {
@@ -35,7 +36,7 @@ export function StepRates({ form }: StepRatesProps) {
       </div>
 
       <div className="space-y-2">
-        <FormLabel>Currency</FormLabel>
+        <Label>Currency</Label>
         <Input value="Currency: USD ($)" readOnly className="bg-muted/40" />
         <p className="text-xs text-muted-foreground">
           All tours are priced and paid in USD.
