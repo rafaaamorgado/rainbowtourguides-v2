@@ -28,6 +28,7 @@ const TRAVELER_STEPS: {
   title: string;
   description: string;
   bullets: string[];
+  imageSrc: string;
   icon: LucideIcon;
   visualGradient: string;
 }[] = [
@@ -41,6 +42,7 @@ const TRAVELER_STEPS: {
       'Filter by languages and interests',
       'Read verified reviews',
     ],
+    imageSrc: '/images/how-it-works/step-find.png',
     icon: Search,
     visualGradient: 'from-brand/95 via-brand/80 to-pink-500/90',
   },
@@ -54,6 +56,7 @@ const TRAVELER_STEPS: {
       'Flexible cancellation policy',
       'Direct messaging with your guide',
     ],
+    imageSrc: '/images/how-it-works/step-book.png',
     icon: Shield,
     visualGradient: 'from-emerald-500/90 via-teal-500/85 to-brand/80',
   },
@@ -67,6 +70,7 @@ const TRAVELER_STEPS: {
       'Insider LGBTQ+ community access',
       'Share your experience',
     ],
+    imageSrc: '/images/how-it-works/step-explore.png',
     icon: Sparkles,
     visualGradient: 'from-fuchsia-500/90 via-rose-500/85 to-orange-400/90',
   },
@@ -119,14 +123,15 @@ export default function HowItWorksPage() {
             </div>
 
             <div className="relative">
-              <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-slate-900 shadow-2xl aspect-[5/4]">
+              <div className="relative isolate overflow-hidden rounded-[30px] border border-slate-200 shadow-2xl aspect-[5/4]">
                 <Image
-                  src="/images/home/hero-aurora.svg"
-                  alt="Aurora-inspired illustration for how it works"
+                  src="/images/how-it-works/how-it-works-hero.png"
+                  alt="Community hero"
                   fill
-                  className="object-cover"
+                  className="object-cover object-center -z-10"
                   priority
                 />
+                <div className="absolute inset-0 bg-black/50" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-slate-900/10 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
                   <p className="text-xs uppercase tracking-[0.12em] text-white/80 mb-1">
@@ -182,6 +187,14 @@ export default function HowItWorksPage() {
                       </p>
                     </div>
 
+                    <div className="relative w-full aspect-[4/3] mb-6 rounded-lg overflow-hidden shadow-md">
+                      <Image
+                        src={step.imageSrc}
+                        alt="Step illustration"
+                        fill
+                        className="object-cover object-center"
+                      />
+                    </div>
                     <h3 className="text-3xl sm:text-4xl font-black text-ink tracking-tight mb-4">
                       {step.title}
                     </h3>

@@ -2,9 +2,13 @@
 
 import Image from "next/image";
 import { Sparkles, ShieldCheck, MapPin } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, EffectFade } from "swiper/modules";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { HomeSearchBar } from "@/components/home/home-search-bar";
 import type { City } from "@/lib/mock-data";
+import "swiper/css";
+import "swiper/css/effect-fade";
 
 interface HeroSectionProps {
   cities: City[];
@@ -12,6 +16,11 @@ interface HeroSectionProps {
 }
 
 const containerClasses = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8";
+const heroImages = [
+  "/images/home/carousel/hero-1.png",
+  "/images/home/carousel/hero-2.png",
+  "/images/home/carousel/hero-3.png",
+];
 
 export function HeroSection({ cities, totalGuides }: HeroSectionProps) {
   const cityCount = cities.length;
@@ -87,15 +96,32 @@ function HeroTop({ avatarFallbacks, cityCount, totalGuides }: HeroTopProps) {
       </div>
 
       <div className="relative">
-        <div className="relative overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-black/5 bg-slate-900 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[5/4]">
-          <Image
-            src="/images/home/hero-aurora.svg"
-            alt="Travelers exploring a vibrant city"
-            fill
-            priority
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-slate-900/10 to-transparent" />
+        <div className="relative isolate overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-black/5 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[5/4]">
+          <Swiper
+            modules={[Autoplay, EffectFade]}
+            effect="fade"
+            speed={1500}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            loop={true}
+            className="absolute inset-0 w-full h-full -z-10"
+          >
+            {heroImages.map((src, index) => (
+              <SwiperSlide
+                key={src}
+                className="relative"
+              >
+                <Image
+                  src={src}
+                  fill
+                  className="object-cover object-center"
+                  priority={index === 0}
+                  alt="Hero background"
+                />
+                <div className="absolute inset-0 bg-black/40" />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-slate-900/10 to-transparent" />
 
           {/* Overlay content */}
           <div className="absolute bottom-6 left-6 right-6 grid gap-3 text-white">
