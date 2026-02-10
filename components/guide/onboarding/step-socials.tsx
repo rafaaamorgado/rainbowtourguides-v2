@@ -24,7 +24,8 @@ export function StepSocials({ form }: StepSocialsProps) {
         <h2 className="text-xl font-semibold">Contact & Socials</h2>
         <p className="text-sm text-muted-foreground">
           Help us verify your identity and stay in touch. Only your phone number
-          is required — social links help build trust with travelers.
+          and WhatsApp are required. Other social links help build trust with
+          travelers.
         </p>
       </div>
 
@@ -61,12 +62,12 @@ export function StepSocials({ form }: StepSocialsProps) {
         </div>
         <div className="relative flex justify-center text-xs">
           <span className="bg-white px-3 text-ink-soft">
-            Social profiles (optional)
+            Other social profiles (optional)
           </span>
         </div>
       </div>
 
-      {/* Social fields — all optional */}
+      {/* Social fields — WhatsApp required, others optional */}
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField
           control={form.control}
@@ -141,7 +142,7 @@ export function StepSocials({ form }: StepSocialsProps) {
             <FormItem>
               <FormLabel className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
-                WhatsApp
+                WhatsApp <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
                 <Input

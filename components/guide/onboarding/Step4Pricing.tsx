@@ -2,7 +2,6 @@
 
 import { DollarSign, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import {
   Card,
   CardContent,
@@ -15,19 +14,13 @@ export type Step4Data = {
   rate4h: string;
   rate6h: string;
   rate8h: string;
-  currency: string;
+  currency: 'USD';
 };
 
 type Step4PricingProps = {
   data: Step4Data;
   onChange: (data: Partial<Step4Data>) => void;
 };
-
-const CURRENCY_OPTIONS = [
-  { value: 'USD', label: 'USD ($)', symbol: '$' },
-  { value: 'EUR', label: 'EUR (€)', symbol: '€' },
-  { value: 'GBP', label: 'GBP (£)', symbol: '£' },
-];
 
 export function Step4Pricing({ data, onChange }: Step4PricingProps) {
   const calculateHourlyRate = (totalRate: string, hours: number): string => {
@@ -36,10 +29,7 @@ export function Step4Pricing({ data, onChange }: Step4PricingProps) {
     return (rate / hours).toFixed(2);
   };
 
-  const selectedCurrency = CURRENCY_OPTIONS.find(
-    (c) => c.value === data.currency,
-  );
-  const currencySymbol = selectedCurrency?.symbol || '$';
+  const currencySymbol = '$';
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -51,21 +41,13 @@ export function Step4Pricing({ data, onChange }: Step4PricingProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Currency Selection */}
+        {/* Currency */}
         <div className="space-y-2">
-          <label
-            htmlFor="currency"
-            className="text-sm font-medium text-slate-700"
-          >
-            Currency <span className="text-destructive">*</span>
+          <label htmlFor="currency" className="text-sm font-medium text-slate-700">
+            Currency
           </label>
-          <Select
-            value={data.currency}
-            onChange={(val) => onChange({ currency: val })}
-            options={CURRENCY_OPTIONS}
-            placeholder="Select currency"
-            className="h-11"
-          />
+          <Input id="currency" value="Currency: USD ($)" readOnly className="h-11 bg-slate-50" />
+          <p className="text-xs text-slate-500">All tours are priced and paid in USD.</p>
         </div>
 
         {/* Pricing Grid */}

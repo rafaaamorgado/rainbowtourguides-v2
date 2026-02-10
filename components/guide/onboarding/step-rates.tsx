@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { GuideOnboardingData } from '@/lib/validations/guide-onboarding';
 import {
@@ -10,13 +11,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface StepRatesProps {
@@ -24,6 +18,12 @@ interface StepRatesProps {
 }
 
 export function StepRates({ form }: StepRatesProps) {
+  useEffect(() => {
+    if (form.getValues('currency') !== 'USD') {
+      form.setValue('currency', 'USD');
+    }
+  }, [form]);
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -34,30 +34,13 @@ export function StepRates({ form }: StepRatesProps) {
         </p>
       </div>
 
-      <FormField
-        control={form.control}
-        name="currency"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Currency</FormLabel>
-            <FormControl>
-              <Select
-                value={field.value}
-                onChange={field.onChange}
-                options={[
-                  { value: 'USD', label: 'USD ($)' },
-                  { value: 'EUR', label: 'EUR (€)' },
-                  { value: 'GBP', label: 'GBP (£)' },
-                  { value: 'VND', label: 'VND (₫)' },
-                  { value: 'THB', label: 'THB (฿)' },
-                ]}
-                placeholder="Select currency"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="space-y-2">
+        <FormLabel>Currency</FormLabel>
+        <Input value="Currency: USD ($)" readOnly className="bg-muted/40" />
+        <p className="text-xs text-muted-foreground">
+          All tours are priced and paid in USD.
+        </p>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>

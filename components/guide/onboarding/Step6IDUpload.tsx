@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Shield } from 'lucide-react';
 import {
   Card,
@@ -16,6 +15,7 @@ import { getCurrentUserId, uploadFile } from '@/lib/storage-helpers';
 export type Step6Data = {
   idDocumentUrl: string | null;
   idDocumentType: string;
+  proofOfAddressUrl: string | null;
 };
 
 type Step6IDUploadProps = {
@@ -31,7 +31,10 @@ const ID_TYPES = [
 ];
 
 export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
-  const handleDocumentUpload = async (file: File) => {
+  const handleDocumentUpload = async (
+    file: File,
+    documentType: 'id-document' | 'proof-of-address',
+  ) => {
     const userId = await getCurrentUserId();
     if (!userId) {
       return {
@@ -40,19 +43,45 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
       };
     }
 
-    return uploadFile(file, 'guide-documents', userId, 'id-document');
+    return uploadFile(file, 'guide-documents', userId, documentType);
   };
+
+  const handleIdDocumentUpload = (file: File) =>
+    handleDocumentUpload(file, 'id-document');
+  const handleProofOfAddressUpload = (file: File) =>
+    handleDocumentUpload(file, 'proof-of-address');
 
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="text-3xl font-serif">ID Verification</CardTitle>
         <CardDescription>
-          To ensure safety and trust, we need to verify your identity. Upload a
-          government-issued ID.
+          To ensure safety and trust, we need to verify your identity. Upload
+          your government-issued ID and proof of address.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Requirements */}
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <p className="text-sm font-semibold text-blue-900 mb-2">Requirements:</p>
+          <ul className="space-y-1 text-sm text-blue-800">
+            <li>
+              <span className="font-medium">Clear photo</span> of Passport,
+              Driver&apos;s License, or National ID.
+            </li>
+            <li>
+              <span className="font-medium">Legible text</span>, no glare, and{' '}
+              <span className="font-medium">all 4 edges</span> visible.
+            </li>
+            <li>
+              <span className="font-medium">No edits</span> or filters.
+            </li>
+            <li>
+              <span className="font-medium">Max file size: 2MB</span>.
+            </li>
+          </ul>
+        </div>
+
         {/* ID Type Selection */}
         <div className="space-y-2">
           <label
@@ -82,10 +111,31 @@ export function Step6IDUpload({ data, onChange }: Step6IDUploadProps) {
             onChange={(url) =>
               onChange({ idDocumentUrl: typeof url === 'string' ? url : null })
             }
-            onUpload={handleDocumentUpload}
-            accept="image/*,application/pdf"
-            maxSizeMB={10}
-            helperText="PNG, JPG, or PDF up to 10MB. Make sure your full name and photo are clearly visible."
+            onUpload={handleIdDocumentUpload}
+            accept="image/jpeg,image/jpg,image/png,application/pdf"
+            maxSizeMB={2}
+            helperText="Supports JPG, PNG, PDF (Max 2MB)"
+          />
+        </div>
+
+        {/* Proof of Address Upload */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">
+            Proof of Address <span className="text-destructive">*</span>
+          </label>
+          <PhotoUpload
+            variant="document"
+            size="xl"
+            value={data.proofOfAddressUrl}
+            onChange={(url) =>
+              onChange({
+                proofOfAddressUrl: typeof url === 'string' ? url : null,
+              })
+            }
+            onUpload={handleProofOfAddressUpload}
+            accept="image/jpeg,image/jpg,image/png,application/pdf"
+            maxSizeMB={2}
+            helperText="Supports JPG, PNG, PDF (Max 2MB)"
           />
         </div>
 

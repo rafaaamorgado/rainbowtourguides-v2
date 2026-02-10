@@ -48,6 +48,27 @@ export function StepVerificationDocs({ form }: StepVerificationDocsProps) {
         </div>
       </div>
 
+      {/* Requirements */}
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+        <p className="text-sm font-semibold text-blue-900 mb-2">Requirements:</p>
+        <ul className="space-y-1 text-sm text-blue-800">
+          <li>
+            <span className="font-medium">Clear photo</span> of Passport,
+            Driver&apos;s License, or National ID.
+          </li>
+          <li>
+            <span className="font-medium">Legible text</span>, no glare, and{' '}
+            <span className="font-medium">all 4 edges</span> visible.
+          </li>
+          <li>
+            <span className="font-medium">No edits</span> or filters.
+          </li>
+          <li>
+            <span className="font-medium">Max file size: 2MB</span>.
+          </li>
+        </ul>
+      </div>
+
       {/* Government ID */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
@@ -73,9 +94,9 @@ export function StepVerificationDocs({ form }: StepVerificationDocsProps) {
             );
           }}
           onUpload={handleUpload}
-          accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
-          maxSizeMB={10}
-          helperText="PNG, JPG, or PDF — max 10 MB"
+          accept="image/jpeg,image/jpg,image/png,application/pdf"
+          maxSizeMB={2}
+          helperText="Supports JPG, PNG, PDF (Max 2MB)"
         />
         {form.formState.errors.id_document_url && (
           <p className="text-sm text-red-600">
@@ -89,8 +110,7 @@ export function StepVerificationDocs({ form }: StepVerificationDocsProps) {
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-ink-soft" />
           <label className="text-sm font-semibold text-ink">
-            Proof of Address{' '}
-            <span className="text-ink-soft font-normal">(optional)</span>
+            Proof of Address <span className="text-red-500">*</span>
           </label>
         </div>
         <p className="text-xs text-ink-soft">
@@ -109,10 +129,15 @@ export function StepVerificationDocs({ form }: StepVerificationDocsProps) {
             );
           }}
           onUpload={handleUpload}
-          accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
-          maxSizeMB={10}
-          helperText="PNG, JPG, or PDF — max 10 MB"
+          accept="image/jpeg,image/jpg,image/png,application/pdf"
+          maxSizeMB={2}
+          helperText="Supports JPG, PNG, PDF (Max 2MB)"
         />
+        {form.formState.errors.proof_of_address_url && (
+          <p className="text-sm text-red-600">
+            {form.formState.errors.proof_of_address_url.message}
+          </p>
+        )}
       </div>
     </div>
   );

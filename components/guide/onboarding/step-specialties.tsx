@@ -30,16 +30,27 @@ const SPECIALTIES_OPTIONS = [
 ];
 
 const LANGUAGE_OPTIONS = [
+    "Arabic",
+    "Bengali",
+    "Cantonese",
     "English",
-    "Spanish",
     "French",
-    "Portuguese",
     "German",
+    "Hindi",
+    "Indonesian",
     "Italian",
-    "Mandarin",
     "Japanese",
+    "Korean",
+    "Mandarin",
+    "Portuguese",
+    "Punjabi",
+    "Russian",
+    "Spanish",
+    "Swahili",
+    "Thai",
+    "Turkish",
+    "Urdu",
     "Vietnamese",
-    "Thai"
 ];
 
 export function StepSpecialties({ form }: StepSpecialtiesProps) {
@@ -93,7 +104,7 @@ export function StepSpecialties({ form }: StepSpecialtiesProps) {
                 render={({ field }) => (
                     <FormItem className="pt-4">
                         <Label className="text-sm font-medium">Languages</Label>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {LANGUAGE_OPTIONS.map((item) => (
                                 <div
                                     key={item}

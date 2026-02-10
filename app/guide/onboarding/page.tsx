@@ -153,7 +153,7 @@ export default function GuideOnboardingPage() {
           base_price_4h: parseFloat(guide.price_4h || '0'),
           base_price_6h: parseFloat(guide.price_6h || '0'),
           base_price_8h: parseFloat(guide.price_8h || '0'),
-          currency: guide.currency || 'EUR',
+          currency: 'USD',
           available_days: guide.available_days || [
             'monday',
             'tuesday',
@@ -229,7 +229,7 @@ export default function GuideOnboardingPage() {
         price_4h: data.base_price_4h?.toString() || null,
         price_6h: data.base_price_6h?.toString() || null,
         price_8h: data.base_price_8h?.toString() || null,
-        currency: data.currency || 'EUR',
+        currency: 'USD',
         available_days: data.available_days || [],
         typical_start_time: data.typical_start_time || null,
         typical_end_time: data.typical_end_time || null,
@@ -303,16 +303,16 @@ export default function GuideOnboardingPage() {
         fieldsToValidate = ['specialties', 'languages', 'headline', 'about'];
         break;
       case 3:
-        fieldsToValidate = ['base_price_4h', 'currency'];
+        fieldsToValidate = ['base_price_4h'];
         break;
       case 4:
         // Availability — optional fields, no hard validation
         break;
       case 5:
-        fieldsToValidate = ['id_document_url'];
+        fieldsToValidate = ['id_document_url', 'proof_of_address_url'];
         break;
       case 6:
-        fieldsToValidate = ['phone_number'];
+        fieldsToValidate = ['phone_number', 'social_whatsapp'];
         break;
     }
 

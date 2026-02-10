@@ -80,6 +80,7 @@ export function OnboardingWizard({
   const [step6Data, setStep6Data] = useState<Step6Data>({
     idDocumentUrl: null,
     idDocumentType: '',
+    proofOfAddressUrl: null,
   });
 
   // Validation for each step
@@ -111,7 +112,11 @@ export function OnboardingWizard({
           step5Data.endTime
         );
       case 6:
-        return !!(step6Data.idDocumentUrl && step6Data.idDocumentType);
+        return !!(
+          step6Data.idDocumentUrl &&
+          step6Data.idDocumentType &&
+          step6Data.proofOfAddressUrl
+        );
       case 7:
         return true;
       default:
@@ -178,6 +183,9 @@ export function OnboardingWizard({
     formData.set('id_document_type', step6Data.idDocumentType);
     if (step6Data.idDocumentUrl) {
       formData.set('id_document_url', step6Data.idDocumentUrl);
+    }
+    if (step6Data.proofOfAddressUrl) {
+      formData.set('proof_of_address_url', step6Data.proofOfAddressUrl);
     }
 
     const result = await onSubmit(formData);

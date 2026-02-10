@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rainbow Tour Guides v2 · Project Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: rgba(15, 23, 42, 0.72);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --accent: #f97316;
+      --accent-2: #22d3ee;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.15), transparent 40%),
+                  radial-gradient(circle at 80% 0%, rgba(249, 115, 22, 0.18), transparent 35%),
+                  radial-gradient(circle at 50% 100%, rgba(14, 165, 233, 0.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      padding: 40px 18px 60px;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: grid;
+      gap: 14px;
+      text-align: left;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--panel-border);
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 44px);
+      line-height: 1.1;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .grid.cols-3 {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      padding: 18px 18px 16px;
+      box-shadow: var(--card-shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 6px 0 4px;
+    }
+
+    .pill {
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    ul { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.55; }
+    li + li { margin-top: 6px; }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed var(--panel-border);
+    }
+
+    .flow-step strong { color: var(--accent); font-size: 14px; }
+
+    .flow-step p { margin: 0; color: var(--muted); line-height: 1.6; }
+
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      background: var(--accent);
+    }
+
+    .dot.alt { background: var(--accent-2); }
+
+    a { color: var(--accent-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <span class="eyebrow">Project Map</span>
+      <h1>How the Rainbow Tour Guides v2 codebase fits together</h1>
+      <p class="lede">A quick, visual guide to the key folders, how data flows, and where to look when you want to tweak the marketplace, marketing site, or backend integrations.</p>
+    </header>
+
+    <section class="grid cols-3" aria-label="Tech stack highlights">
+      <article class="card">
+        <h3>Frontend runtime</h3>
+        <div class="pill-row">
+          <span class="pill">Next.js 16 · App Router</span>
+          <span class="pill">React 19</span>
+          <span class="pill">Tailwind 3</span>
+        </div>
+        <ul>
+          <li>`app/` holds routes (marketing, traveler, guide, admin).</li>
+          <li>Layout + providers live in `app/layout.tsx` and `app/providers.tsx`.</li>
+          <li>UI primitives and shells are under `components/`.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h3>Data + services</h3>
+        <div class="pill-row">
+          <span class="pill">Supabase (auth + Postgres)</span>
+          <span class="pill">Resend (email)</span>
+          <span class="pill">Stripe (payments)</span>
+          <span class="pill">Cloudinary (media)</span>
+        </div>
+        <ul>
+          <li>`lib/data-service.ts` funnels reads/writes through Supabase.</li>
+          <li>Schema and triggers are defined in `supabase-schema.sql`.</li>
+          <li>Server/client Supabase helpers in `lib/supabase-*`.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h3>Local dev basics</h3>
+        <div class="pill-row">
+          <span class="pill">`npm install`</span>
+          <span class="pill">`npm run dev`</span>
+          <span class="pill">`.env.local` from `.env.example`</span>
+        </div>
+        <ul>
+          <li>Missing Supabase creds? UI falls back to mock data in `lib/mock-data.ts`.</li>
+          <li>Tailwind + shadcn-style components live under `components/ui`.</li>
+          <li>Static assets (logos, flags, guides) live in `public/`.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="card" style="margin-top: 18px;">
+      <h3>How data moves through the app</h3>
+      <div class="legend">
+        <span><span class="dot"></span> Server-side work</span>
+        <span><span class="dot alt"></span> Client/UI layers</span>
+      </div>
+      <div class="flow">
+        <div class="flow-step">
+          <strong>Routes</strong>
+          <p>Next.js server components in `app/` fetch page data (e.g., `app/page.tsx` pulls cities/guides).</p>
+        </div>
+        <div class="flow-step">
+          <strong>Components</strong>
+          <p>Pages compose presentational + interactive pieces from `components/` (cards, filters, hero blocks, booking forms).</p>
+        </div>
+        <div class="flow-step">
+          <strong>Data layer</strong>
+          <p>`lib/data-service.ts` acts as the single entry point for queries/mutations, logging each call via `lib/query-logger.ts`.</p>
+        </div>
+        <div class="flow-step">
+          <strong>Supabase</strong>
+          <p>`lib/supabase-server.ts`/`supabase-browser.ts` create clients that talk to tables and RPCs defined in `supabase-schema.sql`.</p>
+        </div>
+        <div class="flow-step">
+          <strong>Integrations</strong>
+          <p>Emails go through `lib/email.ts` (Resend), media through `lib/cloudinary-*`, and payments through `lib/stripe.ts`.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid cols-2" style="margin-top: 18px;" aria-label="Key folders">
+      <article class="card">
+        <h3>Key app surface areas</h3>
+        <ul>
+          <li>`app/(marketing)/page.tsx` — public landing page.</li>
+          <li>`app/traveler` — traveler dashboards and trip tools.</li>
+          <li>`app/become-a-guide` — onboarding for guides.</li>
+          <li>`app/admin` — admin views and controls.</li>
+          <li>`app/messages` & `app/booking` — messaging and booking flows.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h3>Supporting libraries</h3>
+        <ul>
+          <li>`lib/adapters.ts` — shapes Supabase rows into UI-friendly objects.</li>
+          <li>`lib/validations/` — zod schemas for forms.</li>
+          <li>`lib/hooks/` — React hooks for client interactions.</li>
+          <li>`scripts/` — maintenance utilities (e.g., data seeds, checks).</li>
+          <li>`types/` — shared TypeScript types for domain entities.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="card" style="margin-top: 18px;">
+      <h3>Environment + safety checklist</h3>
+      <ul>
+        <li>Copy `.env.example` to `.env.local` and add Supabase URL/anon key, Resend key, Stripe keys, and Cloudinary creds.</li>
+        <li>Secrets stay local; git ignores `.env.local` and other environment-specific files.</li>
+        <li>If Supabase env vars are absent, pages still render using the mock fixtures in `lib/mock-data.ts`.</li>
+      </ul>
+    </section>
+
+    <footer>
+      Built for quick onboarding: start in `app/` to adjust pages, in `components/` to tweak UI, and in `lib/` + `supabase-schema.sql` to evolve data + integrations.
+    </footer>
+  </main>
+</body>
+</html>

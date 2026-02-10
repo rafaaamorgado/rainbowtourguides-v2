@@ -1,16 +1,6 @@
 import { z } from "zod";
 
 /**
- * Validation: accepts a non-empty URL string or null/undefined.
- * Used for optional document upload fields.
- */
-const optionalUrl = z
-    .string()
-    .url("Must be a valid URL")
-    .nullish()
-    .or(z.literal(""));
-
-/**
  * Validation: requires a valid URL. Used for mandatory document uploads
  * that must be present before the guide can submit for review.
  */
@@ -21,6 +11,14 @@ const requiredUrl = z.string().url("Must be a valid URL").min(1, "Required");
  * We accept anything non-empty; specific format varies per platform.
  */
 const optionalSocial = z.string().nullish().or(z.literal(""));
+
+/**
+ * Validation: required contact channel.
+ */
+const requiredContact = z
+    .string()
+    .min(7, "WhatsApp number must be at least 7 characters")
+    .max(20, "WhatsApp number is too long");
 
 export const guideOnboardingSchema = z.object({
     // Step 1: Account & Basics
@@ -49,7 +47,7 @@ export const guideOnboardingSchema = z.object({
     base_price_6h: z.number().min(0),
     base_price_8h: z.number().min(0),
     hourly_rate: z.number().min(0).optional(),
-    currency: z.string().length(3),
+    currency: z.literal('USD'),
 
     // Step 5: Availability
     available_days: z.array(z.string()).optional(),
@@ -62,13 +60,13 @@ export const guideOnboardingSchema = z.object({
         .min(7, "Phone number must be at least 7 characters")
         .max(20, "Phone number is too long"),
     id_document_url: requiredUrl,
-    proof_of_address_url: optionalUrl,
+    proof_of_address_url: requiredUrl,
 
-    // Step 6: Verification — Social Links (all optional)
+    // Step 6: Verification — Social Links
     social_instagram: optionalSocial,
     social_facebook: optionalSocial,
     social_twitter: optionalSocial,
-    social_whatsapp: optionalSocial,
+    social_whatsapp: requiredContact,
     social_telegram: optionalSocial,
     social_zalo: optionalSocial,
 });

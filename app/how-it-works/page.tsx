@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Search,
   Shield,
@@ -11,6 +12,7 @@ import {
   DollarSign,
   Globe,
   ArrowRight,
+  type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -21,132 +23,210 @@ export const metadata: Metadata = {
     'Learn how to book authentic LGBTQ+ tours with local guides or become a guide yourself.',
 };
 
+const TRAVELER_STEPS: {
+  step: string;
+  title: string;
+  description: string;
+  bullets: string[];
+  icon: LucideIcon;
+  visualGradient: string;
+}[] = [
+  {
+    step: '1',
+    title: 'Find Your Guide',
+    description:
+      'Browse verified LGBTQ+ guides by city or country. Filter by language, interests, and tour themes to find your best fit.',
+    bullets: [
+      'Search by destination',
+      'Filter by languages and interests',
+      'Read verified reviews',
+    ],
+    icon: Search,
+    visualGradient: 'from-brand/95 via-brand/80 to-pink-500/90',
+  },
+  {
+    step: '2',
+    title: 'Book Safely',
+    description:
+      'Send your booking request, confirm details directly with your guide, and pay securely through the platform.',
+    bullets: [
+      'Secure payment processing',
+      'Flexible cancellation policy',
+      'Direct messaging with your guide',
+    ],
+    icon: Shield,
+    visualGradient: 'from-emerald-500/90 via-teal-500/85 to-brand/80',
+  },
+  {
+    step: '3',
+    title: 'Explore Together',
+    description:
+      'Meet your local guide and experience the city through an LGBTQ+ lens with insider recommendations and community-safe spots.',
+    bullets: [
+      'Personalized local experiences',
+      'Insider LGBTQ+ community access',
+      'Share your experience',
+    ],
+    icon: Sparkles,
+    visualGradient: 'from-fuchsia-500/90 via-rose-500/85 to-orange-400/90',
+  },
+];
+
 export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-canvas">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-lavender via-mint/30 to-canvas pt-20 pb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] pointer-events-none" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 pt-20 pb-20">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -left-32 top-12 h-80 w-80 rounded-full bg-brand/15 blur-3xl" />
+          <div className="absolute right-6 top-20 h-72 w-72 rounded-full bg-amber-200/35 blur-3xl" />
+          <div className="absolute left-1/2 bottom-0 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-200/35 blur-3xl" />
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03]" />
+        </div>
+
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-ink mb-6">
-              How Rainbow Tour Guides Works
-            </h1>
-            <p className="text-xl text-ink-soft max-w-2xl mx-auto">
-              Connect with verified LGBTQ+ local guides for authentic
-              experiences around the world
-            </p>
+          <div className="max-w-6xl mx-auto grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div className="space-y-7">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-1.5 text-sm font-semibold text-brand shadow-sm">
+                <Sparkles className="h-4 w-4" />
+                Safe, inclusive, premium experiences
+              </div>
+
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight text-ink">
+                  How Rainbow Tour Guides Works
+                </h1>
+                <p className="text-lg md:text-xl text-ink-soft max-w-2xl leading-relaxed">
+                  Book trusted LGBTQ+ local guides in three simple steps and
+                  explore every destination with confidence.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm">
+                  <Shield className="h-4 w-4 text-brand" />
+                  <span className="text-sm font-semibold text-ink">
+                    Verified guides
+                  </span>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm">
+                  <Users className="h-4 w-4 text-brand" />
+                  <span className="text-sm font-semibold text-ink">
+                    LGBTQ+ community focus
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-slate-900 shadow-2xl aspect-[5/4]">
+                <Image
+                  src="/images/home/hero-aurora.svg"
+                  alt="Aurora-inspired illustration for how it works"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-slate-900/10 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+                  <p className="text-xs uppercase tracking-[0.12em] text-white/80 mb-1">
+                    Built for confidence
+                  </p>
+                  <p className="text-sm font-semibold text-white">
+                    Verified guides, secure payments, and direct communication.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Steps Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <Card className="relative p-8 bg-white border-2 border-border hover:border-brand transition-all duration-300 hover:shadow-xl group">
-              <div className="absolute -top-6 left-8 bg-brand text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
-                1
-              </div>
-              <div className="mt-4 mb-6">
-                <div className="w-16 h-16 bg-lavender/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Search className="w-8 h-8 text-brand" />
-                </div>
-                <h3 className="text-2xl font-bold text-ink mb-4">
-                  Find Your Guide
-                </h3>
-                <p className="text-ink-soft leading-relaxed">
-                  Browse verified LGBTQ+ guides by city or country. Filter by
-                  language, interests, and tour themes. Read reviews from other
-                  travelers to find the perfect match for your journey.
-                </p>
-              </div>
-              <ul className="space-y-2 text-sm text-ink-soft">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Search by destination</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Filter by languages and interests</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Read verified reviews</span>
-                </li>
-              </ul>
-            </Card>
+      <section className="container mx-auto px-4 py-20 sm:py-24">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="max-w-3xl mx-auto text-center space-y-3">
+            <p className="text-sm uppercase tracking-[0.18em] text-brand font-semibold">
+              Three Steps
+            </p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-ink tracking-tight">
+              A Safer Way to Explore
+            </h2>
+            <p className="text-lg text-ink-soft">
+              From discovery to checkout to your day on the ground, everything
+              is designed to feel effortless.
+            </p>
+          </div>
 
-            {/* Step 2 */}
-            <Card className="relative p-8 bg-white border-2 border-border hover:border-brand transition-all duration-300 hover:shadow-xl group">
-              <div className="absolute -top-6 left-8 bg-brand text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
-                2
-              </div>
-              <div className="mt-4 mb-6">
-                <div className="w-16 h-16 bg-mint/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Shield className="w-8 h-8 text-brand" />
-                </div>
-                <h3 className="text-2xl font-bold text-ink mb-4">
-                  Book Safely
-                </h3>
-                <p className="text-ink-soft leading-relaxed">
-                  Submit a booking request with your preferred dates and
-                  details. Your guide confirms availability and you complete
-                  payment securely through our platform. Your funds are
-                  protected until the tour is completed.
-                </p>
-              </div>
-              <ul className="space-y-2 text-sm text-ink-soft">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Secure payment processing</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Flexible cancellation policy</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Direct messaging with your guide</span>
-                </li>
-              </ul>
-            </Card>
+          <div className="space-y-8 sm:space-y-10 lg:space-y-12">
+            {TRAVELER_STEPS.map((step, index) => {
+              const Icon = step.icon;
+              const isTextFirst = index % 2 === 0;
 
-            {/* Step 3 */}
-            <Card className="relative p-8 bg-white border-2 border-border hover:border-brand transition-all duration-300 hover:shadow-xl group">
-              <div className="absolute -top-6 left-8 bg-brand text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
-                3
-              </div>
-              <div className="mt-4 mb-6">
-                <div className="w-16 h-16 bg-lavender/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Sparkles className="w-8 h-8 text-brand" />
+              return (
+                <div
+                  key={step.title}
+                  className="grid gap-5 sm:gap-6 lg:gap-10 lg:grid-cols-2 lg:items-stretch"
+                >
+                  <Card
+                    className={`p-6 sm:p-8 bg-white border border-slate-200 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.55)] ${
+                      isTextFirst ? 'lg:order-1' : 'lg:order-2'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="h-12 w-12 rounded-2xl bg-brand text-white flex items-center justify-center font-bold text-lg shadow-md">
+                        {step.step}
+                      </div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-brand/80">
+                        Step {step.step}
+                      </p>
+                    </div>
+
+                    <h3 className="text-3xl sm:text-4xl font-black text-ink tracking-tight mb-4">
+                      {step.title}
+                    </h3>
+                    <p className="text-base sm:text-lg text-ink-soft leading-relaxed mb-6">
+                      {step.description}
+                    </p>
+                    <ul className="space-y-2.5 text-sm sm:text-base text-ink-soft">
+                      {step.bullets.map((bullet) => (
+                        <li key={bullet} className="flex items-start gap-2.5">
+                          <CheckCircle className="w-5 h-5 text-brand mt-0.5 flex-shrink-0" />
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+
+                  <div
+                    className={`relative rounded-3xl border border-slate-200 overflow-hidden min-h-[260px] sm:min-h-[320px] shadow-[0_22px_60px_-38px_rgba(15,23,42,0.6)] ${
+                      isTextFirst ? 'lg:order-2' : 'lg:order-1'
+                    }`}
+                  >
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-br ${step.visualGradient}`}
+                    />
+                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.08]" />
+                    <div className="absolute right-6 top-4 text-[7rem] sm:text-[8rem] leading-none font-black text-white/20">
+                      {step.step}
+                    </div>
+                    <div className="relative h-full p-8 sm:p-10 flex items-end">
+                      <div className="w-full rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+                        <div className="h-16 w-16 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-4">
+                          <Icon className="h-10 w-10" />
+                        </div>
+                        <p className="text-lg font-bold text-white">
+                          {step.title}
+                        </p>
+                        <p className="text-sm text-white/85 mt-1">
+                          {step.bullets[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-ink mb-4">
-                  Explore Together
-                </h3>
-                <p className="text-ink-soft leading-relaxed">
-                  Meet your guide and discover the city through a local LGBTQ+
-                  lens. Enjoy personalized experiences, insider tips, and
-                  authentic connections. Leave a review to help future
-                  travelers.
-                </p>
-              </div>
-              <ul className="space-y-2 text-sm text-ink-soft">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Personalized local experiences</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Insider LGBTQ+ community access</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-                  <span>Share your experience</span>
-                </li>
-              </ul>
-            </Card>
+              );
+            })}
           </div>
         </div>
       </section>
