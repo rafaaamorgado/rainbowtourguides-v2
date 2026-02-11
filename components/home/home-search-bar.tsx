@@ -49,7 +49,7 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
       onSubmit={handleSubmit}
       className="w-full rounded-2xl bg-white/90 backdrop-blur-lg shadow-2xl ring-1 ring-black/5 border border-white/70 p-4 sm:p-6 space-y-4"
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr,1.2fr,1fr,auto] gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr,1fr,1fr,auto] gap-3 sm:gap-4">
         {/* City Search - Where */}
         <div className="space-y-2">
           <label

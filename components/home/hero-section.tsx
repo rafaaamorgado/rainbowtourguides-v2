@@ -74,8 +74,8 @@ function HeroTop({ avatarFallbacks, cityCount, totalGuides }: HeroTopProps) {
           Safe, inclusive, authentic
         </div>
 
-        <div className="space-y-4">
-          <h1 className="text-4xl sm:text-5xl xl:text-6xl font-bold leading-tight text-ink">
+        <div className="space-y-4 max-w-3xl">
+          <h1 className="text-4xl sm:text-5xl font-semibold leading-tight text-ink tracking-tight">
             Discover cities with{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-indigo-500">
               LGBTQ+ local guides
