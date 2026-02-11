@@ -96,8 +96,10 @@ export async function updateGuideProfile(
       .update({
         bio: data.bio?.trim() || null,
         city_id: cityId,
+        sexual_orientation: data.sexual_orientation || null,
+        pronouns: data.pronouns?.trim() || null,
         tagline: data.tagline?.trim() || null,
-        about: data.about?.trim() || null,
+        tour_description: data.tour_description?.trim() || null,
         experience_tags: data.themes.length > 0 ? data.themes : null,
         languages: data.languages.length > 0 ? data.languages : null,
         price_4h: data.base_price_4h || null,

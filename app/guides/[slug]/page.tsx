@@ -19,17 +19,22 @@ type GuideRow = {
   city_id: string;
   headline: string | null;
   bio: string | null;
+  languages: string[] | null;
   experience_tags: string[] | null;
   price_4h: string | null;
   price_6h: string | null;
   price_8h: string | null;
   currency: string | null;
   status: string;
+  sexual_orientation: string | null;
+  pronouns: string | null;
+  tagline: string | null;
+  tour_description: string | null;
+  lgbtq_alignment: any | null;
   profile: {
     full_name?: string | null;
     avatar_url?: string | null;
     cover_url?: string | null;
-    languages?: string[] | null;
   } | null;
   city: {
     name?: string | null;
@@ -108,17 +113,22 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
         city_id,
         headline,
         bio,
+        languages,
         experience_tags,
         price_4h,
         price_6h,
         price_8h,
         currency,
         status,
+        sexual_orientation,
+        pronouns,
+        tagline,
+        tour_description,
+        lgbtq_alignment,
         profile:profiles!guides_id_fkey(
           full_name,
           avatar_url,
-          cover_url,
-          languages
+          cover_url
         ),
         city:cities!guides_city_id_fkey(
           name,
@@ -148,16 +158,21 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
             city_id,
             headline,
             bio,
+            languages,
             experience_tags,
             price_4h,
             price_6h,
             price_8h,
             currency,
             status,
+            sexual_orientation,
+            pronouns,
+            tagline,
+            tour_description,
+            lgbtq_alignment,
             profile:profiles!guides_id_fkey(
               full_name,
-              avatar_url,
-              languages
+              avatar_url
             ),
             city:cities!guides_city_id_fkey(
               name,
@@ -266,6 +281,9 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
           rating={rating}
           reviews={reviews.length}
           verified={verified}
+          sexual_orientation={guide.sexual_orientation}
+          pronouns={guide.pronouns}
+          tagline={guide.tagline}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
@@ -273,7 +291,9 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
             <GuideAbout
               name={fullName}
               bio={guide.bio || ''}
-              languages={guide.profile?.languages || []}
+              tour_description={guide.tour_description || ''}
+              lgbtq_alignment={guide.lgbtq_alignment}
+              languages={guide.languages || []}
               interests={guide.experience_tags || []}
             />
 

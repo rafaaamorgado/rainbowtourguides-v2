@@ -14,6 +14,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { PhotoUpload } from '@/components/ui/photo-upload';
 import { CountrySelect } from '@/components/form/CountrySelect';
 import { CitySelect } from '@/components/form/CitySelect';
+import { Select, SelectItem, Input as HeroInput } from "@heroui/react";
+import { SEXUAL_ORIENTATION_OPTIONS, PRONOUNS_OPTIONS } from "@/lib/constants/profile-options";
 import { useStepBasicInfo } from './lib/use-step-basic-info';
 
 interface StepBasicInfoProps {
@@ -108,6 +110,93 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
         )}
       />
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="sexual_orientation"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Sexual Orientation</FormLabel>
+              <FormControl>
+                <Select
+                  aria-label="Sexual Orientation"
+                  variant="bordered"
+                  placeholder="Select option"
+                  selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+                    field.onChange(selected);
+                  }}
+                  classNames={{
+                    trigger: "h-10 min-h-10 bg-white",
+                    value: "text-foreground",
+                  }}
+                >
+                  {SEXUAL_ORIENTATION_OPTIONS.map((option) => (
+                    <SelectItem key={option} textValue={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="pronouns"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Pronouns</FormLabel>
+              <FormControl>
+                <Select
+                  aria-label="Pronouns"
+                  variant="bordered"
+                  placeholder="Select option"
+                  selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+                    field.onChange(selected);
+                  }}
+                  classNames={{
+                    trigger: "h-10 min-h-10 bg-white",
+                    value: "text-foreground",
+                  }}
+                >
+                  {PRONOUNS_OPTIONS.map((option) => (
+                    <SelectItem key={option} textValue={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <FormField
+        control={form.control}
+        name="tagline"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Profile Tagline</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="A catchy one-liner describing you (e.g., 'The History Buff of Berlin')"
+                maxLength={60}
+                {...field}
+                value={field.value || ''}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <FormField
         control={form.control}
         name="bio"
@@ -119,6 +208,24 @@ export function StepBasicInfo({ form }: StepBasicInfoProps) {
                 placeholder="Tell travelers a bit about yourself..."
                 className="min-h-[120px]"
                 {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="tour_description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>My Tour Style</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Describe what your tours are like..."
+                className="min-h-[120px]"
+                {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />

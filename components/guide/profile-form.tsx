@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PhotoUpload } from '@/components/ui/photo-upload';
@@ -16,10 +15,13 @@ import {
   GUIDE_SPECIALTIES,
   LANGUAGE_OPTIONS,
   CURRENCY_OPTIONS,
+  SEXUAL_ORIENTATION_OPTIONS,
+  PRONOUNS_OPTIONS,
 } from '@/lib/constants/profile-options';
 import { Loader2, ExternalLink } from 'lucide-react';
 import { CountrySelect } from '@/components/form/CountrySelect';
 import { CitySelect } from '@/components/form/CitySelect';
+import { Select as HeroSelect, SelectItem as HeroSelectItem, Input as HeroInput } from "@heroui/react";
 import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -48,9 +50,11 @@ export interface GuideProfileFormData {
   bio: string | null;
   city_name: string;
   country_code: string;
+  sexual_orientation: string | null;
+  pronouns: string | null;
   // Tour Details
   tagline: string | null;
-  about: string | null;
+  tour_description: string | null;
   themes: string[];
   languages: string[];
   // Pricing
@@ -74,14 +78,16 @@ export function GuideProfileForm({
     bio: guide.bio || '',
     city_name: initialCityName || '',
     country_code: initialCountryCode || '',
+    sexual_orientation: guide.sexual_orientation || null,
+    pronouns: guide.pronouns || null,
     tagline: guide.tagline || '',
-    about: guide.about || '',
+    tour_description: guide.tour_description || '',
     themes: guide.experience_tags || [],
     languages: guide.languages || [],
     base_price_4h: guide.price_4h || '',
     base_price_6h: guide.price_6h || '',
     base_price_8h: guide.price_8h || '',
-    currency: guide.currency || 'EUR',
+    currency: 'USD',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,16 +130,6 @@ export function GuideProfileForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
     setSuccess(false);
-  };
-
-  const handleArrayToggle = (field: 'themes' | 'languages', item: string) => {
-    setFormData((prev) => {
-      const currentItems = prev[field] || [];
-      const newItems = currentItems.includes(item)
-        ? currentItems.filter((i) => i !== item)
-        : [...currentItems, item];
-      return { ...prev, [field]: newItems };
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -203,8 +199,12 @@ export function GuideProfileForm({
       <div className="space-y-2 mb-6">
         <Label className="text-sm font-medium">Cover Image</Label>
         <CoverUploader
-          currentCoverUrl={profile.cover_url}
-          userId={profile.id}
+          currentImageUrl={profile.cover_url}
+          onUpload={async (file) => {
+             // TODO: Implement actual upload logic here, possibly passing userId if needed by the upload function
+             // For now, we'll just log it. You likely need an upload helper similar to uploadAvatar.
+             console.log("Uploading cover:", file);
+          }}
         />
       </div>
 
@@ -262,6 +262,67 @@ export function GuideProfileForm({
           />
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid gap-2">
+            <Label>Sexual Orientation</Label>
+            <HeroSelect
+              aria-label="Sexual Orientation"
+              variant="bordered"
+              placeholder="Select option"
+              selectedKeys={formData.sexual_orientation ? new Set([formData.sexual_orientation]) : new Set()}
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0] as string;
+                handleChange('sexual_orientation', selected);
+              }}
+              classNames={{
+                trigger: "h-10 min-h-10 bg-white border-input",
+                value: "text-foreground",
+              }}
+            >
+              {SEXUAL_ORIENTATION_OPTIONS.map((option) => (
+                <HeroSelectItem key={option} textValue={option}>
+                  {option}
+                </HeroSelectItem>
+              ))}
+            </HeroSelect>
+          </div>
+
+          <div className="grid gap-2">
+             <Label>Pronouns</Label>
+             <HeroSelect
+               aria-label="Pronouns"
+               variant="bordered"
+               placeholder="Select option"
+               selectedKeys={formData.pronouns ? new Set([formData.pronouns]) : new Set()}
+               onSelectionChange={(keys) => {
+                 const selected = Array.from(keys)[0] as string;
+                 handleChange('pronouns', selected);
+               }}
+               classNames={{
+                 trigger: "h-10 min-h-10 bg-white border-input",
+                 value: "text-foreground",
+               }}
+             >
+               {PRONOUNS_OPTIONS.map((option) => (
+                 <HeroSelectItem key={option} textValue={option}>
+                   {option}
+                 </HeroSelectItem>
+               ))}
+             </HeroSelect>
+          </div>
+        </div>
+
+        <div className="grid gap-2">
+           <Label htmlFor="tagline">Profile Tagline</Label>
+           <Input
+             id="tagline"
+             value={formData.tagline || ''}
+             onChange={(e) => handleChange('tagline', e.target.value)}
+             placeholder="A catchy one-liner describing you (e.g., 'The History Buff of Berlin')"
+             maxLength={60}
+           />
+        </div>
+
         <div className="grid gap-2">
           <Label htmlFor="bio">Bio</Label>
           <Textarea
@@ -288,105 +349,73 @@ export function GuideProfileForm({
         <TabsContent value="tour" className="space-y-6">
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="tagline">Tagline</Label>
-              <Input
-                id="tagline"
-                value={formData.tagline || ''}
-                onChange={(e) => handleChange('tagline', e.target.value)}
-                placeholder="A catchy one-liner about your tours"
-                maxLength={100}
-              />
-              <p className="text-xs text-muted-foreground">
-                This appears below your name on search results.
-              </p>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="about">About the Tour</Label>
+              <Label htmlFor="tour_description">My Tour Style</Label>
               <Textarea
-                id="about"
-                value={formData.about || ''}
-                onChange={(e) => handleChange('about', e.target.value)}
-                placeholder="Describe what travelers will experience on your tour. What will you show them? What makes your tour special?"
-                className="min-h-[150px]"
-                maxLength={2000}
+                id="tour_description"
+                value={formData.tour_description || ''}
+                onChange={(e) => handleChange('tour_description', e.target.value)}
+                placeholder="Describe what your tours are like (e.g., 'I love showing hidden gems and local food spots...')"
+                className="min-h-[120px]"
               />
-              <p className="text-xs text-muted-foreground text-right">
-                {(formData.about || '').length}/2000 characters
-              </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-medium">Specialties</h3>
-              <p className="text-sm text-muted-foreground">
-                Select the types of experiences you offer.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <HeroSelect
+              label="Specialties"
+              placeholder="Select specialties"
+              selectionMode="multiple"
+              selectedKeys={new Set(formData.themes || [])}
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys) as string[];
+                handleChange('themes', selected);
+              }}
+              variant="bordered"
+              classNames={{
+                trigger: "bg-white border-input min-h-12",
+                value: "text-foreground",
+              }}
+            >
               {GUIDE_SPECIALTIES.map((specialty) => (
-                <label
-                  key={specialty}
-                  className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg border hover:bg-accent/50 transition-colors"
-                >
-                  <Checkbox
-                    checked={(formData.themes || []).includes(specialty)}
-                    onCheckedChange={() =>
-                      handleArrayToggle('themes', specialty)
-                    }
-                  />
-                  <span className="text-sm font-medium">{specialty}</span>
-                </label>
+                <HeroSelectItem key={specialty} textValue={specialty}>
+                  {specialty}
+                </HeroSelectItem>
               ))}
-            </div>
+            </HeroSelect>
           </div>
 
           <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-medium">Languages</h3>
-              <p className="text-sm text-muted-foreground">
-                Select all languages you can guide in.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <HeroSelect
+              label="Languages"
+              placeholder="Select languages"
+              selectionMode="multiple"
+              selectedKeys={new Set(formData.languages || [])}
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys) as string[];
+                handleChange('languages', selected);
+              }}
+              variant="bordered"
+              classNames={{
+                trigger: "bg-white border-input min-h-12",
+                value: "text-foreground",
+              }}
+            >
               {LANGUAGE_OPTIONS.map((language) => (
-                <label
-                  key={language}
-                  className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg border hover:bg-accent/50 transition-colors"
-                >
-                  <Checkbox
-                    checked={(formData.languages || []).includes(language)}
-                    onCheckedChange={() =>
-                      handleArrayToggle('languages', language)
-                    }
-                  />
-                  <span className="text-sm font-medium">{language}</span>
-                </label>
+                <HeroSelectItem key={language} textValue={language}>
+                  {language}
+                </HeroSelectItem>
               ))}
-            </div>
+            </HeroSelect>
           </div>
         </TabsContent>
 
         {/* Tab 3: Pricing */}
         <TabsContent value="pricing" className="space-y-6">
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="currency">Currency</Label>
-              <Select
-                value={formData.currency}
-                onChange={(value) => handleChange('currency', value)}
-                options={[...CURRENCY_OPTIONS]}
-                placeholder="Select currency"
-              />
-            </div>
-          </div>
-
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-medium">Tour Rates</h3>
               <p className="text-sm text-muted-foreground">
-                Set your pricing for different tour durations.
+                Set your pricing for different tour durations. All prices are in USD ($).
               </p>
             </div>
 
@@ -400,7 +429,7 @@ export function GuideProfileForm({
                 </div>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    {getCurrencySymbol(formData.currency)}
+                    $
                   </span>
                   <Input
                     type="number"
@@ -416,7 +445,7 @@ export function GuideProfileForm({
                 </div>
                 {formData.base_price_4h && (
                   <p className="text-xs text-center text-muted-foreground">
-                    {getCurrencySymbol(formData.currency)}
+                    $
                     {Math.round(Number(formData.base_price_4h) / 4)}/hour
                   </p>
                 )}
@@ -431,7 +460,7 @@ export function GuideProfileForm({
                 </div>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    {getCurrencySymbol(formData.currency)}
+                    $
                   </span>
                   <Input
                     type="number"
@@ -447,7 +476,7 @@ export function GuideProfileForm({
                 </div>
                 {formData.base_price_6h && (
                   <p className="text-xs text-center text-muted-foreground">
-                    {getCurrencySymbol(formData.currency)}
+                    $
                     {Math.round(Number(formData.base_price_6h) / 6)}/hour
                   </p>
                 )}
@@ -462,7 +491,7 @@ export function GuideProfileForm({
                 </div>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    {getCurrencySymbol(formData.currency)}
+                    $
                   </span>
                   <Input
                     type="number"
@@ -478,7 +507,7 @@ export function GuideProfileForm({
                 </div>
                 {formData.base_price_8h && (
                   <p className="text-xs text-center text-muted-foreground">
-                    {getCurrencySymbol(formData.currency)}
+                    $
                     {Math.round(Number(formData.base_price_8h) / 8)}/hour
                   </p>
                 )}

@@ -26,6 +26,10 @@ export const guideOnboardingSchema = z.object({
     country_code: z.string().min(2, "Country is required"),
     display_name: z.string().min(2, "Display name must be at least 2 characters"),
     bio: z.string().min(50, "Bio should be at least 50 characters to build trust"),
+    sexual_orientation: z.string().optional().nullable(),
+    pronouns: z.string().optional().nullable(),
+    tagline: z.string().max(60).optional().nullable(),
+    tour_description: z.string().optional().nullable(),
 
     // Step 2: Alignment & Standards
     lgbtq_alignment: z.object({
