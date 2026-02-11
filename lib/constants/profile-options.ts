@@ -24,6 +24,36 @@ export const GUIDE_SPECIALTIES = [
   "Shopping",
   "Art & Architecture",
   "Queer History",
+  "Street Art",
+  "Off the beaten path",
+  "LGBTQ+ History",
+  "Architecture",
+  "Local Politics",
+  "Museums",
+  "Galleries",
+] as const;
+
+export const SEXUAL_ORIENTATION_OPTIONS = [
+  "Gay",
+  "Lesbian",
+  "Bisexual",
+  "Queer",
+  "Pansexual",
+  "Asexual",
+  "Demisexual",
+  "Heteroflexible",
+  "Straight / Ally",
+  "Prefer not to say",
+] as const;
+
+export const PRONOUNS_OPTIONS = [
+  "He/Him",
+  "She/Her",
+  "They/Them",
+  "He/They",
+  "She/They",
+  "Any Pronouns",
+  "Prefer not to say",
 ] as const;
 
 export const LANGUAGE_OPTIONS = [
@@ -56,5 +86,7 @@ export const CURRENCY_OPTIONS = [
 
 export type TravelerInterest = (typeof TRAVELER_INTERESTS)[number];
 export type GuideSpecialty = (typeof GUIDE_SPECIALTIES)[number];
+export type SexualOrientation = (typeof SEXUAL_ORIENTATION_OPTIONS)[number];
+export type Pronouns = (typeof PRONOUNS_OPTIONS)[number];
 export type LanguageOption = (typeof LANGUAGE_OPTIONS)[number];
 export type CurrencyOption = (typeof CURRENCY_OPTIONS)[number];

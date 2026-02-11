@@ -4,6 +4,7 @@ import Image from "next/image";
 import { BadgeCheck, MapPin, Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarUrl } from "@/lib/storage-helpers";
+import { Chip } from "@heroui/react";
 
 interface GuideHeroProps {
   name: string;
@@ -14,6 +15,9 @@ interface GuideHeroProps {
   rating?: number;
   reviews?: number;
   verified?: boolean;
+  sexual_orientation?: string | null;
+  pronouns?: string | null;
+  tagline?: string | null;
 }
 
 export function GuideHero({
@@ -25,12 +29,18 @@ export function GuideHero({
   rating,
   reviews,
   verified,
+  sexual_orientation,
+  pronouns,
+  tagline,
 }: GuideHeroProps) {
   const photo =
     (avatarUrl && (getAvatarUrl(avatarUrl) || avatarUrl)) ||
     "/images/guides/default.svg";
   const ratingLabel =
     rating && rating > 0 ? `${rating.toFixed(1)} (${reviews ?? 0} reviews)` : "New";
+
+  const showSexualOrientation = sexual_orientation && sexual_orientation !== "Prefer not to say";
+  const showPronouns = !!pronouns;
 
   return (
     <section className="relative overflow-hidden rounded-3xl bg-slate-900 shadow-2xl ring-1 ring-black/5">
@@ -43,7 +53,7 @@ export function GuideHero({
           className="object-cover"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/25 to-transparent" />
       </div>
 
       <div className="relative px-6 sm:px-10 lg:px-14 py-10 sm:py-16 flex flex-col justify-end text-white gap-6">
@@ -58,13 +68,20 @@ export function GuideHero({
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{name}</h1>
-              {verified && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
-                  <BadgeCheck className="h-4 w-4" />
-                  Verified
-                </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{name}</h1>
+                {verified && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
+                    <BadgeCheck className="h-4 w-4" />
+                    Verified
+                  </span>
+                )}
+              </div>
+              {tagline && (
+                <p className="text-lg sm:text-xl text-white/90 font-medium mt-1">
+                  {tagline}
+                </p>
               )}
             </div>
             <div className="flex items-center gap-3 text-sm text-white/80 flex-wrap">
@@ -80,6 +97,35 @@ export function GuideHero({
                     <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                     {ratingLabel}
                   </span>
+                </>
+              )}
+              
+              {(showSexualOrientation || showPronouns) && (
+                <>
+                  <span className="w-1 h-1 rounded-full bg-white/60 hidden sm:block" />
+                  <div className="flex items-center gap-2">
+                    {showSexualOrientation && (
+                      <Chip
+                        variant="solid"
+                        size="sm"
+                        className="bg-zinc-900 text-white border border-zinc-800"
+                        classNames={{
+                          content: "font-semibold",
+                        }}
+                      >
+                        🏳️‍🌈 {sexual_orientation}
+                      </Chip>
+                    )}
+                    {showPronouns && (
+                      <Chip
+                        variant="solid"
+                        size="sm"
+                        className="bg-black/60 text-white border border-white/20"
+                      >
+                        {pronouns}
+                      </Chip>
+                    )}
+                  </div>
                 </>
               )}
             </div>

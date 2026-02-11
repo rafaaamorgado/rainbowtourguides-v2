@@ -143,6 +143,7 @@ type GuidesTable = {
     bio: string | null;
     headline: string | null;
     about: string | null;
+    tour_description: string | null;
     languages: string[] | null;
     themes: string[] | null;
     experience_tags: string[] | null;
@@ -151,6 +152,8 @@ type GuidesTable = {
     typical_end_time: string | null;
     availability_pattern?: Record<string, any> | null;
     lgbtq_alignment: Record<string, any> | null;
+    sexual_orientation: string | null;
+    pronouns: string | null;
     is_verified: boolean;
     approved: boolean;
     price_4h: string | null;
@@ -185,6 +188,7 @@ type GuidesTable = {
     bio?: string | null;
     headline?: string | null;
     about?: string | null;
+    tour_description?: string | null;
     languages?: string[] | null;
     themes?: string[] | null;
     experience_tags?: string[] | null;
@@ -193,6 +197,8 @@ type GuidesTable = {
     typical_end_time?: string | null;
     availability_pattern?: Record<string, any> | null;
     lgbtq_alignment?: Record<string, any> | null;
+    sexual_orientation?: string | null;
+    pronouns?: string | null;
     is_verified?: boolean;
     approved?: boolean;
     price_4h?: string | null;

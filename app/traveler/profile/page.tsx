@@ -57,7 +57,15 @@ export default async function TravelerProfilePage() {
         {/* Cover Image (full width) */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Cover Image</label>
-          <CoverUploader currentCoverUrl={profile.cover_url} userId={user.id} />
+          <CoverUploader
+            currentImageUrl={profile.cover_url}
+            onUpload={async (file) => {
+              "use server";
+              // TODO: Implement actual upload logic here.
+              // For now, this is a placeholder to satisfy the prop type.
+              console.log("Uploading cover:", file.name);
+            }}
+          />
         </div>
 
         {/* Profile Photo (single source; can replace Google Avatar) */}
