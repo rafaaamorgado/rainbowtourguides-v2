@@ -47,7 +47,7 @@ export function HeroSearch({ cities }: HeroSearchProps) {
   return (
     <form onSubmit={handleSearch} className="w-full">
       <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr,1fr,1fr,auto] gap-4 lg:gap-5 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end">
           {/* Where - City */}
           <div className="space-y-2">
             <label

@@ -101,8 +101,8 @@ export function CoverUploader({ currentImageUrl, onUpload, isUploading }: CoverU
            {(onClose) => ( 
              <> 
                <ModalHeader>Adjust Cover Image</ModalHeader> 
-               <ModalBody> 
-                 <div className="relative h-[300px] w-full bg-black rounded-lg overflow-hidden"> 
+              <ModalBody className="max-h-[80vh] overflow-y-auto"> 
+                <div className="relative h-[300px] w-full bg-black rounded-lg overflow-hidden"> 
                    {selectedFile && ( 
                      <Cropper 
                        image={selectedFile} 

@@ -136,9 +136,10 @@ export function AdminGuidesTable({ guides }: { guides: GuideRow[] }) {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-slate-50/50">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50/50">
               <TableHead className="font-semibold">Name</TableHead>
               <TableHead className="font-semibold">City</TableHead>
               <TableHead className="font-semibold">Submitted</TableHead>
@@ -240,7 +241,8 @@ export function AdminGuidesTable({ guides }: { guides: GuideRow[] }) {
               })
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
     </div>
   );

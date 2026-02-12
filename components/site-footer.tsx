@@ -4,9 +4,9 @@ import { MapPin } from "lucide-react";
 export function SiteFooter() {
   return (
     <footer className="bg-panel-dark text-slate-400 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row gap-12 justify-between">
         {/* Brand Column */}
-        <div className="col-span-1">
+        <div className="flex-1 md:max-w-xs">
           <div className="flex items-center gap-2 mb-6">
             <div className="bg-brand p-1.5 rounded-full text-white">
               <MapPin size={16} fill="currentColor" strokeWidth={0} />
@@ -29,31 +29,31 @@ export function SiteFooter() {
         </div>
 
         {/* Discover Column */}
-        <div>
-          <h4 className="text-white font-semibold mb-4">Discover</h4>
-          <ul className="space-y-3 text-sm">
+        <div className="flex-1 md:max-w-[200px]">
+          <h4 className="text-white font-semibold mb-2">Discover</h4>
+          <ul className="text-sm flex flex-col">
             <li>
-              <Link href="/cities" className="hover:text-white transition-colors">
+              <Link href="/cities" className="block py-3 hover:text-white transition-colors">
                 Cities
               </Link>
             </li>
             <li>
-              <Link href="/guides" className="hover:text-white transition-colors">
+              <Link href="/guides" className="block py-3 hover:text-white transition-colors">
                 Guides
               </Link>
             </li>
             <li>
-              <Link href="/how-it-works" className="hover:text-white transition-colors">
+              <Link href="/how-it-works" className="block py-3 hover:text-white transition-colors">
                 How It Works
               </Link>
             </li>
             <li>
-              <Link href="/blog" className="hover:text-white transition-colors">
+              <Link href="/blog" className="block py-3 hover:text-white transition-colors">
                 Blog
               </Link>
             </li>
             <li>
-              <Link href="/legal/safety" className="hover:text-white transition-colors">
+              <Link href="/legal/safety" className="block py-3 hover:text-white transition-colors">
                 Safety
               </Link>
             </li>
@@ -61,21 +61,21 @@ export function SiteFooter() {
         </div>
 
         {/* Support Column */}
-        <div>
-          <h4 className="text-white font-semibold mb-4">Support</h4>
-          <ul className="space-y-3 text-sm">
+        <div className="flex-1 md:max-w-[200px]">
+          <h4 className="text-white font-semibold mb-2">Support</h4>
+          <ul className="text-sm flex flex-col">
             <li>
-              <Link href="/faq" className="hover:text-white transition-colors">
+              <Link href="/faq" className="block py-3 hover:text-white transition-colors">
                 FAQ
               </Link>
             </li>
             <li>
-              <Link href="/legal/terms" className="hover:text-white transition-colors">
+              <Link href="/legal/terms" className="block py-3 hover:text-white transition-colors">
                 Terms of Service
               </Link>
             </li>
             <li>
-              <Link href="/legal/privacy" className="hover:text-white transition-colors">
+              <Link href="/legal/privacy" className="block py-3 hover:text-white transition-colors">
                 Privacy Policy
               </Link>
             </li>
@@ -83,7 +83,7 @@ export function SiteFooter() {
         </div>
 
         {/* Newsletter Column */}
-        <div>
+        <div className="flex-1 md:max-w-xs">
           <h4 className="text-white font-semibold mb-4">Stay Connected</h4>
           <p className="text-sm mb-4">
             Join our newsletter for travel tips and new city launches.
@@ -92,9 +92,9 @@ export function SiteFooter() {
             <input
               type="email"
               placeholder="Email address"
-              className="bg-slate-900 border border-slate-800 text-white px-4 py-2 rounded-l-lg focus:outline-none focus:border-brand w-full text-sm"
+              className="bg-slate-900 border border-slate-800 text-white px-4 py-2 rounded-l-lg focus:outline-none focus:border-brand w-full text-sm min-w-0"
             />
-            <button className="bg-brand text-white px-4 py-2 rounded-r-lg font-medium hover:bg-brand-dark transition-colors">
+            <button className="bg-brand text-white px-4 py-2 rounded-r-lg font-medium hover:bg-brand-dark transition-colors whitespace-nowrap">
               Join
             </button>
           </div>

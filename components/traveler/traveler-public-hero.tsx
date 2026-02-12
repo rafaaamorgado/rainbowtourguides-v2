@@ -55,7 +55,7 @@ export function TravelerPublicHero({
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{name}</h1>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">{name}</h1>
             <div className="flex items-center gap-3 text-sm text-white/80 flex-wrap">
               {countryName && (
                 <span className="inline-flex items-center gap-1">
