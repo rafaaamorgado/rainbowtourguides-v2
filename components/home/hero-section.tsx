@@ -15,149 +15,119 @@ interface HeroSectionProps {
   totalGuides: number;
 }
 
-const containerClasses = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8";
 const heroSlides = [
   {
     src: "/images/home/carousel/hero-1.png",
-    eyebrow: "Verified Guides",
-    copy: "Identity-checked LGBTQ+ locals who prioritize comfort, safety, and authenticity.",
+    alt: "Verified LGBTQ+ Guides",
   },
   {
     src: "/images/home/carousel/hero-2.png",
-    eyebrow: "Secure Booking",
-    copy: "Protected payments and direct messaging keep every detail clear before you arrive.",
+    alt: "Secure Booking Platform",
   },
   {
     src: "/images/home/carousel/hero-3.png",
-    eyebrow: "Inclusive Experiences",
-    copy: "Discover queer-friendly neighborhoods, culture, and nightlife with local confidence.",
+    alt: "Inclusive Travel Experiences",
   },
 ];
 
 export function HeroSection({ cities, totalGuides }: HeroSectionProps) {
-  const cityCount = cities.length;
   const avatarFallbacks = ["AR", "MS", "JP", "LC"];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Background decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -left-40 top-10 h-96 w-96 rounded-full bg-brand/10 blur-3xl" />
-        <div className="absolute right-10 bottom-10 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl" />
+    <section className="relative w-full h-[85dvh] min-h-[500px] md:h-screen overflow-hidden bg-slate-900">
+      {/* Background Swiper */}
+      <div className="absolute inset-0 -z-10">
+        <Swiper
+          modules={[Autoplay, EffectFade]}
+          effect="fade"
+          speed={1500}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          loop={true}
+          className="h-full w-full"
+        >
+          {heroSlides.map((slide, index) => (
+            <SwiperSlide key={slide.src} className="relative h-full w-full">
+              <Image
+                src={slide.src}
+                fill
+                className="object-cover"
+                priority={index === 0}
+                sizes="100vw"
+                alt={slide.alt}
+              />
+              {/* Dark overlay for text readability */}
+              <div className="absolute inset-0 bg-black/40" />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </div>
 
-      <div className={`${containerClasses} relative py-16 lg:py-20 space-y-8 lg:space-y-10`}>
-        <HeroTop
-          avatarFallbacks={avatarFallbacks}
-          cityCount={cityCount}
-          totalGuides={totalGuides}
-        />
-        <TrustChipsRow />
-        <HomeSearchCard cities={cities} />
+      {/* Content Container */}
+      <div className="relative z-10 h-full flex flex-col justify-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8 lg:space-y-10">
+          
+          {/* Main Text Content */}
+          <div className="space-y-6 max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 text-sm font-medium text-white shadow-sm">
+              <Sparkles className="h-4 w-4 text-brand-lighter" />
+              Safe, inclusive, authentic
+            </div>
+
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight text-white tracking-tight drop-shadow-sm">
+              Discover cities with{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-lighter to-indigo-300">
+                LGBTQ+ local guides
+              </span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-white/90 max-w-2xl leading-relaxed drop-shadow-sm">
+              Book verified guides who know every queer-friendly corner, hidden speakeasy,
+              and community hotspot—so you can explore with confidence.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  {avatarFallbacks.map((fallback) => (
+                    <Avatar
+                      key={fallback}
+                      className="border-2 border-white/20 h-10 w-10 bg-brand/20 text-white backdrop-blur-sm"
+                    >
+                      <AvatarFallback className="font-semibold bg-transparent">{fallback}</AvatarFallback>
+                    </Avatar>
+                  ))}
+                </div>
+                <div className="text-white">
+                  <p className="text-sm font-semibold">Trusted by travelers</p>
+                  <p className="text-xs text-white/70">
+                    {totalGuides}+ verified guides
+                  </p>
+                </div>
+              </div>
+              
+              <TrustChipsRow />
+            </div>
+          </div>
+
+          {/* Search Card */}
+          <HomeSearchCard cities={cities} />
+          
+        </div>
       </div>
     </section>
-  );
-}
-
-interface HeroTopProps {
-  avatarFallbacks: string[];
-  cityCount: number;
-  totalGuides: number;
-}
-
-function HeroTop({ avatarFallbacks, cityCount, totalGuides }: HeroTopProps) {
-  return (
-    <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-      <div className="space-y-7 lg:space-y-8">
-        <div className="inline-flex items-center gap-2 rounded-full bg-white shadow-sm border border-slate-200 px-4 py-1.5 text-sm font-medium text-brand">
-          <Sparkles className="h-4 w-4" />
-          Safe, inclusive, authentic
-        </div>
-
-        <div className="space-y-4 max-w-3xl">
-          <h1 className="text-4xl sm:text-5xl font-semibold leading-tight text-ink tracking-tight">
-            Discover cities with{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-indigo-500">
-              LGBTQ+ local guides
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-ink-soft max-w-2xl leading-relaxed">
-            Book verified guides who know every queer-friendly corner, hidden speakeasy,
-            and community hotspot—so you can explore with confidence.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex -space-x-3">
-            {avatarFallbacks.map((fallback) => (
-              <Avatar
-                key={fallback}
-                className="border-2 border-white h-10 w-10 bg-brand/10 text-brand"
-              >
-                <AvatarFallback className="font-semibold">{fallback}</AvatarFallback>
-              </Avatar>
-            ))}
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-ink">Trusted by travelers worldwide</p>
-            <p className="text-sm text-ink-soft">
-              {totalGuides}+ verified guides across {cityCount}+ cities
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative">
-        <div className="relative isolate overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-black/5 aspect-[4/3] sm:aspect-[16/9] lg:aspect-[5/4]">
-          <Swiper
-            modules={[Autoplay, EffectFade]}
-            effect="fade"
-            speed={1500}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-            loop={true}
-            className="absolute inset-0 w-full h-full -z-10"
-          >
-            {heroSlides.map((slide, index) => (
-              <SwiperSlide
-                key={slide.src}
-                className="relative"
-              >
-                <Image
-                  src={slide.src}
-                  fill
-                  className="object-cover object-center"
-                  priority={index === 0}
-                  alt="Hero background"
-                />
-                <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6">
-                  <div className="rounded-3xl border border-white/35 bg-slate-900/35 px-5 py-4 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.95)] backdrop-blur-md sm:px-6">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/80 sm:text-xs">
-                      {slide.eyebrow}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold leading-snug text-white sm:text-xl">
-                      {slide.copy}
-                    </p>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      </div>
-    </div>
   );
 }
 
 function TrustChipsRow() {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200">
-        <ShieldCheck className="h-4 w-4 text-brand" />
-        <span className="text-sm font-semibold text-ink">Verified locals</span>
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm transition-colors hover:bg-white/20">
+        <ShieldCheck className="h-4 w-4 text-brand-lighter" />
+        <span className="text-sm font-semibold text-white">Verified locals</span>
       </div>
-      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200">
-        <MapPin className="h-4 w-4 text-brand" />
-        <span className="text-sm font-semibold text-ink">Queer-owned spots</span>
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm transition-colors hover:bg-white/20">
+        <MapPin className="h-4 w-4 text-brand-lighter" />
+        <span className="text-sm font-semibold text-white">Queer-owned spots</span>
       </div>
     </div>
   );
@@ -165,7 +135,7 @@ function TrustChipsRow() {
 
 function HomeSearchCard({ cities }: { cities: City[] }) {
   return (
-    <div className="w-full">
+    <div className="w-full max-w-4xl">
       <HomeSearchBar cities={cities} />
     </div>
   );

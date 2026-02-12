@@ -92,15 +92,15 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${manrope.variable} bg-background text-foreground`}>
+      <body className={`${manrope.variable} bg-background text-foreground overflow-x-hidden`}>
         <Providers>
           {/* Noise Overlay */}
           <div className="noise-overlay" />
 
           {/* Shared shell */}
-          <div className="flex min-h-screen flex-col">
+          <div className="relative flex min-h-screen w-full flex-col">
             <SiteHeader />
-            <main className="flex-1 pt-14">{children}</main>
+            <main className="flex-1 pt-14 w-full">{children}</main>
             <ConditionalFooter />
           </div>
         </Providers>
