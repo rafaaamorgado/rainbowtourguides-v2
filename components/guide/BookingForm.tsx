@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { parseDate, type CalendarDate } from '@internationalized/date';
+import { addToast } from '@heroui/react';
+import { addHours, format, isBefore } from 'date-fns';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,16 +16,106 @@ type BookingFormProps = {
     formData: FormData,
   ) => Promise<{ success: boolean; error?: string; guideName?: string }>;
   guideName: string;
+  guideTimezone?: string;
 };
 
-export function BookingForm({ onSubmit, guideName }: BookingFormProps) {
+export function BookingForm({
+  onSubmit,
+  guideName,
+  guideTimezone = 'UTC',
+}: BookingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [date, setDate] = useState<CalendarDate | null>(null);
+  const [time, setTime] = useState('');
+
+  const getSafeMinDate = () => {
+    const nowInGuideCity = toZonedTime(new Date(), guideTimezone);
+    return addHours(nowInGuideCity, 24);
+  };
+
+  const safeMinDate = getSafeMinDate();
+  const safeMinDateValue = parseDate(format(safeMinDate, 'yyyy-MM-dd'));
+  const safeMinTimeValue = format(safeMinDate, 'HH:mm');
+  const isCutoffDaySelected = !!date && date.compare(safeMinDateValue) === 0;
+
+  const isBeforeSafeMinDateTime = (
+    selectedDate: CalendarDate,
+    selectedTime: string,
+    safeDate: Date,
+  ) => {
+    if (!selectedTime) {
+      return false;
+    }
+
+    const selectedZonedDateTime = fromZonedTime(
+      `${selectedDate.toString()}T${selectedTime}:00`,
+      guideTimezone,
+    );
+    const safeMinZonedDateTime = fromZonedTime(safeDate, guideTimezone);
+
+    return isBefore(selectedZonedDateTime, safeMinZonedDateTime);
+  };
+
+  const showNoticeToast = () => {
+    addToast({
+      title: '24-hour notice required',
+      description: 'Please give the guide at least 24 hours notice.',
+      color: 'warning',
+    });
+  };
+
+  const handleDateChange = (nextDate: CalendarDate | null) => {
+    if (!nextDate) {
+      setDate(null);
+      return;
+    }
+
+    const safeMinDateForValidation = getSafeMinDate();
+    const safeMinDateValueForValidation = parseDate(
+      format(safeMinDateForValidation, 'yyyy-MM-dd'),
+    );
+
+    if (nextDate.compare(safeMinDateValueForValidation) < 0) {
+      showNoticeToast();
+      return;
+    }
+
+    if (
+      time &&
+      isBeforeSafeMinDateTime(nextDate, time, safeMinDateForValidation)
+    ) {
+      showNoticeToast();
+      setTime('');
+    }
+
+    setDate(nextDate);
+  };
+
+  const handleTimeChange = (nextTime: string) => {
+    if (!date) {
+      setTime(nextTime);
+      return;
+    }
+
+    if (isBeforeSafeMinDateTime(date, nextTime, getSafeMinDate())) {
+      showNoticeToast();
+      return;
+    }
+
+    setTime(nextTime);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (date && time && isBeforeSafeMinDateTime(date, time, getSafeMinDate())) {
+      showNoticeToast();
+      setError('Please give the guide at least 24 hours notice.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
@@ -30,6 +123,9 @@ export function BookingForm({ onSubmit, guideName }: BookingFormProps) {
     const formData = new FormData(e.currentTarget);
     if (date) {
       formData.set('date', date.toString());
+    }
+    if (time) {
+      formData.set('time', time);
     }
 
     const result = await onSubmit(formData);
@@ -75,18 +171,27 @@ export function BookingForm({ onSubmit, guideName }: BookingFormProps) {
         <DatePicker
           id="date"
           value={date}
-          onChange={setDate}
-          minValue={parseDate(new Date().toISOString().split('T')[0])}
-          placeholderValue={parseDate(new Date().toISOString().split('T')[0])}
+          onChange={handleDateChange}
+          minValue={safeMinDateValue}
+          placeholderValue={safeMinDateValue}
           isRequired
         />
+        <p className="text-xs text-muted-foreground">Bookings require 24h notice.</p>
       </div>
 
       <div className="space-y-2">
         <label htmlFor="time" className="text-sm font-medium">
           Time
         </label>
-        <Input id="time" name="time" type="time" required />
+        <Input
+          id="time"
+          name="time"
+          type="time"
+          value={time}
+          onChange={(e) => handleTimeChange(e.target.value)}
+          min={isCutoffDaySelected ? safeMinTimeValue : undefined}
+          required
+        />
       </div>
 
       <div className="space-y-2">

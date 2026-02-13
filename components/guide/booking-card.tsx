@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Users, MapPin, Loader2 } from 'lucide-react';
-import { parseDate, type CalendarDate } from '@internationalized/date';
+import { Clock, Users, Loader2 } from 'lucide-react';
+import { type CalendarDate } from '@internationalized/date';
+import { addToast, Modal, ModalBody, ModalContent, ModalHeader } from '@heroui/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,12 +12,20 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
+import {
+  getSafeBookingStart,
+  isBeforeSafeBookingStart,
+  toCalendarDateValue,
+  toTimeValue,
+} from '@/lib/booking-notice';
+import { resolveGuideTimezone } from '@/lib/guide-timezone';
 
 type Duration = 4 | 6 | 8;
 
 interface BookingCardProps {
   guideId: string;
   cityId: string;
+  guideCityName?: string | null;
   basePrices: Partial<Record<Duration, number>>;
   currency?: string | null;
 }
@@ -24,6 +33,7 @@ interface BookingCardProps {
 export function BookingCard({
   guideId,
   cityId,
+  guideCityName,
   basePrices,
   currency = 'USD',
 }: BookingCardProps) {
@@ -36,12 +46,74 @@ export function BookingCard({
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isMobileBookingOpen, setIsMobileBookingOpen] = useState(false);
+  const guideTimezone = resolveGuideTimezone(guideCityName);
+  const safeBookingStart = getSafeBookingStart(guideTimezone);
+  const safeBookingStartDate = toCalendarDateValue(safeBookingStart);
+  const safeBookingStartTime = toTimeValue(safeBookingStart);
+  const currencySymbol = currency === 'EUR' ? '€' : '$';
 
   const price = basePrices[duration] ?? 120;
   const serviceFee = price * 0.08;
   const total = price + serviceFee;
 
   const canSubmit = date && time && travelers > 0;
+  const isCutoffDaySelected = !!date && date.compare(safeBookingStartDate) === 0;
+
+  const showNoticeToast = () => {
+    addToast({
+      title: '24-hour notice required',
+      description: 'Please give the guide at least 24 hours notice.',
+      color: 'warning',
+    });
+  };
+
+  const handleDateChange = (nextDate: CalendarDate | null) => {
+    if (!nextDate) {
+      setDate(null);
+      return;
+    }
+
+    const safeBookingStartForValidation = getSafeBookingStart(guideTimezone);
+    const safeBookingStartDateForValidation = toCalendarDateValue(
+      safeBookingStartForValidation,
+    );
+
+    if (nextDate.compare(safeBookingStartDateForValidation) < 0) {
+      showNoticeToast();
+      return;
+    }
+
+    if (
+      time &&
+      isBeforeSafeBookingStart(nextDate, time, safeBookingStartForValidation)
+    ) {
+      showNoticeToast();
+      setTime('');
+    }
+
+    setDate(nextDate);
+  };
+
+  const handleTimeChange = (nextTime: string) => {
+    if (!date) {
+      setTime(nextTime);
+      return;
+    }
+
+    if (
+      isBeforeSafeBookingStart(
+        date,
+        nextTime,
+        getSafeBookingStart(guideTimezone),
+      )
+    ) {
+      showNoticeToast();
+      return;
+    }
+
+    setTime(nextTime);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,10 +144,11 @@ export function BookingCard({
         return;
       }
 
-      // Validate date is in the future
-      const startDateTime = new Date(`${date.toString()}T${time}`);
-      if (startDateTime <= new Date()) {
-        setError('Please select a future date and time');
+      if (
+        isBeforeSafeBookingStart(date, time, getSafeBookingStart(guideTimezone))
+      ) {
+        showNoticeToast();
+        setError('Please give the guide at least 24 hours notice.');
         setLoading(false);
         return;
       }
@@ -118,18 +191,8 @@ export function BookingCard({
   };
 
   const durationOptions: Duration[] = [4, 6, 8];
-
-  return (
-    <aside className="rounded-3xl border border-border bg-card shadow-editorial p-5 space-y-5 sticky top-24">
-      <div>
-        <p className="text-sm text-ink-soft">Starting from</p>
-        <p className="text-3xl font-display font-bold text-ink">
-          {currency === 'EUR' ? '€' : '$'}
-          {price.toFixed(0)}{' '}
-          <span className="text-base font-medium text-ink-soft">per tour</span>
-        </p>
-      </div>
-
+  const renderBookingFormContent = () => (
+    <>
       {/* Duration */}
       <div className="space-y-2">
         <label className="text-sm font-semibold text-ink">Duration</label>
@@ -160,10 +223,11 @@ export function BookingCard({
           </label>
           <DatePicker
             value={date}
-            onChange={setDate}
-            minValue={parseDate(new Date().toISOString().split('T')[0])}
-            placeholderValue={parseDate(new Date().toISOString().split('T')[0])}
+            onChange={handleDateChange}
+            minValue={safeBookingStartDate}
+            placeholderValue={safeBookingStartDate}
           />
+          <p className="text-xs text-ink-soft">Bookings require 24h notice.</p>
         </div>
         <div className="space-y-1">
           <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
@@ -174,7 +238,8 @@ export function BookingCard({
             <Input
               type="time"
               value={time}
-              onChange={(e) => setTime(e.target.value)}
+              onChange={(e) => handleTimeChange(e.target.value)}
+              min={isCutoffDaySelected ? safeBookingStartTime : undefined}
               className="pl-10"
             />
           </div>
@@ -236,14 +301,14 @@ export function BookingCard({
         <div className="flex justify-between">
           <span>Base tour ({duration} hrs)</span>
           <span>
-            {currency === 'EUR' ? '€' : '$'}
+            {currencySymbol}
             {price.toFixed(0)}
           </span>
         </div>
         <div className="flex justify-between">
           <span>Service fee</span>
           <span>
-            {currency === 'EUR' ? '€' : '$'}
+            {currencySymbol}
             {serviceFee.toFixed(0)}
           </span>
         </div>
@@ -251,7 +316,7 @@ export function BookingCard({
         <div className="flex justify-between font-semibold">
           <span>Total</span>
           <span>
-            {currency === 'EUR' ? '€' : '$'}
+            {currencySymbol}
             {total.toFixed(0)}
           </span>
         </div>
@@ -282,6 +347,76 @@ export function BookingCard({
           first.
         </p>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <aside className="hidden md:block rounded-3xl border border-border bg-card shadow-editorial p-5 space-y-5 sticky top-24">
+        <div>
+          <p className="text-sm text-ink-soft">Starting from</p>
+          <p className="text-3xl font-display font-bold text-ink">
+            {currencySymbol}
+            {price.toFixed(0)}{' '}
+            <span className="text-base font-medium text-ink-soft">per tour</span>
+          </p>
+        </div>
+        {renderBookingFormContent()}
+      </aside>
+
+      <div className="h-24 md:hidden" aria-hidden="true" />
+      <div className="fixed bottom-0 left-0 w-full z-50 bg-white border-t p-4 md:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div>
+            <p className="text-xs text-ink-soft uppercase tracking-wide">From</p>
+            <p className="text-lg font-display font-bold text-ink">
+              {currencySymbol}
+              {price.toFixed(0)}
+              <span className="ml-1 text-sm font-medium text-ink-soft">/tour</span>
+            </p>
+          </div>
+          <Button
+            className="h-11 rounded-full px-6 text-sm font-semibold"
+            onClick={() => setIsMobileBookingOpen(true)}
+            disabled={loading}
+          >
+            Request Booking
+          </Button>
+        </div>
+      </div>
+
+      <Modal
+        isOpen={isMobileBookingOpen}
+        onOpenChange={setIsMobileBookingOpen}
+        placement="bottom-center"
+        size="full"
+        scrollBehavior="inside"
+        classNames={{
+          wrapper: 'items-end',
+          base: 'm-0 rounded-t-3xl',
+        }}
+      >
+        <ModalContent>
+          {() => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Request Booking
+              </ModalHeader>
+              <ModalBody className="space-y-5 pb-28">
+                <div>
+                  <p className="text-sm text-ink-soft">Starting from</p>
+                  <p className="text-2xl font-display font-bold text-ink">
+                    {currencySymbol}
+                    {price.toFixed(0)}{' '}
+                    <span className="text-sm font-medium text-ink-soft">per tour</span>
+                  </p>
+                </div>
+                {renderBookingFormContent()}
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 }

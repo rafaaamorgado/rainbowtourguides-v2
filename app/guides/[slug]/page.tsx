@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { GuideHero } from '@/components/guide/guide-hero';
 import { GuideAbout } from '@/components/guide/guide-about';
@@ -12,6 +13,10 @@ import { logError } from '@/lib/query-logger';
 interface GuidePageProps {
   params: Promise<{ slug: string }>;
 }
+
+type SupabaseServerClient = Awaited<
+  ReturnType<typeof createSupabaseServerClient>
+>;
 
 type GuideRow = {
   id: string;
@@ -30,7 +35,7 @@ type GuideRow = {
   pronouns: string | null;
   tagline: string | null;
   tour_description: string | null;
-  lgbtq_alignment: any | null;
+  lgbtq_alignment: unknown | null;
   profile: {
     full_name?: string | null;
     avatar_url?: string | null;
@@ -44,6 +49,46 @@ type GuideRow = {
     } | null;
   } | null;
 };
+
+type ReviewRow = {
+  id?: string | null;
+  reviewer_name?: string | null;
+  rating?: number | null;
+  comment?: string | null;
+  created_at?: string | null;
+};
+
+const GUIDE_SELECT_FIELDS = `
+  id,
+  slug,
+  city_id,
+  headline,
+  bio,
+  languages,
+  experience_tags,
+  price_4h,
+  price_6h,
+  price_8h,
+  currency,
+  status,
+  sexual_orientation,
+  pronouns,
+  tagline,
+  tour_description,
+  lgbtq_alignment,
+  profile:profiles!guides_id_fkey(
+    full_name,
+    avatar_url,
+    cover_url
+  ),
+  city:cities!guides_city_id_fkey(
+    name,
+    slug,
+    country:countries!cities_country_id_fkey(
+      name
+    )
+  )
+`;
 
 function resolveCover(slug: string, citySlug?: string | null) {
   const coverDir = path.join(process.cwd(), 'public', 'images');
@@ -63,7 +108,7 @@ function resolveCover(slug: string, citySlug?: string | null) {
   return '/images/covers/default.svg';
 }
 
-function toReviews(raw: any[], guideName: string) {
+function toReviews(raw: ReviewRow[], guideName: string) {
   if (!raw?.length) {
     return [
       {
@@ -93,96 +138,28 @@ function toReviews(raw: any[], guideName: string) {
   }));
 }
 
-export default async function GuideProfilePage({ params }: GuidePageProps) {
-  const { slug } = await params;
-  if (!slug) notFound();
-
-  const supabase = await createSupabaseServerClient();
-
-  // Try to find guide by slug first, then by ID
+async function getGuideBySlug(
+  supabase: SupabaseServerClient,
+  slug: string,
+): Promise<{ guide: GuideRow | null; error: unknown }> {
   let guide: GuideRow | null = null;
-  let error: any = null;
+  let error: unknown = null;
 
-  // First attempt: search by slug
   const { data: guideBySlug, error: slugError } = await supabase
     .from('guides')
-    .select(
-      `
-        id,
-        slug,
-        city_id,
-        headline,
-        bio,
-        languages,
-        experience_tags,
-        price_4h,
-        price_6h,
-        price_8h,
-        currency,
-        status,
-        sexual_orientation,
-        pronouns,
-        tagline,
-        tour_description,
-        lgbtq_alignment,
-        profile:profiles!guides_id_fkey(
-          full_name,
-          avatar_url,
-          cover_url
-        ),
-        city:cities!guides_city_id_fkey(
-          name,
-          slug,
-          country:countries!cities_country_id_fkey(
-            name
-          )
-        )
-      `,
-    )
+    .select(GUIDE_SELECT_FIELDS)
     .eq('slug', slug)
     .single<GuideRow>();
 
   if (guideBySlug) {
     guide = guideBySlug;
   } else {
-    // Second attempt: search by ID (if slug looks like a UUID)
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (uuidRegex.test(slug)) {
       const { data: guideById, error: idError } = await supabase
         .from('guides')
-        .select(
-          `
-            id,
-            slug,
-            city_id,
-            headline,
-            bio,
-            languages,
-            experience_tags,
-            price_4h,
-            price_6h,
-            price_8h,
-            currency,
-            status,
-            sexual_orientation,
-            pronouns,
-            tagline,
-            tour_description,
-            lgbtq_alignment,
-            profile:profiles!guides_id_fkey(
-              full_name,
-              avatar_url
-            ),
-            city:cities!guides_city_id_fkey(
-              name,
-              slug,
-              country:countries!cities_country_id_fkey(
-                name
-              )
-            )
-          `,
-        )
+        .select(GUIDE_SELECT_FIELDS)
         .eq('id', slug)
         .single<GuideRow>();
 
@@ -195,6 +172,55 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
       error = slugError;
     }
   }
+
+  return { guide, error };
+}
+
+export async function generateMetadata({
+  params,
+}: GuidePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const fallbackImage = '/images/og-default.jpg';
+
+  if (!slug) {
+    return {
+      title: 'Rainbow Tour Guides',
+      openGraph: {
+        images: [fallbackImage],
+      },
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { guide } = await getGuideBySlug(supabase, slug);
+
+  if (!guide) {
+    return {
+      title: 'Rainbow Tour Guides',
+      openGraph: {
+        images: [fallbackImage],
+      },
+    };
+  }
+
+  const guideName = guide.profile?.full_name || 'Local Guide';
+  const profilePictureUrl = guide.profile?.avatar_url || fallbackImage;
+  const title = `Book ${guideName} | Rainbow Tour Guides`;
+
+  return {
+    title,
+    openGraph: {
+      images: [profilePictureUrl],
+    },
+  };
+}
+
+export default async function GuideProfilePage({ params }: GuidePageProps) {
+  const { slug } = await params;
+  if (!slug) notFound();
+
+  const supabase = await createSupabaseServerClient();
+  const { guide, error } = await getGuideBySlug(supabase, slug);
 
   if (error || !guide) {
     logError('SELECT', 'guides', error);
@@ -223,7 +249,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
           .eq('id', user.id)
           .single();
 
-        if ((viewerProfile as any)?.role === 'admin') {
+        if ((viewerProfile as { role?: string } | null)?.role === 'admin') {
           isAllowed = true;
         }
       }
@@ -271,7 +297,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 space-y-8">
         <GuideHero
           name={fullName}
           city={guide.city?.name ?? ''}
@@ -312,6 +338,7 @@ export default async function GuideProfilePage({ params }: GuidePageProps) {
             <BookingCard
               guideId={guide.id}
               cityId={guide.city_id}
+              guideCityName={guide.city?.name ?? null}
               basePrices={{
                 4: guide.price_4h ? Number(guide.price_4h) : undefined,
                 6: guide.price_6h ? Number(guide.price_6h) : undefined,

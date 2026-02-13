@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Manrope, Fraunces } from 'next/font/google';
 
 import { SiteHeader } from '@/components/site-header';
+import { AnalyticsProvider } from '@/components/marketing/analytics-provider';
+import { CookieBanner } from '@/components/marketing/cookie-banner';
 import { Providers } from './providers';
 import { ConditionalFooter } from '@/components/conditional-footer';
 import './globals.css';
@@ -117,6 +119,8 @@ export default function RootLayout({
             <main id="main-content" className="flex-1 pt-16 w-full">{children}</main>
             <ConditionalFooter />
           </div>
+          <CookieBanner />
+          <AnalyticsProvider />
         </Providers>
       </body>
     </html>
