@@ -47,7 +47,7 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full rounded-2xl bg-white/90 backdrop-blur-lg shadow-2xl ring-1 ring-black/5 border border-white/70 p-4 sm:p-6 space-y-4"
+      className="w-full rounded-3xl bg-white/90 backdrop-blur-lg shadow-editorial ring-1 ring-black/5 border border-white/70 p-4 sm:p-6 space-y-4"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr,1fr,1fr,auto] gap-3 sm:gap-4">
         {/* City Search - Where */}
@@ -118,7 +118,7 @@ export function HomeSearchBar({ cities }: HomeSearchBarProps) {
         <Button
           type="submit"
           size="lg"
-          className={`w-full ${SEARCH_INPUT_HEIGHT} px-6 rounded-xl ${SEARCH_INPUT_FONT} font-semibold gap-2`}
+          className={`w-full ${SEARCH_INPUT_HEIGHT} px-6 rounded-full ${SEARCH_INPUT_FONT} font-semibold gap-2`}
           startContent={<Search className="h-4 w-4" />}
         >
             Search Now

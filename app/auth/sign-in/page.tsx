@@ -18,10 +18,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const message = params.message;
 
   return (
-    <section className="flex min-h-[70vh] items-center justify-center">
-      <Card className="w-full max-w-md">
+    <section className="flex min-h-[70vh] items-center justify-center bg-gradient-to-br from-surface-pride-amber/20 via-background to-surface-pride-lilac/20 px-4">
+      <Card className="w-full max-w-md shadow-editorial rounded-3xl">
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
+          <CardTitle className="text-3xl tracking-tight">Sign in</CardTitle>
+          <p className="text-sm text-muted-foreground">Welcome back to Rainbow Tour Guides</p>
         </CardHeader>
         <CardContent className="space-y-6">
           {message === "password_updated" && (
@@ -32,7 +33,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           <SignInForm />
           <p className="text-sm text-muted-foreground">
             Need an account?{" "}
-            <Link className="text-primary underline" href="/auth/sign-up">
+            <Link className="text-primary font-medium hover:underline" href="/auth/sign-up">
               Create one
             </Link>
             .

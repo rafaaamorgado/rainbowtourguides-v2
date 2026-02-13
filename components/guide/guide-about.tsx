@@ -55,15 +55,15 @@ export function GuideAbout({
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-foreground">About {name}</h2>
-        <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+        <h2 className="text-2xl font-display font-bold text-foreground">About {name}</h2>
+        <p className="text-muted-foreground leading-loose whitespace-pre-wrap">
           {bio || `${name} is a local expert who loves crafting welcoming experiences for LGBTQ+ travelers.`}
         </p>
       </div>
 
       {tour_description && (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-foreground">About The Tour</h2>
+          <h2 className="text-2xl font-display font-bold text-foreground">About The Tour</h2>
           <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
             {tour_description}
           </p>
@@ -72,7 +72,7 @@ export function GuideAbout({
       
       {whyGuiding && (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-foreground">Why I Guide</h2>
+          <h2 className="text-2xl font-display font-bold text-foreground">Why I Guide</h2>
           <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
             {whyGuiding}
           </p>

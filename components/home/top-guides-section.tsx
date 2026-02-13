@@ -15,14 +15,14 @@ export function TopGuidesSection({ guides }: TopGuidesSectionProps) {
   const hasGuides = guides.length > 0;
 
   return (
-    <section className="py-16 lg:py-20 bg-slate-50">
+    <section className="py-16 lg:py-20 bg-surface-warm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.2em] text-brand font-semibold">
               Meet our top guides
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-ink">Travel with people who get you</h2>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-ink">Travel with people who get you</h2>
             <p className="text-ink-soft max-w-2xl">
               Handpicked locals with verified backgrounds and glowing reviews.
             </p>
@@ -37,8 +37,8 @@ export function TopGuidesSection({ guides }: TopGuidesSectionProps) {
         </div>
 
         {!hasGuides ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center space-y-3">
-            <h3 className="text-xl font-semibold text-ink">Guides are being added</h3>
+          <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center space-y-3">
+            <h3 className="text-xl font-display font-semibold text-ink">Guides are being added</h3>
             <p className="text-ink-soft">
               We&apos;re onboarding locals right now. Browse cities to see who&apos;s available.
             </p>
@@ -70,10 +70,10 @@ export function TopGuidesSection({ guides }: TopGuidesSectionProps) {
                 <Link
                   key={guide.id}
                   href={`/guides/${guide.slug || guide.id}`}
-                  className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="group rounded-2xl border border-border bg-card p-5 shadow-none hover:shadow-warm-md transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="relative h-14 w-14 rounded-full overflow-hidden bg-slate-100 ring-4 ring-white shadow-md">
+                    <div className="relative h-14 w-14 rounded-full overflow-hidden bg-surface-warm ring-4 ring-white shadow-warm-sm">
                       <Image
                         src={photo}
                         alt={guide.name}
@@ -84,7 +84,7 @@ export function TopGuidesSection({ guides }: TopGuidesSectionProps) {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-ink group-hover:text-brand transition-colors">
+                        <h3 className="text-lg font-display font-semibold text-ink group-hover:text-brand transition-colors">
                           {guide.name}
                         </h3>
                         {verified && (

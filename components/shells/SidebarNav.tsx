@@ -72,7 +72,7 @@ export function SidebarNav({
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-20 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden fixed top-20 left-0 right-0 z-40 bg-background border-b border-border px-4 py-3 flex items-center justify-between">
         <Link href={brandHref} className="flex items-center gap-2">
           <div
             className={cn(
@@ -87,7 +87,7 @@ export function SidebarNav({
 
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-muted rounded-lg transition-colors"
         >
           <Menu className="h-6 w-6 text-ink" />
         </button>
@@ -104,7 +104,7 @@ export function SidebarNav({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-20 bottom-0 left-0 z-40 w-64 bg-white border-r border-slate-200",
+          "fixed top-20 bottom-0 left-0 z-40 w-64 bg-background border-r border-border",
           "transform transition-transform duration-300 ease-in-out",
           "lg:translate-x-0",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
@@ -112,7 +112,7 @@ export function SidebarNav({
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-6 border-b border-slate-200">
+          <div className="p-6 border-b border-border bg-gradient-to-br from-surface-pride-amber/30 to-surface-pride-lilac/20">
             {/* User Info Card */}
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ export function SidebarNav({
                     <Badge
                       variant="secondary"
                       className={cn(
-                        "mt-1 text-xs bg-slate-100 text-slate-700",
+                        "mt-1 text-xs bg-muted text-ink-soft",
                         userBadgeClassName,
                       )}
                     >
@@ -173,8 +173,8 @@ export function SidebarNav({
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative",
                       isActive
-                        ? "bg-brand/10 text-brand font-semibold"
-                        : "text-ink-soft hover:bg-slate-100 hover:text-ink",
+                        ? "bg-surface-warm text-ink font-semibold before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-5 before:bg-primary before:rounded-full"
+                        : "text-ink-soft hover:bg-surface-warm hover:text-ink",
                     )}
                   >
                     <Icon className="h-5 w-5 flex-shrink-0" />
@@ -191,7 +191,7 @@ export function SidebarNav({
           </nav>
 
           {/* Divider */}
-          <div className="border-t border-slate-200" />
+          <div className="border-t border-border" />
 
           {/* Bottom Section */}
           <div className="p-4 space-y-2">
@@ -199,7 +199,7 @@ export function SidebarNav({
               <Link
                 href={browseHref}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-ink-soft hover:bg-slate-100 hover:text-ink transition-all"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-ink-soft hover:bg-surface-warm hover:text-ink transition-all"
               >
                 <BrowseIcon className="h-5 w-5 flex-shrink-0" />
                 <span>{browseLabel}</span>

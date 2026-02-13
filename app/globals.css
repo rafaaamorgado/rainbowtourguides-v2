@@ -4,26 +4,32 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 40 20% 98%;
     --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
+    --card: 40 20% 99%;
     --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
+    --popover: 40 20% 99%;
     --popover-foreground: 240 10% 3.9%;
     --primary: 0 84% 60%; /* #ff3a3a brand color */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;
+    --secondary: 40 10% 95%;
     --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
+    --muted: 40 10% 95%;
     --muted-foreground: 240 3.8% 46.1%;
     --accent: 316 73% 67%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    --border: 40 8% 88%;
+    --input: 40 8% 88%;
     --ring: 0 84% 60%;
     --radius: 0.75rem;
+
+    /* Warm surface tokens */
+    --surface-warm: 40 25% 96%;
+    --surface-pride-amber: 40 85% 94%;
+    --surface-pride-lilac: 280 60% 95%;
+    --surface-pride-mint: 155 50% 94%;
   }
 
   .dark {
@@ -54,9 +60,9 @@
 
   body {
     @apply text-foreground antialiased;
-    background-color: #fcfcfc;
+    background-color: hsl(var(--background));
     font-family:
-      var(--font-manrope),
+      var(--font-body, var(--font-manrope)),
       system-ui,
       -apple-system,
       BlinkMacSystemFont,
@@ -90,8 +96,34 @@
 
   /* Editorial Typography */
   .text-editorial {
-    letter-spacing: -0.04em;
-    line-height: 0.9;
+    font-family: var(--font-display), Georgia, serif;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+  }
+
+  /* Display Font Utility */
+  .text-display {
+    font-family: var(--font-display), Georgia, serif;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+  }
+
+  /* Pride Gradient */
+  .gradient-pride-warm {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--surface-pride-amber)),
+      hsl(var(--surface-pride-lilac)),
+      hsl(var(--surface-pride-mint))
+    );
+  }
+
+  /* Glassmorphism - warm tint */
+  .glass-panel-warm {
+    background: rgba(250, 249, 247, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(250, 249, 247, 0.5);
   }
 
   /* Hide Scrollbar */
@@ -131,5 +163,17 @@
 
   .scrollbar-track-transparent::-webkit-scrollbar-track {
     background: transparent;
+  }
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

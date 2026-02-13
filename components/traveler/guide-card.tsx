@@ -24,7 +24,7 @@ export function GuideCard({ guide }: GuideCardProps) {
     const href = guide.slug ? `/guides/${guide.slug}` : '#';
 
     return (
-        <div className="flex flex-col rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+        <div className="flex flex-col rounded-lg border border-border bg-card text-card-foreground shadow-none overflow-hidden hover:shadow-warm-md transition-shadow">
             <div className="p-6 pb-4 flex flex-col items-center text-center space-y-4">
                 <Avatar className="h-24 w-24">
                     <AvatarImage src={guide.avatar_url || ''} alt={guide.display_name} />
@@ -32,7 +32,7 @@ export function GuideCard({ guide }: GuideCardProps) {
                 </Avatar>
 
                 <div className="space-y-1">
-                    <h3 className="font-semibold text-xl leading-none tracking-tight">
+                    <h3 className="font-display font-semibold text-xl leading-none tracking-tight">
                         {guide.display_name}
                     </h3>
                     <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">

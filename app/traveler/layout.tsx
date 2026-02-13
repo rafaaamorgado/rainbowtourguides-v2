@@ -15,12 +15,12 @@ export default async function TravelerLayout({
   const { profile } = await requireRole("traveler");
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <TravelerSidebar profile={profile} />
 
       {/* Main Content */}
       <div className="lg:pl-64">
-        <main className="p-8">
+        <main className="p-6 lg:p-10">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

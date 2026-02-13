@@ -43,11 +43,11 @@ export function CityHero({
       </div>
 
       <div className="relative px-6 sm:px-10 lg:px-14 py-16 sm:py-24 flex flex-col justify-end text-white max-w-4xl space-y-4">
-        <p className="inline-flex items-center gap-2 text-sm font-medium text-white/80">
+        <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-white/80">
           <MapPin className="h-4 w-4" />
           {country || "Destination"}
         </p>
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold tracking-tight leading-tight">
           {name}
         </h1>
         <p className="text-lg text-white/80">

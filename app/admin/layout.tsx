@@ -24,7 +24,7 @@ export default async function AdminLayout({
     .eq('status', 'pending');
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <AdminSidebar
         profile={profile}
         pendingGuidesCount={pendingGuidesCount || 0}
@@ -33,13 +33,13 @@ export default async function AdminLayout({
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Top bar with search */}
-        <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur-sm px-8 py-3">
+        <div className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm px-8 py-3">
           <div className="max-w-7xl mx-auto flex items-center justify-end">
             <AdminSearchBar />
           </div>
         </div>
 
-        <main className="p-8">
+        <main className="p-6 lg:p-10">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

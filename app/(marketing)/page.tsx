@@ -64,7 +64,7 @@ export default async function MarketingPage() {
   return (
     <>
       {/* Hero Section - Light Background */}
-      <section className="bg-white py-12 md:py-16 lg:py-20">
+      <section className="bg-background py-12 md:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Hero Top: Text + Image Grid */}
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
@@ -78,13 +78,13 @@ export default async function MarketingPage() {
                 Safe, inclusive, authentic
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-[1.1] tracking-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-ink leading-[1.1] tracking-tight">
                 Discover cities with
                 <br />
                 <span className="text-brand">LGBTQ+ local guides</span>
               </h1>
 
-              <p className="text-base md:text-lg text-slate-600 max-w-[55ch] font-light leading-relaxed">
+              <p className="text-base md:text-lg text-ink-soft max-w-[55ch] font-light leading-relaxed">
                 Book verified guides who know every queer-friendly corner,
                 hidden speakeasy, and community hotspot—so you can explore with
                 confidence.
@@ -92,7 +92,7 @@ export default async function MarketingPage() {
 
               {/* Trusted By Section */}
               <div className="space-y-2 pt-2">
-                <p className="text-sm text-slate-500 font-medium">
+                <p className="text-sm text-ink-soft font-medium">
                   Trusted by travelers worldwide
                 </p>
                 <div className="flex items-center gap-2">
@@ -100,7 +100,7 @@ export default async function MarketingPage() {
                   <span className="text-lg">🇲🇽</span>
                   <span className="text-lg">🇯🇵</span>
                   <span className="text-lg">🇱🇨</span>
-                  <span className="text-xs text-slate-400 ml-1">
+                  <span className="text-xs text-ink-soft ml-1">
                     8+ verified guides across 56 cities
                   </span>
                 </div>
@@ -109,7 +109,7 @@ export default async function MarketingPage() {
 
             {/* Right Column: Hero Image Card */}
             <div className="relative w-full max-w-xl mx-auto lg:mx-0 lg:ml-auto">
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-editorial">
                 {/* Gradient Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-brand/80 via-purple-500/70 to-pink-400/60" />
 
@@ -151,11 +151,11 @@ export default async function MarketingPage() {
 
           {/* Trust Chips Row - Below Hero Grid */}
           <div className="flex flex-wrap justify-start gap-3 mt-10 lg:mt-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-warm border border-border text-ink/80 text-sm font-medium">
               <Shield className="h-4 w-4 text-brand" />
               Verified locals
             </div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-warm border border-border text-ink/80 text-sm font-medium">
               <Map className="h-4 w-4 text-brand" />
               Queer-owned spots
             </div>
@@ -169,18 +169,18 @@ export default async function MarketingPage() {
       </section>
 
       {/* Manifesto / Introduction */}
-      <section className="py-16 md:py-20 bg-white relative">
+      <section className="py-20 md:py-28 bg-background relative">
         <div className="max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div
             className="opacity-0 animate-fade-in-up"
             style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}
           >
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-6 leading-tight">
               Not just a guide.
               <br />
-              <span className="text-slate-300">A friend in the city.</span>
+              <span className="text-ink-soft/50">A friend in the city.</span>
             </h2>
-            <div className="space-y-4 text-base md:text-lg font-light text-slate-600 leading-relaxed max-w-2xl">
+            <div className="space-y-4 text-base md:text-lg font-light text-ink-soft leading-relaxed max-w-2xl">
               <p>
                 We believe travel is about who you meet, not just what you see.
                 Traditional tours feel transactional. Dating apps feel risky. We
@@ -199,21 +199,21 @@ export default async function MarketingPage() {
               alt="Queer travelers connecting in the city"
               width={400}
               height={320}
-              className="rounded-2xl w-full h-80 object-cover mt-12 shadow-sm border border-black/5 hover:shadow-xl transition-shadow"
+              className="rounded-2xl w-full h-80 object-cover mt-12 shadow-sm border border-black/5 hover:shadow-editorial transition-shadow"
             />
             <Image
               src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80"
               alt="Authentic travel moment"
               width={400}
               height={320}
-              className="rounded-2xl w-full h-80 object-cover shadow-sm border border-black/5 hover:shadow-xl transition-shadow"
+              className="rounded-2xl w-full h-80 object-cover shadow-sm border border-black/5 hover:shadow-editorial transition-shadow"
             />
           </div>
         </div>
       </section>
 
       {/* Modern How It Works */}
-      <section className="py-16 md:py-20 bg-slate-50 border-t border-slate-200">
+      <section className="py-20 md:py-28 bg-surface-warm border-t border-border">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -238,19 +238,19 @@ export default async function MarketingPage() {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="group relative p-8 bg-white rounded-2xl border border-slate-100 hover:bg-slate-900 transition-all duration-500 shadow-md hover:shadow-2xl hover:-translate-y-1"
+                className="group relative p-8 bg-card rounded-2xl border border-border hover:bg-ink transition-all duration-500 shadow-warm-md hover:shadow-editorial hover:-translate-y-1"
               >
-                <span className="text-6xl font-serif font-bold text-slate-100 group-hover:text-slate-800 transition-colors absolute top-4 right-6 select-none">
+                <span className="text-6xl font-display font-bold text-border group-hover:text-ink/80 transition-colors absolute top-4 right-6 select-none">
                   {item.num}
                 </span>
                 <div className="relative z-10">
-                  <div className="w-14 h-14 bg-brand rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="w-14 h-14 bg-brand rounded-2xl flex items-center justify-center text-white mb-8 shadow-warm-md group-hover:scale-110 transition-transform">
                     <item.icon size={28} />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 group-hover:text-white mb-4 transition-colors">
+                  <h3 className="text-2xl font-display font-bold text-ink group-hover:text-white mb-4 transition-colors">
                     {item.title}
                   </h3>
-                  <p className="text-slate-500 group-hover:text-slate-400 leading-relaxed transition-colors">
+                  <p className="text-ink-soft group-hover:text-ink-soft/50 leading-relaxed transition-colors">
                     {item.desc}
                   </p>
                 </div>
@@ -261,14 +261,14 @@ export default async function MarketingPage() {
       </section>
 
       {/* Curated Destinations */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-20 md:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
               <span className="text-brand font-bold uppercase tracking-widest text-xs mb-3 block">
                 Destinations
               </span>
-              <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-ink">
                 Where next?
               </h2>
             </div>
@@ -288,14 +288,14 @@ export default async function MarketingPage() {
       </section>
 
       {/* Meet Our Top Guides */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-20 md:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
             <div>
-              <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
                 Meet Our Top Guides
               </h2>
-              <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
+              <p className="text-base md:text-lg text-ink-soft font-light max-w-2xl">
                 Verified locals who share authentic experiences and safe spaces
                 in their cities.
               </p>
@@ -321,11 +321,11 @@ export default async function MarketingPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 md:py-20 bg-slate-50">
+      <section className="py-20 md:py-28 bg-surface-warm">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Image */}
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-200 shadow-sm border border-black/5">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-surface-warm shadow-sm border border-black/5">
               <Image
                 src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80"
                 alt="Two men connecting through travel"
@@ -338,10 +338,10 @@ export default async function MarketingPage() {
             {/* Content */}
             <div className="space-y-10">
               <div>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
                   How It Works
                 </h2>
-                <p className="text-base md:text-lg text-slate-500 font-light">
+                <p className="text-base md:text-lg text-ink-soft font-light">
                   Three simple steps to authentic local experiences
                 </p>
               </div>
@@ -373,20 +373,20 @@ export default async function MarketingPage() {
                 ].map((step) => (
                   <div key={step.number} className="flex gap-6">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center shadow-md">
+                      <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center shadow-warm-md">
                         <step.icon className="h-6 w-6 text-white" />
                       </div>
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-4xl font-serif font-bold text-slate-200">
+                        <span className="text-4xl font-display font-bold text-ink-soft/30">
                           {step.number}
                         </span>
-                        <h3 className="text-xl font-bold text-slate-900">
+                        <h3 className="text-xl font-display font-bold text-ink">
                           {step.title}
                         </h3>
                       </div>
-                      <p className="text-slate-600 leading-relaxed">
+                      <p className="text-ink-soft leading-relaxed">
                         {step.description}
                       </p>
                     </div>
@@ -397,7 +397,7 @@ export default async function MarketingPage() {
               <Button
                 asChild
                 size="lg"
-                className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="shadow-warm-md hover:shadow-editorial hover:-translate-y-0.5 transition-all rounded-full"
               >
                 <Link href="/cities">Browse Cities</Link>
               </Button>
@@ -407,16 +407,16 @@ export default async function MarketingPage() {
       </section>
 
       {/* Why a Local LGBTQ+ Guide? */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-20 md:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Content */}
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
                   Why a Local LGBTQ+ Guide?
                 </h2>
-                <p className="text-base md:text-lg text-slate-500 font-light">
+                <p className="text-base md:text-lg text-ink-soft font-light">
                   More than just sightseeing—it's about connection, safety, and
                   authentic experiences.
                 </p>
@@ -424,15 +424,15 @@ export default async function MarketingPage() {
 
               {/* Benefits */}
               <div className="space-y-6">
-                <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex gap-4 p-5 bg-surface-warm rounded-2xl border border-border">
                   <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Shield size={24} className="text-brand" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 mb-1">
+                    <h4 className="font-display font-semibold text-ink mb-1">
                       Safer First Impressions
                     </h4>
-                    <p className="text-sm text-slate-600 leading-relaxed">
+                    <p className="text-sm text-ink-soft leading-relaxed">
                       All guides are ID-verified, interviewed, and
                       background-checked. Know who you're meeting before you
                       arrive.
@@ -440,15 +440,15 @@ export default async function MarketingPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex gap-4 p-5 bg-surface-warm rounded-2xl border border-border">
                   <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Map size={24} className="text-brand" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 mb-1">
+                    <h4 className="font-display font-semibold text-ink mb-1">
                       Cultural Context
                     </h4>
-                    <p className="text-sm text-slate-600 leading-relaxed">
+                    <p className="text-sm text-ink-soft leading-relaxed">
                       Navigate queer-friendly spaces, local etiquette, and
                       LGBTQ+ rights with someone who knows the community
                       intimately.
@@ -456,15 +456,15 @@ export default async function MarketingPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex gap-4 p-5 bg-surface-warm rounded-2xl border border-border">
                   <div className="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Users size={24} className="text-brand" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 mb-1">
+                    <h4 className="font-display font-semibold text-ink mb-1">
                       Personal Fit
                     </h4>
-                    <p className="text-sm text-slate-600 leading-relaxed">
+                    <p className="text-sm text-ink-soft leading-relaxed">
                       Match with guides based on interests, pace, and vibe.
                       Whether you want nightlife or museums, find your perfect
                       companion.
@@ -488,7 +488,7 @@ export default async function MarketingPage() {
             </div>
 
             {/* Image */}
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-200 shadow-lg border border-black/5 lg:order-last">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-surface-warm shadow-warm-md border border-black/5 lg:order-last">
               <Image
                 src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800"
                 alt="Why a local LGBTQ+ guide"
@@ -502,14 +502,14 @@ export default async function MarketingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative py-20 md:py-24 bg-white overflow-hidden">
+      <section className="relative py-20 md:py-24 bg-background overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 md:px-6 text-center relative z-10">
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 mb-6 leading-tight tracking-tight">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-ink mb-6 leading-tight tracking-tight">
             YOUR CITY.
             <br />
             YOUR RULES.
           </h2>
-          <p className="text-base md:text-xl text-slate-500 mb-10 max-w-2xl mx-auto font-light">
+          <p className="text-base md:text-xl text-ink-soft mb-10 max-w-2xl mx-auto font-light">
             Whether you want to explore history, architecture, or the
             underground scene, do it with someone who gets it.
           </p>
@@ -517,7 +517,7 @@ export default async function MarketingPage() {
             <Button
               asChild
               size="lg"
-              className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              className="shadow-warm-md hover:shadow-editorial hover:-translate-y-0.5 transition-all rounded-full"
             >
               <Link href="/cities">Start Exploring</Link>
             </Button>

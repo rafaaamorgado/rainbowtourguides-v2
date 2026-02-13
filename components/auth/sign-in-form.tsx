@@ -112,7 +112,7 @@ export function SignInForm() {
   return (
     <form className="space-y-4" onSubmit={handleSignIn}>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="email">
+        <label className="text-sm font-medium text-ink" htmlFor="email">
           Email
         </label>
         <Input
@@ -124,7 +124,7 @@ export function SignInForm() {
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="password">
+        <label className="text-sm font-medium text-ink" htmlFor="password">
           Password
         </label>
         <Input
@@ -136,7 +136,7 @@ export function SignInForm() {
         />
         <p className="text-right">
           <Link
-            className="text-sm text-primary underline"
+            className="text-sm text-primary font-medium hover:underline"
             href="/auth/forgot-password"
           >
             Forgot password?
@@ -145,7 +145,7 @@ export function SignInForm() {
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button
-        className="w-full"
+        className="w-full rounded-full"
         type="submit"
         disabled={isSubmitting || isOAuthLoading}
       >
@@ -166,7 +166,7 @@ export function SignInForm() {
       <Button
         type="button"
         variant="bordered"
-        className="w-full"
+        className="w-full rounded-full"
         onClick={handleGoogleSignIn}
         disabled={isSubmitting || isOAuthLoading}
       >

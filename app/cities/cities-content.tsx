@@ -43,7 +43,7 @@ function CityCard({ city }: { city: City }) {
 
       {/* Content Overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-        <h3 className="text-2xl font-bold mb-1 group-hover:text-brand transition-colors">
+        <h3 className="text-2xl font-display font-bold mb-1 group-hover:text-brand transition-colors">
           {city.name}
         </h3>
         <p className="text-sm text-white/80 mb-2">{city.country_name}</p>
@@ -119,7 +119,7 @@ export function CitiesContent({ cities }: { cities: City[] }) {
     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 space-y-12">
       {/* Hero Section */}
       <header className="space-y-6 text-center max-w-3xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold text-ink tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-display font-bold text-ink tracking-tight">
           Explore Cities
         </h1>
         <p className="text-lg text-ink-soft leading-relaxed">

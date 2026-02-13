@@ -120,10 +120,10 @@ export function BookingCard({
   const durationOptions: Duration[] = [4, 6, 8];
 
   return (
-    <aside className="rounded-2xl border border-slate-200 bg-white shadow-xl p-5 space-y-5 sticky top-24">
+    <aside className="rounded-3xl border border-border bg-card shadow-editorial p-5 space-y-5 sticky top-24">
       <div>
         <p className="text-sm text-ink-soft">Starting from</p>
-        <p className="text-3xl font-bold text-ink">
+        <p className="text-3xl font-display font-bold text-ink">
           {currency === 'EUR' ? '€' : '$'}
           {price.toFixed(0)}{' '}
           <span className="text-base font-medium text-ink-soft">per tour</span>
@@ -143,7 +143,7 @@ export function BookingCard({
                 'rounded-xl border px-3 py-2 text-sm font-semibold transition-colors',
                 duration === opt
                   ? 'border-brand bg-brand/10 text-brand'
-                  : 'border-slate-200 hover:border-brand/40',
+                  : 'border-border hover:border-brand/40',
               )}
             >
               {opt} hrs
@@ -232,7 +232,7 @@ export function BookingCard({
       </div>
 
       {/* Price breakdown */}
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 text-sm text-ink">
+      <div className="rounded-xl border border-border bg-surface-warm p-4 space-y-2 text-sm text-ink">
         <div className="flex justify-between">
           <span>Base tour ({duration} hrs)</span>
           <span>
@@ -247,7 +247,7 @@ export function BookingCard({
             {serviceFee.toFixed(0)}
           </span>
         </div>
-        <div className="h-px bg-slate-200 my-1" />
+        <div className="h-px bg-border my-1" />
         <div className="flex justify-between font-semibold">
           <span>Total</span>
           <span>
@@ -264,7 +264,7 @@ export function BookingCard({
           </div>
         )}
         <Button
-          className="w-full h-12 text-base font-semibold"
+          className="w-full h-12 text-base font-semibold rounded-full"
           disabled={!canSubmit || loading}
           onClick={handleSubmit}
         >

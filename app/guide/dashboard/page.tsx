@@ -38,7 +38,7 @@ export default async function GuideDashboardPage() {
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5">
           <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
           <div>
-            <h3 className="font-semibold text-amber-900">
+            <h3 className="font-display font-semibold text-amber-900">
               Your application is being reviewed
             </h3>
             <p className="mt-1 text-sm text-amber-800">
@@ -53,7 +53,7 @@ export default async function GuideDashboardPage() {
         <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-5">
           <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
           <div>
-            <h3 className="font-semibold text-blue-900">
+            <h3 className="font-display font-semibold text-blue-900">
               Complete your application
             </h3>
             <p className="mt-1 text-sm text-blue-800">
@@ -74,7 +74,7 @@ export default async function GuideDashboardPage() {
         <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-5">
           <XCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
           <div>
-            <h3 className="font-semibold text-red-900">
+            <h3 className="font-display font-semibold text-red-900">
               Application needs changes
             </h3>
             <p className="mt-1 text-sm text-red-800">
@@ -95,7 +95,7 @@ export default async function GuideDashboardPage() {
         <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
           <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
           <div>
-            <h3 className="font-semibold text-emerald-900">
+            <h3 className="font-display font-semibold text-emerald-900">
               Welcome, {firstName}! You&apos;re verified.
             </h3>
             <p className="mt-1 text-sm text-emerald-800">
@@ -107,7 +107,7 @@ export default async function GuideDashboardPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-display font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
           Overview of your performance and upcoming activities.
         </p>
@@ -120,7 +120,7 @@ export default async function GuideDashboardPage() {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$0.00</div>
+            <div className="text-2xl font-display font-bold">$0.00</div>
             <p className="text-xs text-muted-foreground">
               +0% from last month
             </p>
@@ -132,7 +132,7 @@ export default async function GuideDashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+0</div>
+            <div className="text-2xl font-display font-bold">+0</div>
             <p className="text-xs text-muted-foreground">
               +0% from last month
             </p>
@@ -144,7 +144,7 @@ export default async function GuideDashboardPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+0</div>
+            <div className="text-2xl font-display font-bold">+0</div>
             <p className="text-xs text-muted-foreground">
               +0% from last month
             </p>
@@ -156,7 +156,7 @@ export default async function GuideDashboardPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
+            <div className="text-2xl font-display font-bold">--</div>
             <p className="text-xs text-muted-foreground">
               No upcoming tours
             </p>

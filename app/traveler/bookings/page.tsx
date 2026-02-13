@@ -341,7 +341,7 @@ export default function TravelerBookingsPage() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-ink mb-2">My Bookings</h1>
+          <h1 className="text-3xl font-bold font-display text-ink mb-2">My Bookings</h1>
           <p className="text-ink-soft">Loading your bookings...</p>
         </div>
       </div>
@@ -370,7 +370,7 @@ export default function TravelerBookingsPage() {
       {/* Page Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-ink mb-2">My Bookings</h1>
+          <h1 className="text-3xl font-bold font-display text-ink mb-2">My Bookings</h1>
           <p className="text-ink-soft">
             Manage your tour bookings and requests
           </p>
@@ -556,7 +556,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
   const hasReview = false;
 
   return (
-    <div className="bg-panel-light border border-slate-200 rounded-2xl p-6 hover:shadow-glass transition-all">
+    <div className="bg-card border border-border rounded-2xl p-6 hover:shadow-warm-md transition-all">
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-6">
         {/* Guide Photo */}
         <div className="flex items-start">
@@ -570,7 +570,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
         {/* Booking Details */}
         <div className="space-y-3">
           <div>
-            <h3 className="text-xl font-semibold text-ink mb-1">
+            <h3 className="text-xl font-semibold font-display text-ink mb-1">
               {booking.guide_name}
             </h3>
             <p className="text-ink-soft flex items-center gap-1">
@@ -598,7 +598,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
           <div className="flex items-center gap-3">
             <BookingStatusBadge status={booking.status} />
 
-            <span className="text-2xl font-bold text-ink">
+            <span className="text-2xl font-bold font-display text-ink">
               ${booking.price_total}
             </span>
           </div>

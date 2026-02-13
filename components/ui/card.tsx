@@ -22,7 +22,7 @@ export interface CardProps extends HeroCardProps {
  * - Similar to previous card pattern but with better structure
  */
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, shadow = 'sm', ...props }, ref) => {
+  ({ className, shadow = 'none', ...props }, ref) => {
     return (
       <HeroCard
         ref={ref}
@@ -47,7 +47,7 @@ export const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      'text-2xl font-semibold leading-none tracking-tight',
+      'text-2xl font-display font-semibold leading-none tracking-tight',
       className,
     )}
     {...props}

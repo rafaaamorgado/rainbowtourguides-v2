@@ -78,7 +78,7 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-canvas">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 pt-20 pb-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-surface-warm via-background to-surface-warm pt-20 pb-20">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -left-32 top-12 h-80 w-80 rounded-full bg-brand/15 blur-3xl" />
           <div className="absolute right-6 top-20 h-72 w-72 rounded-full bg-amber-200/35 blur-3xl" />
@@ -89,13 +89,13 @@ export default function HowItWorksPage() {
         <div className="container mx-auto px-4 relative">
           <div className="max-w-7xl mx-auto grid gap-12 lg:grid-cols-2 lg:items-center">
             <div className="space-y-7">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-1.5 text-sm font-semibold text-brand shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white/90 px-4 py-1.5 text-sm font-semibold text-brand shadow-sm">
                 <Sparkles className="h-4 w-4" />
                 Safe, inclusive, premium experiences
               </div>
 
               <div className="space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight text-ink">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-[1.05] tracking-tight text-ink">
                   How Rainbow Tour Guides Works
                 </h1>
                 <p className="text-lg md:text-xl text-ink-soft max-w-2xl leading-relaxed">
@@ -105,13 +105,13 @@ export default function HowItWorksPage() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-sm">
                   <Shield className="h-4 w-4 text-brand" />
                   <span className="text-sm font-semibold text-ink">
                     Verified guides
                   </span>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-sm">
                   <Users className="h-4 w-4 text-brand" />
                   <span className="text-sm font-semibold text-ink">
                     LGBTQ+ community focus
@@ -121,7 +121,7 @@ export default function HowItWorksPage() {
             </div>
 
             <div className="relative">
-              <div className="relative isolate overflow-hidden rounded-[30px] border border-slate-200 shadow-2xl aspect-[4/3] sm:aspect-[16/9] lg:aspect-[5/4]">
+              <div className="relative isolate overflow-hidden rounded-[30px] border border-border shadow-2xl aspect-[4/3] sm:aspect-[16/9] lg:aspect-[5/4]">
                 <Image
                   src="/images/how-it-works/how-it-works-hero.png"
                   alt="Community hero"
@@ -150,7 +150,7 @@ export default function HowItWorksPage() {
             <p className="text-sm uppercase tracking-[0.18em] text-brand font-semibold">
               Three Steps
             </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-ink tracking-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-ink tracking-tight">
               A Safer Way to Explore
             </h2>
             <p className="text-lg text-ink-soft">
@@ -166,7 +166,7 @@ export default function HowItWorksPage() {
               return (
                 <Card
                   key={step.title}
-                  className="overflow-hidden border border-slate-200 bg-white shadow-[0_24px_60px_-42px_rgba(15,23,42,0.65)]"
+                  className="overflow-hidden border border-border bg-card shadow-[0_24px_60px_-42px_rgba(15,23,42,0.65)]"
                 >
                   <div className="grid lg:grid-cols-2 lg:items-stretch">
                     <div
@@ -202,7 +202,7 @@ export default function HowItWorksPage() {
                       <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand/80">
                         Step {step.step}
                       </p>
-                      <h3 className="mt-2 text-3xl sm:text-4xl font-black text-ink tracking-tight">
+                      <h3 className="mt-2 text-3xl sm:text-4xl font-display font-bold text-ink tracking-tight">
                         {step.title}
                       </h3>
                       <p className="mt-4 text-base sm:text-lg text-ink-soft leading-relaxed">
@@ -230,7 +230,7 @@ export default function HowItWorksPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-ink mb-4">
+              <h2 className="text-4xl font-display font-bold text-ink mb-4">
                 Become a Guide
               </h2>
               <p className="text-xl text-ink-soft max-w-2xl mx-auto">
@@ -241,8 +241,8 @@ export default function HowItWorksPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               {/* How to Become a Guide */}
-              <Card className="p-8 bg-white">
-                <h3 className="text-2xl font-bold text-ink mb-6">
+              <Card className="p-8 bg-card">
+                <h3 className="text-2xl font-display font-bold text-ink mb-6">
                   How to Get Started
                 </h3>
                 <ol className="space-y-4">
@@ -291,8 +291,8 @@ export default function HowItWorksPage() {
               </Card>
 
               {/* Benefits */}
-              <Card className="p-8 bg-white">
-                <h3 className="text-2xl font-bold text-ink mb-6">
+              <Card className="p-8 bg-card">
+                <h3 className="text-2xl font-display font-bold text-ink mb-6">
                   Guide Benefits
                 </h3>
                 <ul className="space-y-4">

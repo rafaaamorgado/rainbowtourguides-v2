@@ -12,10 +12,10 @@ export default async function TravelerSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-ink">Settings</h1>
+        <h1 className="text-3xl font-bold font-display text-ink">Settings</h1>
         <p className="text-ink-soft">Manage your account preferences.</p>
       </div>
-      <div className="bg-white rounded-2xl border border-slate-200 p-8">
+      <div className="bg-card rounded-2xl border border-border p-8">
         <TravelerSettingsForm
           initialData={{
             full_name: profile.full_name || "",

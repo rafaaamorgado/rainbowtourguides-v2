@@ -9,9 +9,9 @@ export default function CityDetailLoading() {
         <div className="absolute inset-0 flex flex-col justify-end">
           <div className="max-w-7xl mx-auto w-full px-6 pb-12 space-y-4">
             <div className="animate-pulse space-y-3">
-              <div className="h-8 w-48 bg-white/20 rounded-lg" />
-              <div className="h-12 w-64 bg-white/20 rounded-xl" />
-              <div className="h-6 w-40 bg-white/20 rounded-lg" />
+              <div className="h-8 w-48 bg-white/20 rounded-2xl" />
+              <div className="h-12 w-64 bg-white/20 rounded-2xl" />
+              <div className="h-6 w-40 bg-white/20 rounded-2xl" />
             </div>
           </div>
         </div>
@@ -22,17 +22,17 @@ export default function CityDetailLoading() {
         {/* About Section Skeleton */}
         <section className="max-w-4xl mx-auto space-y-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 w-64 bg-slate-200 rounded-lg" />
-            <div className="h-4 w-full bg-slate-200 rounded" />
-            <div className="h-4 w-full bg-slate-200 rounded" />
-            <div className="h-4 w-3/4 bg-slate-200 rounded" />
+            <div className="h-8 w-64 bg-surface-warm rounded-2xl" />
+            <div className="h-4 w-full bg-surface-warm rounded-2xl" />
+            <div className="h-4 w-full bg-surface-warm rounded-2xl" />
+            <div className="h-4 w-3/4 bg-surface-warm rounded-2xl" />
           </div>
         </section>
 
         {/* Guides Section Skeleton */}
         <section className="space-y-8">
           <div className="animate-pulse">
-            <div className="h-8 w-48 bg-slate-200 rounded-lg mb-6" />
+            <div className="h-8 w-48 bg-surface-warm rounded-2xl mb-6" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <ProfileSkeleton />

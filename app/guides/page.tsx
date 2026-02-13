@@ -98,13 +98,13 @@ export default async function GuidesPage() {
     .slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-white to-slate-50 border-b border-slate-200 py-16">
+      <section className="bg-gradient-to-b from-background to-surface-warm border-b border-border py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {/* Header */}
           <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold text-ink tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-ink tracking-tight">
               Find Your Guide
             </h1>
             <p className="text-lg text-ink-soft leading-relaxed">
@@ -125,7 +125,7 @@ export default async function GuidesPage() {
         {/* Top-Rated Guides */}
         <section className="space-y-6">
           <div>
-            <h2 className="text-3xl font-bold text-ink mb-2">
+            <h2 className="text-3xl font-display font-bold text-ink mb-2">
               Top-Rated Guides
             </h2>
             <p className="text-ink-soft">
@@ -143,7 +143,7 @@ export default async function GuidesPage() {
         {/* New Guides */}
         <section className="space-y-6">
           <div>
-            <h2 className="text-3xl font-bold text-ink mb-2">New Guides</h2>
+            <h2 className="text-3xl font-display font-bold text-ink mb-2">New Guides</h2>
             <p className="text-ink-soft">
               Welcome our newest community members
             </p>
@@ -160,7 +160,7 @@ export default async function GuidesPage() {
         {newDestinations.length > 0 && (
           <section className="space-y-6">
             <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl font-bold text-ink mb-2">
+              <h2 className="text-3xl font-display font-bold text-ink mb-2">
                 New Destinations
               </h2>
               <p className="text-ink-soft">
@@ -186,7 +186,7 @@ export default async function GuidesPage() {
                           />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-ink">
+                          <h3 className="text-xl font-display font-bold text-ink">
                             {city.name}
                           </h3>
                           <p className="text-sm text-ink-soft">
@@ -224,7 +224,7 @@ export default async function GuidesPage() {
         {popularDestinations.length > 0 ? (
           <section className="space-y-6">
             <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl font-bold text-ink mb-2">
+              <h2 className="text-3xl font-display font-bold text-ink mb-2">
                 Popular Destinations
               </h2>
               <p className="text-ink-soft">
@@ -255,7 +255,7 @@ export default async function GuidesPage() {
 
                   {/* Content */}
                   <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <h3 className="text-lg font-bold mb-1 group-hover:text-brand transition-colors">
+                    <h3 className="text-lg font-display font-bold mb-1 group-hover:text-brand transition-colors">
                       {city.name}
                     </h3>
                     <p className="text-sm text-white/80">{city.country_name}</p>

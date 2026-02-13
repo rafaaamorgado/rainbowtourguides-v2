@@ -145,7 +145,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         {/* Icon */}
         <div
           className={cn(
-            'mb-4 rounded-full bg-gradient-to-br from-pink-50 to-rose-50 p-4',
+            'mb-4 rounded-full bg-gradient-to-br from-surface-pride-amber to-surface-pride-lilac p-4',
             isMinimal && 'mb-3 p-3',
           )}
         >
@@ -163,7 +163,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         {/* Title */}
         <h3
           className={cn(
-            'font-semibold text-slate-900 mb-2 max-w-md',
+            'font-display font-semibold text-ink mb-2 max-w-md',
             isMinimal ? 'text-base' : 'text-xl tracking-tight',
           )}
         >

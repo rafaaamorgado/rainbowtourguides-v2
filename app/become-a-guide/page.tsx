@@ -90,7 +90,7 @@ export const metadata = {
 
 export default function BecomeAGuidePage() {
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="bg-background min-h-screen">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         {/* Hero */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
@@ -100,7 +100,7 @@ export default function BecomeAGuidePage() {
               Become a Guide
             </div>
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl font-bold text-ink leading-tight">
+              <h1 className="text-4xl sm:text-5xl font-display font-bold text-ink leading-tight">
                 Become a Guide
               </h1>
               <p className="text-lg text-ink-soft leading-relaxed">
@@ -110,14 +110,14 @@ export default function BecomeAGuidePage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button size="lg" asChild className="h-12 px-6">
+              <Button size="lg" asChild className="h-12 px-6 rounded-full">
                 <Link href="/guide/onboarding">Get Started</Link>
               </Button>
               <Button
                 size="lg"
                 variant="bordered"
                 asChild
-                className="h-12 px-6"
+                className="h-12 px-6 rounded-full"
               >
                 <Link href="/guides">Browse Guides</Link>
               </Button>
@@ -140,7 +140,7 @@ export default function BecomeAGuidePage() {
         {/* Why Guide with Us */}
         <section className="space-y-6">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-bold text-ink">Why Guide with Us?</h2>
+            <h2 className="text-3xl font-display font-bold text-ink">Why Guide with Us?</h2>
             <p className="text-ink-soft">
               Safe, inclusive, and built for the community.
             </p>
@@ -149,12 +149,12 @@ export default function BecomeAGuidePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg transition-all duration-300"
+                className="rounded-2xl border border-border bg-card p-6 shadow-none hover:shadow-warm-md transition-all duration-300"
               >
                 <div className="h-12 w-12 rounded-full bg-brand/10 text-brand flex items-center justify-center mb-4">
                   <feature.icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-semibold text-ink">
+                <h3 className="text-lg font-display font-semibold text-ink">
                   {feature.title}
                 </h3>
                 <p className="text-sm text-ink-soft mt-2 leading-relaxed">
@@ -168,7 +168,7 @@ export default function BecomeAGuidePage() {
         {/* How It Works */}
         <section className="space-y-6">
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold text-ink">How It Works</h2>
+            <h2 className="text-3xl font-display font-bold text-ink">How It Works</h2>
             <p className="text-ink-soft">
               From profile to first tour in four simple steps.
             </p>
@@ -177,12 +177,12 @@ export default function BecomeAGuidePage() {
             {steps.map((step) => (
               <div
                 key={step.title}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col gap-3"
+                className="rounded-2xl border border-border bg-card p-6 shadow-none flex flex-col gap-3"
               >
                 <div className="text-brand text-xl font-semibold">
                   {step.number}
                 </div>
-                <h3 className="text-lg font-semibold text-ink">{step.title}</h3>
+                <h3 className="text-lg font-display font-semibold text-ink">{step.title}</h3>
                 <p className="text-sm text-ink-soft leading-relaxed">
                   {step.description}
                 </p>
@@ -194,13 +194,13 @@ export default function BecomeAGuidePage() {
         {/* What You'll Need */}
         <section className="space-y-6">
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold text-ink">What You’ll Need</h2>
+            <h2 className="text-3xl font-display font-bold text-ink">What You'll Need</h2>
             <p className="text-ink-soft">
               A few essentials to offer safe, memorable experiences.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="space-y-3 rounded-2xl border border-border bg-card p-6 shadow-none">
               {checklistLeft.map((item) => (
                 <div key={item} className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5" />
@@ -208,7 +208,7 @@ export default function BecomeAGuidePage() {
                 </div>
               ))}
             </div>
-            <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="space-y-3 rounded-2xl border border-border bg-card p-6 shadow-none">
               {checklistRight.map((item) => (
                 <div key={item} className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5" />
@@ -222,7 +222,7 @@ export default function BecomeAGuidePage() {
         {/* Safety & Support */}
         <section className="space-y-6">
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold text-ink">Safety & Support</h2>
+            <h2 className="text-3xl font-display font-bold text-ink">Safety & Support</h2>
             <p className="text-ink-soft">
               We’re building features to keep you and travelers comfortable
               every step of the way.
@@ -232,13 +232,13 @@ export default function BecomeAGuidePage() {
             {safetyCards.map((card) => (
               <div
                 key={card.title}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex gap-4"
+                className="rounded-2xl border border-border bg-card p-6 shadow-none flex gap-4"
               >
                 <div className="h-12 w-12 rounded-full bg-brand/10 text-brand flex items-center justify-center">
                   <card.icon className="h-6 w-6" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-ink">
+                  <h3 className="text-lg font-display font-semibold text-ink">
                     {card.title}
                   </h3>
                   <p className="text-sm text-ink-soft leading-relaxed">
@@ -251,8 +251,8 @@ export default function BecomeAGuidePage() {
         </section>
 
         {/* Final CTA */}
-        <section className="text-center space-y-4 rounded-3xl border border-slate-200 bg-white p-10 shadow-lg">
-          <h2 className="text-3xl font-bold text-ink">
+        <section className="text-center space-y-4 rounded-3xl border border-border bg-card p-10 shadow-editorial">
+          <h2 className="text-3xl font-display font-bold text-ink">
             Ready to Start Guiding?
           </h2>
           <p className="text-ink-soft max-w-2xl mx-auto">

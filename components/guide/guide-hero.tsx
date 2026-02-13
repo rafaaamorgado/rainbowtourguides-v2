@@ -70,9 +70,9 @@ export function GuideHero({
           <div className="space-y-2">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{name}</h1>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold leading-tight">{name}</h1>
                 {verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-surface-pride-mint/30 backdrop-blur-sm px-3 py-1 text-sm font-semibold">
                     <BadgeCheck className="h-4 w-4" />
                     Verified
                   </span>

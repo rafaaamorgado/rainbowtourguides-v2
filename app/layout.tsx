@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Manrope } from 'next/font/google';
+import { Manrope, Fraunces } from 'next/font/google';
 
 import { SiteHeader } from '@/components/site-header';
 import { Providers } from './providers';
@@ -87,20 +87,34 @@ const manrope = Manrope({
   display: 'swap',
 });
 
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${manrope.variable} bg-background text-foreground overflow-x-hidden`}>
+      <body className={`${manrope.variable} ${fraunces.variable} bg-background text-foreground overflow-x-hidden`}>
         <Providers>
           {/* Noise Overlay */}
           <div className="noise-overlay" />
 
+          {/* Skip to content — accessibility */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-none"
+          >
+            Skip to content
+          </a>
+
           {/* Shared shell */}
           <div className="relative flex min-h-screen w-full flex-col">
             <SiteHeader />
-            <main className="flex-1 pt-14 w-full">{children}</main>
+            <main id="main-content" className="flex-1 pt-16 w-full">{children}</main>
             <ConditionalFooter />
           </div>
         </Providers>

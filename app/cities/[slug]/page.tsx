@@ -37,7 +37,7 @@ export default async function CityPage({ params }: CityPageProps) {
   const heroImage = getCityImageUrl(slug, city.image_url);
 
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="bg-background min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         <CityHero
           name={city.name}

@@ -84,13 +84,13 @@ export function Loading() {
     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 space-y-12">
       {/* Hero Skeleton */}
       <header className="space-y-6 text-center max-w-3xl mx-auto">
-        <div className="h-12 w-2/3 bg-slate-200 rounded-lg animate-pulse mx-auto" />
-        <div className="h-6 w-4/5 bg-slate-200 rounded animate-pulse mx-auto" />
+        <div className="h-12 w-2/3 bg-surface-warm rounded-2xl animate-pulse mx-auto" />
+        <div className="h-6 w-4/5 bg-surface-warm rounded-2xl animate-pulse mx-auto" />
       </header>
 
       {/* Search Bar Skeleton */}
       <div className="max-w-2xl mx-auto">
-        <div className="h-12 w-full bg-slate-200 rounded-full animate-pulse" />
+        <div className="h-12 w-full bg-surface-warm rounded-full animate-pulse" />
       </div>
 
       {/* Cities Grid Skeleton */}
@@ -98,7 +98,7 @@ export function Loading() {
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="aspect-video rounded-2xl bg-slate-200 animate-pulse"
+            className="aspect-video rounded-2xl bg-surface-warm animate-pulse"
           />
         ))}
       </div>

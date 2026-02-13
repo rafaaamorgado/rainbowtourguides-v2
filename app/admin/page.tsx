@@ -78,7 +78,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-ink">
+        <h1 className="text-3xl font-display font-bold text-ink">
           Welcome back, {firstName}
         </h1>
         <p className="text-ink-soft mt-1">
@@ -93,7 +93,7 @@ export default async function AdminDashboardPage() {
           return (
             <div
               key={stat.label}
-              className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+              className="rounded-xl border border-border bg-card p-6"
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-ink-soft">
@@ -103,7 +103,7 @@ export default async function AdminDashboardPage() {
                   <Icon className={`h-5 w-5 ${stat.color}`} />
                 </div>
               </div>
-              <p className="mt-3 text-3xl font-bold text-ink">{stat.value}</p>
+              <p className="mt-3 text-3xl font-display font-bold text-ink">{stat.value}</p>
             </div>
           );
         })}
@@ -111,10 +111,10 @@ export default async function AdminDashboardPage() {
 
       {/* Placeholder sections for future content */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="h-5 w-5 text-ink-soft" />
-            <h2 className="text-lg font-semibold text-ink">Recent Activity</h2>
+            <h2 className="text-lg font-display font-semibold text-ink">Recent Activity</h2>
           </div>
           <p className="text-sm text-ink-soft">
             Activity feed coming soon — new bookings, guide sign-ups, and
@@ -122,10 +122,10 @@ export default async function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-6">
           <div className="flex items-center gap-2 mb-4">
             <DollarSign className="h-5 w-5 text-ink-soft" />
-            <h2 className="text-lg font-semibold text-ink">Revenue Overview</h2>
+            <h2 className="text-lg font-display font-semibold text-ink">Revenue Overview</h2>
           </div>
           <p className="text-sm text-ink-soft">
             Revenue charts and payout summaries will be displayed here once

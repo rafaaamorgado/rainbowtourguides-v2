@@ -28,18 +28,21 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   const isGuideSignUp = initialRole === "guide";
 
   return (
-    <section className="flex min-h-[70vh] items-center justify-center">
-      <Card className="w-full max-w-md">
+    <section className="flex min-h-[70vh] items-center justify-center bg-gradient-to-br from-surface-pride-amber/20 via-background to-surface-pride-lilac/20 px-4">
+      <Card className="w-full max-w-md shadow-editorial rounded-3xl">
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="text-3xl tracking-tight">
             {isGuideSignUp ? "Become a Guide" : "Create an account"}
           </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {isGuideSignUp ? "Share your city with LGBTQ+ travelers" : "Join the Rainbow Tour Guides community"}
+          </p>
         </CardHeader>
         <CardContent className="space-y-6">
           <SignUpForm initialRole={initialRole} />
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link className="text-primary underline" href="/auth/sign-in">
+            <Link className="text-primary font-medium hover:underline" href="/auth/sign-in">
               Sign in
             </Link>
             .
@@ -47,7 +50,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
           {!isGuideSignUp && (
             <p className="text-sm text-muted-foreground">
               Want to become a guide?{" "}
-              <Link className="text-primary underline" href="/auth/sign-up?role=guide">
+              <Link className="text-primary font-medium hover:underline" href="/auth/sign-up?role=guide">
                 Sign up as a guide
               </Link>
               .

@@ -115,7 +115,7 @@ export function SignUpForm({ initialRole = 'traveler' }: SignUpFormProps) {
   return (
     <form className="space-y-4" onSubmit={handleSignUp}>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="name">
+        <label className="text-sm font-medium text-ink" htmlFor="name">
           Name
         </label>
         <Input
@@ -126,7 +126,7 @@ export function SignUpForm({ initialRole = 'traveler' }: SignUpFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="email">
+        <label className="text-sm font-medium text-ink" htmlFor="email">
           Email
         </label>
         <Input
@@ -138,7 +138,7 @@ export function SignUpForm({ initialRole = 'traveler' }: SignUpFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="password">
+        <label className="text-sm font-medium text-ink" htmlFor="password">
           Password
         </label>
         <Input
@@ -152,7 +152,7 @@ export function SignUpForm({ initialRole = 'traveler' }: SignUpFormProps) {
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button
-        className="w-full"
+        className="w-full rounded-full"
         type="submit"
         disabled={isSubmitting || isOAuthLoading}
       >
@@ -177,7 +177,7 @@ export function SignUpForm({ initialRole = 'traveler' }: SignUpFormProps) {
       <Button
         type="button"
         variant="bordered"
-        className="w-full"
+        className="w-full rounded-full"
         onClick={handleGoogleSignUp}
         disabled={isSubmitting || isOAuthLoading}
       >

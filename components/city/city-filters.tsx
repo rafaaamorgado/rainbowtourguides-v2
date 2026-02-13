@@ -81,7 +81,7 @@ export function CityFilters({
   return (
     <section className="space-y-8">
       {/* Filter bar */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-md p-4 sm:p-6 space-y-4">
+      <div className="rounded-2xl border border-border bg-card shadow-warm-md p-4 sm:p-6 space-y-4">
         {fetchError && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             We had trouble reaching our guides database. Showing any cached or
@@ -167,7 +167,7 @@ export function CityFilters({
       <div className="space-y-3">
         <div className="flex items-baseline justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-ink">Available Guides</h2>
+            <h2 className="text-2xl font-display font-bold text-ink">Available Guides</h2>
             <p className="text-sm text-ink-soft">
               {filtered.length} guide{filtered.length === 1 ? '' : 's'} in{' '}
               {cityName}
@@ -177,7 +177,7 @@ export function CityFilters({
         </div>
 
         {guides.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8">
+          <div className="rounded-2xl border border-border bg-surface-warm p-8">
             <EmptyState
               title={`No verified guides yet in ${cityName}`}
               description="We're onboarding locals now. Browse all guides or explore other cities."
@@ -194,7 +194,7 @@ export function CityFilters({
             </div>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8">
+          <div className="rounded-2xl border border-border bg-surface-warm p-8">
             <EmptyState
               title="No guides match your filters"
               description="Try clearing filters or exploring nearby cities."

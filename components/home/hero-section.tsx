@@ -34,7 +34,7 @@ export function HeroSection({ cities, totalGuides }: HeroSectionProps) {
   const avatarFallbacks = ["AR", "MS", "JP", "LC"];
 
   return (
-    <section className="relative w-full h-[85dvh] min-h-[500px] md:h-screen overflow-hidden bg-slate-900">
+    <section className="relative w-full h-[85dvh] min-h-[500px] md:h-screen overflow-hidden bg-ink">
       {/* Background Swiper */}
       <div className="absolute inset-0 -z-10">
         <Swiper
@@ -73,7 +73,7 @@ export function HeroSection({ cities, totalGuides }: HeroSectionProps) {
               Safe, inclusive, authentic
             </div>
 
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight text-white tracking-tight drop-shadow-sm">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold leading-tight text-white tracking-tight drop-shadow-sm">
               Discover cities with{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-lighter to-indigo-300">
                 LGBTQ+ local guides

@@ -51,7 +51,7 @@ export const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
       <div
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-xl bg-slate-100 p-1",
+          "inline-flex items-center justify-center rounded-xl bg-surface-warm p-1",
           className
         )}
         {...props}
@@ -83,7 +83,7 @@ export const TabsTrigger = React.forwardRef<
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
         "disabled:pointer-events-none disabled:opacity-50",
         isActive
-          ? "bg-white text-ink shadow-sm"
+          ? "bg-background text-ink shadow-warm-sm"
           : "text-ink-soft hover:text-ink"
       )}
       {...props}

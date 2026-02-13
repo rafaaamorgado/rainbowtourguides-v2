@@ -30,7 +30,7 @@ export default async function GuideProfilePage() {
   return (
     <div className="space-y-6 max-w-3xl">
       {/* Single "Profile & Listing" section: Cover, Profile Photo, fields, then gallery */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-8">
+      <div className="bg-card rounded-2xl border border-border p-8">
         <GuideProfileForm
           profile={profile}
           guide={guide}
@@ -42,7 +42,7 @@ export default async function GuideProfilePage() {
       </div>
 
       {/* Profile Gallery */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-8">
+      <div className="bg-card rounded-2xl border border-border p-8">
         <ProfileGallery
           userId={user.id}
           isOwner={true}

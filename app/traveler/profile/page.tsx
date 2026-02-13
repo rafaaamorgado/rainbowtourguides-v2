@@ -32,10 +32,10 @@ export default async function TravelerProfilePage() {
   return (
     <div className="space-y-6 max-w-3xl">
       {/* Single "My Profile" container: Cover, Profile Photo, form, then gallery */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-8 space-y-8">
+      <div className="bg-card rounded-2xl border border-border p-8 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-ink">
+            <h1 className="text-2xl font-bold font-display tracking-tight text-ink">
               My Profile
             </h1>
             <p className="text-muted-foreground">
@@ -90,7 +90,7 @@ export default async function TravelerProfilePage() {
       </div>
 
       {/* Profile Gallery (same component as Guides; stored in profile_images) */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-8">
+      <div className="bg-card rounded-2xl border border-border p-8">
         <ProfileGallery
           userId={user.id}
           isOwner={true}

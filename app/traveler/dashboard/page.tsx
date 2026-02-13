@@ -49,7 +49,7 @@ export default async function TravelerDashboardPage() {
   return (
     <div className="container py-10 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">My Trips</h1>
+        <h1 className="text-3xl font-bold font-display">My Trips</h1>
         <p className="text-muted-foreground">
           Manage your booking requests and upcoming tours.
         </p>
@@ -93,7 +93,7 @@ export default async function TravelerDashboardPage() {
                 <div className="flex justify-between items-end border-t pt-4 mt-2">
                   <div className="text-sm">
                     Total:{' '}
-                    <span className="font-semibold">
+                    <span className="font-semibold font-display">
                       {booking.price_total} {booking.currency}
                     </span>
                   </div>

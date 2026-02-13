@@ -12,11 +12,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-lavender/20 to-canvas pt-20 pb-12">
+      <section className="bg-gradient-to-b from-surface-pride-lilac/20 to-background pt-20 pb-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-center text-ink mb-4">
+          <h1 className="text-4xl md:text-5xl font-display font-bold text-center text-ink mb-4">
             Frequently Asked Questions
           </h1>
           <p className="text-center text-ink-soft text-lg max-w-2xl mx-auto">
@@ -32,7 +32,7 @@ export default function FAQPage() {
           <Input
             type="search"
             placeholder="Search for questions..."
-            className="pl-10 h-12 bg-white"
+            className="pl-10 h-12 bg-card"
           />
         </div>
       </section>
@@ -49,8 +49,8 @@ export default function FAQPage() {
 
           {/* For Travelers */}
           <TabsContent value="travelers">
-            <div className="bg-white rounded-lg border border-border p-6">
-              <h2 className="text-2xl font-bold text-ink mb-6">
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h2 className="text-2xl font-display font-bold text-ink mb-6">
                 For Travelers
               </h2>
               <Accordion type="single" collapsible className="w-full">
@@ -195,8 +195,8 @@ export default function FAQPage() {
 
           {/* For Guides */}
           <TabsContent value="guides">
-            <div className="bg-white rounded-lg border border-border p-6">
-              <h2 className="text-2xl font-bold text-ink mb-6">For Guides</h2>
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h2 className="text-2xl font-display font-bold text-ink mb-6">For Guides</h2>
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
                   <AccordionTrigger className="font-semibold text-left">
@@ -315,8 +315,8 @@ export default function FAQPage() {
 
           {/* Safety & Verification */}
           <TabsContent value="safety">
-            <div className="bg-white rounded-lg border border-border p-6">
-              <h2 className="text-2xl font-bold text-ink mb-6">
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h2 className="text-2xl font-display font-bold text-ink mb-6">
                 Safety & Verification
               </h2>
               <Accordion type="single" collapsible className="w-full">
@@ -408,8 +408,8 @@ export default function FAQPage() {
 
           {/* Pricing & Payments */}
           <TabsContent value="pricing">
-            <div className="bg-white rounded-lg border border-border p-6">
-              <h2 className="text-2xl font-bold text-ink mb-6">
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h2 className="text-2xl font-display font-bold text-ink mb-6">
                 Pricing & Payments
               </h2>
               <Accordion type="single" collapsible className="w-full">
