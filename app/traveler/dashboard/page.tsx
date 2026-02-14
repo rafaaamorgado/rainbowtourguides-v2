@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { format, startOfDay } from 'date-fns';
 import { CalendarClock, MapPin } from 'lucide-react';
-import { Tab, Tabs } from '@heroui/react';
 import { requireRole } from '@/lib/auth-helpers';
 import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge';
 import { CancelBookingModal } from '@/components/booking/CancelBookingModal';
@@ -13,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type TravelerDashboardBooking = {
   id: string;
@@ -170,21 +170,19 @@ export default async function TravelerDashboardPage() {
           </Button>
         </div>
       ) : (
-        <Tabs
-          aria-label="Traveler booking timeline"
-          variant="underlined"
-          color="primary"
-        >
-          <Tab
-            key="upcoming"
-            title={`Upcoming (${upcomingBookings.length})`}
-            className="pt-4"
-          >
+        <Tabs defaultValue="upcoming">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upcoming">
+              {`Upcoming (${upcomingBookings.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="past">{`Past (${pastBookings.length})`}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="upcoming" className="pt-4">
             {renderBookingCards(upcomingBookings)}
-          </Tab>
-          <Tab key="past" title={`Past (${pastBookings.length})`} className="pt-4">
+          </TabsContent>
+          <TabsContent value="past" className="pt-4">
             {renderBookingCards(pastBookings)}
-          </Tab>
+          </TabsContent>
         </Tabs>
       )}
     </div>
