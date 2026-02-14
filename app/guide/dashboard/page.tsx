@@ -1,39 +1,158 @@
-import { requireRole } from '@/lib/auth-helpers';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { format, startOfDay } from 'date-fns';
 import {
   Activity,
-  CreditCard,
-  Users,
   Calendar,
-  Clock,
-  AlertCircle,
+  CalendarClock,
   CheckCircle2,
+  Clock,
+  CreditCard,
+  MapPin,
+  AlertCircle,
+  Users,
   XCircle,
 } from 'lucide-react';
-import Link from 'next/link';
+import { Tab, Tabs } from '@heroui/react';
+import { requireRole } from '@/lib/auth-helpers';
+import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge';
+import { CancelBookingModal } from '@/components/booking/CancelBookingModal';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { GuideStatus } from '@/types/database';
 
-/**
- * Guide Dashboard — shows a status banner for non-approved guides
- * and basic stat cards.
- */
+type GuideDashboardBooking = {
+  id: string;
+  status: string;
+  start_at: string;
+  duration_hours: number | null;
+  price_total: string;
+  currency: string | null;
+  traveler?: {
+    full_name?: string | null;
+  } | null;
+  city?: {
+    name?: string | null;
+  } | null;
+};
+
+const CANCELLABLE_STATUSES = new Set([
+  'pending',
+  'approved_pending_payment',
+  'accepted',
+  'awaiting_payment',
+  'confirmed',
+]);
+
+function isCancellable(status: string): boolean {
+  return CANCELLABLE_STATUSES.has(status);
+}
+
+function EmptyTabState() {
+  return (
+    <div className="rounded-lg border bg-muted/20 py-12 text-center text-sm text-muted-foreground">
+      No bookings in this tab yet.
+    </div>
+  );
+}
+
 export default async function GuideDashboardPage() {
   const { supabase, user, profile } = await requireRole('guide');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
 
-  // Fetch guide record for status
-  const { data: guide } = await (supabase as any)
+  const { data: guide } = await db
     .from('guides')
     .select('status, admin_notes')
     .eq('id', user.id)
     .single();
 
+  const { data: bookingRows } = await db
+    .from('bookings')
+    .select(
+      `
+      id,
+      status,
+      start_at,
+      duration_hours,
+      price_total,
+      currency,
+      traveler:profiles!bookings_traveler_id_fkey(full_name),
+      city:cities!bookings_city_id_fkey(name)
+    `,
+    )
+    .eq('guide_id', user.id)
+    .order('start_at', { ascending: true });
+
+  const bookings = (bookingRows || []) as GuideDashboardBooking[];
+  const today = startOfDay(new Date());
+  const upcomingBookings = bookings.filter(
+    (booking) => new Date(booking.start_at) >= today,
+  );
+  const pastBookings = bookings.filter((booking) => new Date(booking.start_at) < today);
+
   const guideStatus: GuideStatus = guide?.status ?? 'draft';
   const adminNotes: string | null = guide?.admin_notes ?? null;
   const firstName = profile.full_name?.split(' ')[0] ?? 'Guide';
 
+  const renderBookingCards = (list: GuideDashboardBooking[]) => {
+    if (list.length === 0) {
+      return <EmptyTabState />;
+    }
+
+    return (
+      <div className="grid gap-4">
+        {list.map((booking) => {
+          const startsAt = new Date(booking.start_at);
+          const allowCancel =
+            startsAt.getTime() > Date.now() && isCancellable(booking.status);
+
+          return (
+            <Card key={booking.id}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg">
+                    {booking.traveler?.full_name || 'Traveler'} in{' '}
+                    {booking.city?.name || 'Unknown City'}
+                  </CardTitle>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <CalendarClock className="h-4 w-4" />
+                    {format(startsAt, 'PPP p')} • {booking.duration_hours || 4}h
+                  </div>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    {booking.city?.name || 'Unknown City'}
+                  </div>
+                </div>
+                <BookingStatusBadge status={booking.status} />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm">
+                  Total:{' '}
+                  <span className="font-semibold">
+                    {booking.price_total} {booking.currency || 'USD'}
+                  </span>
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <Button asChild size="sm" variant="bordered">
+                    <Link href={`/guide/bookings/${booking.id}`}>View Details</Link>
+                  </Button>
+                  {allowCancel && (
+                    <CancelBookingModal
+                      bookingId={booking.id}
+                      bookingStartAt={booking.start_at}
+                    />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8">
-      {/* Status banners */}
       {guideStatus === 'pending' && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5">
           <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
@@ -105,7 +224,6 @@ export default async function GuideDashboardPage() {
         </div>
       )}
 
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-display font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
@@ -121,9 +239,7 @@ export default async function GuideDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-display font-bold">$0.00</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
-            </p>
+            <p className="text-xs text-muted-foreground">+0% from last month</p>
           </CardContent>
         </Card>
         <Card>
@@ -132,10 +248,8 @@ export default async function GuideDashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-display font-bold">+0</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
-            </p>
+            <div className="text-2xl font-display font-bold">{bookings.length}</div>
+            <p className="text-xs text-muted-foreground">Total bookings</p>
           </CardContent>
         </Card>
         <Card>
@@ -145,9 +259,7 @@ export default async function GuideDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-display font-bold">+0</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
-            </p>
+            <p className="text-xs text-muted-foreground">+0% from last month</p>
           </CardContent>
         </Card>
         <Card>
@@ -156,49 +268,35 @@ export default async function GuideDashboardPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-display font-bold">--</div>
+            <div className="text-2xl font-display font-bold">
+              {upcomingBookings.length > 0 ? format(new Date(upcomingBookings[0].start_at), 'MMM d') : '--'}
+            </div>
             <p className="text-xs text-muted-foreground">
-              No upcoming tours
+              {upcomingBookings.length > 0 ? 'Upcoming booking scheduled' : 'No upcoming tours'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Recent Booking Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex h-[200px] items-center justify-center text-muted-foreground text-sm">
-              No recent requests.
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Upcoming Schedule</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-8">
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {guideStatus === 'approved'
-                      ? 'No upcoming tours'
-                      : 'Complete your profile'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {guideStatus === 'approved'
-                      ? 'New bookings will appear here.'
-                      : 'Finish onboarding to get verified.'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Bookings Timeline</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs aria-label="Guide booking timeline" variant="underlined" color="primary">
+            <Tab
+              key="upcoming"
+              title={`Upcoming (${upcomingBookings.length})`}
+              className="pt-4"
+            >
+              {renderBookingCards(upcomingBookings)}
+            </Tab>
+            <Tab key="past" title={`Past (${pastBookings.length})`} className="pt-4">
+              {renderBookingCards(pastBookings)}
+            </Tab>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }

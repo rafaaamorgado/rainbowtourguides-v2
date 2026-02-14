@@ -15,6 +15,7 @@ import {
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { isMessagingEnabled } from '@/lib/messaging-rules';
 import type { Booking } from '@/lib/mock-data';
+import type { Database } from '@/types/database';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,26 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const isDev = process.env.NODE_ENV === 'development';
+
+type TravelerBookingRow = {
+  id: string;
+  traveler_id: string;
+  guide_id: string;
+  city_id: string;
+  start_at: string;
+  duration_hours: number | null;
+  status: string;
+  price_total: string | null;
+  traveler_note: string | null;
+  guide?: {
+    profile?: {
+      full_name?: string | null;
+    } | null;
+  } | null;
+  city?: {
+    name?: string | null;
+  } | null;
+};
 
 export default function TravelerBookingsPage() {
   const router = useRouter();
@@ -66,19 +87,22 @@ export default function TravelerBookingsPage() {
     }
 
     // Adapt to Booking type
-    const adapted = (data || []).map((b: any) => ({
-      id: b.id,
-      traveler_id: b.traveler_id,
-      guide_id: b.guide_id,
-      city_id: b.city_id,
-      guide_name: b.guide?.profile?.full_name || 'Guide',
-      city_name: b.city?.name || 'City',
-      date: b.start_at,
-      duration: b.duration_hours || 4,
-      status: b.status,
-      price_total: parseFloat(b.price_total || '0'),
-      notes: b.traveler_note || '',
-    }));
+    const adapted = (data || []).map((item) => {
+      const b = item as TravelerBookingRow;
+      return {
+        id: b.id,
+        traveler_id: b.traveler_id,
+        guide_id: b.guide_id,
+        city_id: b.city_id,
+        guide_name: b.guide?.profile?.full_name || 'Guide',
+        city_name: b.city?.name || 'City',
+        date: b.start_at,
+        duration: b.duration_hours || 4,
+        status: b.status as Booking['status'],
+        price_total: parseFloat(b.price_total || '0'),
+        notes: b.traveler_note || '',
+      };
+    });
 
     setBookings(adapted);
   }, []);
@@ -138,24 +162,23 @@ export default function TravelerBookingsPage() {
           filter: `traveler_id=eq.${userId}`,
         },
         (payload) => {
+          const oldBooking = (payload.old || null) as Partial<Booking> | null;
+          const newBooking = (payload.new || null) as Partial<Booking> | null;
+
           console.log('[Realtime] Booking updated:', {
-            bookingId: payload.new.id,
-            oldStatus: (payload.old as any)?.status,
-            newStatus: (payload.new as any).status,
+            bookingId: newBooking?.id,
+            oldStatus: oldBooking?.status,
+            newStatus: newBooking?.status,
             timestamp: new Date().toISOString(),
           });
 
           setBookings((prev) =>
             prev.map((b) => {
-              if (b.id === (payload.new as any).id) {
+              if (b.id === newBooking?.id) {
                 console.log('[Realtime] Updating booking in UI:', b.id);
                 return {
                   ...b,
-                  status: (payload.new as any).status,
-                  accepted_at: (payload.new as any).accepted_at,
-                  confirmed_at: (payload.new as any).confirmed_at,
-                  cancelled_at: (payload.new as any).cancelled_at,
-                  completed_at: (payload.new as any).completed_at,
+                  status: newBooking?.status || b.status,
                 };
               }
               return b;
@@ -163,8 +186,12 @@ export default function TravelerBookingsPage() {
           );
 
           // Show success message if status changed to accepted or confirmed
-          const newStatus = (payload.new as any).status;
-          if (newStatus === 'accepted' || newStatus === 'confirmed') {
+          const newStatus = newBooking?.status;
+          if (
+            newStatus === 'approved_pending_payment' ||
+            newStatus === 'accepted' ||
+            newStatus === 'confirmed'
+          ) {
             setShowSuccessMessage(true);
             setTimeout(() => setShowSuccessMessage(false), 5000);
           }
@@ -203,6 +230,8 @@ export default function TravelerBookingsPage() {
 
     const supabase = createSupabaseBrowserClient();
     if (!supabase) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
 
     setIsCreatingDemo(true);
 
@@ -251,11 +280,13 @@ export default function TravelerBookingsPage() {
       const endDate = new Date(startDate);
       endDate.setHours(endDate.getHours() + 4);
 
-      const statuses = ['pending', 'confirmed', 'accepted'];
+      const statuses: Array<
+        Database['public']['Tables']['bookings']['Row']['status']
+      > = ['pending', 'confirmed', 'approved_pending_payment'];
       const randomStatus =
         statuses[Math.floor(Math.random() * statuses.length)];
 
-      const { error: insertError } = await (supabase as any)
+      const { error: insertError } = await db
         .from('bookings')
         .insert({
           traveler_id: userId,
@@ -278,7 +309,7 @@ export default function TravelerBookingsPage() {
 
       // Refresh bookings
       await fetchBookings(userId);
-    } catch (err) {
+    } catch {
       // Silent error
     } finally {
       setIsCreatingDemo(false);
@@ -292,7 +323,10 @@ export default function TravelerBookingsPage() {
       new Date(b.date) >= new Date(),
   );
 
-  const pendingBookings = bookings.filter((b) => b.status === 'pending');
+  const pendingBookings = bookings.filter(
+    (b) =>
+      b.status === 'pending' || b.status === 'approved_pending_payment',
+  );
 
   const pastBookings = bookings.filter(
     (b) =>
@@ -312,9 +346,11 @@ export default function TravelerBookingsPage() {
 
     const supabase = createSupabaseBrowserClient();
     if (!supabase) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
 
     // Update booking status
-    const { error } = await (supabase as any)
+    const { error } = await db
       .from('bookings')
       .update({ status: 'cancelled_by_traveler' })
       .eq('id', bookingToCancel)
@@ -543,7 +579,9 @@ interface BookingCardProps {
 }
 
 function BookingCard({ booking, onCancel }: BookingCardProps) {
-  const isPending = booking.status === 'pending';
+  const isPending =
+    booking.status === 'pending' ||
+    booking.status === 'approved_pending_payment';
   const isUpcoming =
     (booking.status === 'confirmed' || booking.status === 'accepted') &&
     new Date(booking.date) >= new Date();

@@ -244,7 +244,7 @@ export function BookingCard({ guide, isAuthenticated }: BookingCardProps) {
           className="w-full py-4 text-base font-semibold"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Processing...' : 'Request to Book'}
+          {isSubmitting ? 'Processing...' : 'Request Booking'}
         </Button>
 
         {/* Note */}

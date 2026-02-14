@@ -48,9 +48,8 @@ export function PayButton({ bookingId }: PayButtonProps) {
         <p className="text-xs text-destructive">{error}</p>
       )}
       <Button size="sm" onClick={handlePay} disabled={isLoading}>
-        {isLoading ? "Loading..." : "Pay Now"}
+        {isLoading ? "Loading..." : "Request Booking"}
       </Button>
     </div>
   );
 }
-

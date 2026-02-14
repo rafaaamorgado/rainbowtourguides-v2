@@ -4,7 +4,6 @@ import { getStripe } from "@/lib/stripe";
 import { getBaseUrl } from "@/lib/url-helpers";
 import type { Database } from "@/types/database";
 
-type Guide = Database["public"]["Tables"]["guides"]["Row"];
 type Booking = Database["public"]["Tables"]["bookings"]["Row"];
 
 export async function POST(request: NextRequest) {
@@ -121,8 +120,8 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${baseUrl}/traveler/bookings?session={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/traveler/bookings?cancelled=1`,
+      success_url: `${baseUrl}/traveler/bookings/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${bookingId}`,
+      cancel_url: `${baseUrl}/traveler/bookings/${bookingId}?payment=cancelled`,
       metadata: {
         booking_id: bookingId,
       },
@@ -141,11 +140,10 @@ export async function POST(request: NextRequest) {
       .eq("id", bookingId);
 
     return NextResponse.json({ url: session.url });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }
     );
   }
 }
-

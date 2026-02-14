@@ -3,11 +3,13 @@
 import { DatePicker as HeroUIDatePicker } from '@heroui/react';
 import { parseDate, type CalendarDate } from '@internationalized/date';
 import type { DatePickerProps as HeroUIDatePickerProps } from '@heroui/react';
+import { format } from 'date-fns';
 
 export interface DatePickerProps {
   id?: string;
   value: CalendarDate | null;
   onChange: (date: CalendarDate | null) => void;
+  minDate?: Date;
   minValue?: CalendarDate;
   maxValue?: CalendarDate;
   placeholderValue?: CalendarDate;
@@ -29,6 +31,7 @@ export function DatePicker({
   id,
   value,
   onChange,
+  minDate,
   minValue,
   maxValue,
   placeholderValue,
@@ -46,9 +49,12 @@ export function DatePicker({
   'aria-labelledby': ariaLabelledby,
 }: DatePickerProps) {
   // Default values
-  const today = parseDate(new Date().toISOString().split('T')[0]);
-  const defaultMinValue = minValue ?? today;
-  const defaultPlaceholderValue = placeholderValue ?? today;
+  const today = parseDate(format(new Date(), 'yyyy-MM-dd'));
+  const minDateValue = minDate
+    ? parseDate(format(minDate, 'yyyy-MM-dd'))
+    : undefined;
+  const defaultMinValue = minValue ?? minDateValue ?? today;
+  const defaultPlaceholderValue = placeholderValue ?? minDateValue ?? today;
 
   // Default calendar styling
   const defaultCalendarProps = {

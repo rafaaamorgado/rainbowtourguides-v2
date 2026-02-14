@@ -1,6 +1,6 @@
 import { type CalendarDate, parseDate } from '@internationalized/date';
 import { addHours, addMinutes, format, isBefore } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 
 export function getSafeBookingStart(guideTimezone: string) {
   const guideNow = toZonedTime(new Date(), guideTimezone);
@@ -30,11 +30,16 @@ export function isBeforeSafeBookingStart(
   selectedDate: CalendarDate,
   selectedTime: string,
   safeBookingStart: Date,
+  guideTimezone: string,
 ) {
   if (!selectedTime) {
     return false;
   }
 
-  const selectedDateTime = new Date(`${selectedDate.toString()}T${selectedTime}:00`);
-  return isBefore(selectedDateTime, safeBookingStart);
+  const selectedDateTime = fromZonedTime(
+    `${selectedDate.toString()}T${selectedTime}:00`,
+    guideTimezone,
+  );
+  const safeBookingStartUtc = fromZonedTime(safeBookingStart, guideTimezone);
+  return isBefore(selectedDateTime, safeBookingStartUtc);
 }

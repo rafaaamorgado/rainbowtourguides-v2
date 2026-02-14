@@ -70,6 +70,18 @@ export async function updateGuideProfile(
       return { success: false, error: cityError || "Failed to resolve city" };
     }
 
+    const normalizedPhone = data.phone?.trim() || null;
+    const normalizedMessagingApps =
+      data.messaging_apps.length > 0
+        ? Array.from(
+            new Set(
+              data.messaging_apps
+                .map((app) => app.trim())
+                .filter((app) => app.length > 0),
+            ),
+          )
+        : null;
+
     // Update profiles table (shared fields)
     const { error: profileError } = await db
       .from("profiles")
@@ -98,6 +110,9 @@ export async function updateGuideProfile(
         city_id: cityId,
         sexual_orientation: data.sexual_orientation || null,
         pronouns: data.pronouns?.trim() || null,
+        phone: normalizedPhone,
+        phone_number: normalizedPhone,
+        messaging_apps: normalizedMessagingApps,
         tagline: data.tagline?.trim() || null,
         tour_description: data.tour_description?.trim() || null,
         experience_tags: data.themes.length > 0 ? data.themes : null,

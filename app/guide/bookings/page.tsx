@@ -68,6 +68,7 @@ export default function GuideBookingsPage() {
       router.push('/auth/sign-in');
       return;
     }
+    setGuideId(user.id);
 
     const { data } = await supabase
       .from('bookings')
@@ -110,24 +111,23 @@ export default function GuideBookingsPage() {
           filter: `guide_id=eq.${guideId}`,
         },
         (payload) => {
+          const oldBooking = (payload.old || null) as Partial<Booking> | null;
+          const newBooking = (payload.new || null) as Partial<Booking> | null;
+
           console.log('[Realtime] Booking updated:', {
-            bookingId: payload.new.id,
-            oldStatus: (payload.old as any)?.status,
-            newStatus: (payload.new as any).status,
+            bookingId: newBooking?.id,
+            oldStatus: oldBooking?.status,
+            newStatus: newBooking?.status,
             timestamp: new Date().toISOString(),
           });
 
           setBookings((prev) =>
             prev.map((b) => {
-              if (b.id === (payload.new as any).id) {
+              if (b.id === newBooking?.id) {
                 console.log('[Realtime] Updating booking in UI:', b.id);
                 return {
                   ...b,
-                  status: (payload.new as any).status,
-                  accepted_at: (payload.new as any).accepted_at,
-                  confirmed_at: (payload.new as any).confirmed_at,
-                  cancelled_at: (payload.new as any).cancelled_at,
-                  completed_at: (payload.new as any).completed_at,
+                  status: newBooking?.status || b.status,
                 };
               }
               return b;
@@ -165,10 +165,8 @@ export default function GuideBookingsPage() {
   const handleAccept = async (bookingId: string) => {
     setActionLoading(bookingId);
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'accepted' }),
+      const response = await fetch(`/api/bookings/${bookingId}/approve`, {
+        method: 'POST',
       });
 
       if (!response.ok) {
@@ -232,7 +230,9 @@ export default function GuideBookingsPage() {
   const pendingBookings = bookings.filter((b) => b.status === 'pending');
   const upcomingBookings = bookings.filter(
     (b) =>
-      (b.status === 'accepted' || b.status === 'confirmed') &&
+      (b.status === 'approved_pending_payment' ||
+        b.status === 'accepted' ||
+        b.status === 'confirmed') &&
       new Date(b.start_at) >= new Date(),
   );
   const pastBookings = bookings.filter(

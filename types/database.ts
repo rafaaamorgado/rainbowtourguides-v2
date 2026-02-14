@@ -3,6 +3,7 @@ export type GuideStatus = 'draft' | 'pending' | 'approved' | 'rejected';
 export type BookingStatus =
   | 'draft'
   | 'pending'
+  | 'approved_pending_payment'
   | 'accepted'
   | 'awaiting_payment'
   | 'confirmed'
@@ -150,8 +151,8 @@ type GuidesTable = {
     available_days: string[] | null;
     typical_start_time: string | null;
     typical_end_time: string | null;
-    availability_pattern?: Record<string, any> | null;
-    lgbtq_alignment: Record<string, any> | null;
+    availability_pattern?: Record<string, unknown> | null;
+    lgbtq_alignment: Record<string, unknown> | null;
     sexual_orientation: string | null;
     pronouns: string | null;
     is_verified: boolean;
@@ -167,6 +168,8 @@ type GuidesTable = {
     id_document_url: string | null;
     proof_of_address_url: string | null;
     phone_number: string | null;
+    phone: string | null;
+    messaging_apps: string[] | null;
     // Social links
     social_instagram: string | null;
     social_facebook: string | null;
@@ -195,8 +198,8 @@ type GuidesTable = {
     available_days?: string[] | null;
     typical_start_time?: string | null;
     typical_end_time?: string | null;
-    availability_pattern?: Record<string, any> | null;
-    lgbtq_alignment?: Record<string, any> | null;
+    availability_pattern?: Record<string, unknown> | null;
+    lgbtq_alignment?: Record<string, unknown> | null;
     sexual_orientation?: string | null;
     pronouns?: string | null;
     is_verified?: boolean;
@@ -212,6 +215,8 @@ type GuidesTable = {
     id_document_url?: string | null;
     proof_of_address_url?: string | null;
     phone_number?: string | null;
+    phone?: string | null;
+    messaging_apps?: string[] | null;
     // Social links
     social_instagram?: string | null;
     social_facebook?: string | null;

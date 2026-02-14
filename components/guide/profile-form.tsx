@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PhotoUpload } from '@/components/ui/photo-upload';
 import { CoverUploader } from '@/components/profile/CoverUploader';
@@ -21,7 +20,7 @@ import {
 import { Loader2, ExternalLink } from 'lucide-react';
 import { CountrySelect } from '@/components/form/CountrySelect';
 import { CitySelect } from '@/components/form/CitySelect';
-import { Select as HeroSelect, SelectItem as HeroSelectItem, Input as HeroInput } from "@heroui/react";
+import { Select as HeroSelect, SelectItem as HeroSelectItem } from '@heroui/react';
 import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -52,6 +51,8 @@ export interface GuideProfileFormData {
   country_code: string;
   sexual_orientation: string | null;
   pronouns: string | null;
+  phone: string | null;
+  messaging_apps: string[];
   // Tour Details
   tagline: string | null;
   tour_description: string | null;
@@ -64,6 +65,8 @@ export interface GuideProfileFormData {
   currency: string;
 }
 
+const MESSAGING_APP_OPTIONS = ['WhatsApp', 'Zalo', 'Telegram', 'Signal'];
+
 export function GuideProfileForm({
   profile,
   guide,
@@ -72,6 +75,15 @@ export function GuideProfileForm({
   onSubmit,
   onProfilePhotoUpdate,
 }: GuideProfileFormProps) {
+  const initialMessagingApps =
+    guide.messaging_apps && guide.messaging_apps.length > 0
+      ? guide.messaging_apps
+      : [
+          guide.social_whatsapp ? 'WhatsApp' : null,
+          guide.social_zalo ? 'Zalo' : null,
+          guide.social_telegram ? 'Telegram' : null,
+        ].filter((value): value is string => Boolean(value));
+
   const [formData, setFormData] = useState<GuideProfileFormData>({
     display_name: profile.full_name || '',
     avatar_url: profile.avatar_url,
@@ -80,6 +92,8 @@ export function GuideProfileForm({
     country_code: initialCountryCode || '',
     sexual_orientation: guide.sexual_orientation || null,
     pronouns: guide.pronouns || null,
+    phone: guide.phone || guide.phone_number || '',
+    messaging_apps: initialMessagingApps,
     tagline: guide.tagline || '',
     tour_description: guide.tour_description || '',
     themes: guide.experience_tags || [],
@@ -246,7 +260,11 @@ export function GuideProfileForm({
             onChange={(value) => {
               handleChange('country_code', value);
               // Reset city when country changes
-              setFormData((prev) => ({ ...prev, country_code: value, city_name: '' }));
+              setFormData((prev) => ({
+                ...prev,
+                country_code: value,
+                city_name: '',
+              }));
             }}
             placeholder="Select your country"
           />
@@ -336,6 +354,49 @@ export function GuideProfileForm({
           <p className="text-xs text-muted-foreground text-right">
             {(formData.bio || '').length}/1000 characters
           </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="phone">Phone</Label>
+            <Input
+              id="phone"
+              value={formData.phone || ''}
+              onChange={(e) => handleChange('phone', e.target.value)}
+              placeholder="+1 555 123 4567"
+            />
+            <p className="text-xs text-muted-foreground">
+              Shared privately after a booking request is accepted.
+            </p>
+          </div>
+
+          <div className="grid gap-2">
+            <Label>Messaging Apps</Label>
+            <HeroSelect
+              aria-label="Messaging Apps"
+              variant="bordered"
+              selectionMode="multiple"
+              placeholder="Select apps"
+              selectedKeys={new Set(formData.messaging_apps || [])}
+              onSelectionChange={(keys) => {
+                const selected =
+                  keys === 'all'
+                    ? [...MESSAGING_APP_OPTIONS]
+                    : (Array.from(keys) as string[]);
+                handleChange('messaging_apps', selected);
+              }}
+              classNames={{
+                trigger: 'h-10 min-h-10 bg-white border-input',
+                value: 'text-foreground',
+              }}
+            >
+              {MESSAGING_APP_OPTIONS.map((option) => (
+                <HeroSelectItem key={option} textValue={option}>
+                  {option}
+                </HeroSelectItem>
+              ))}
+            </HeroSelect>
+          </div>
         </div>
       </div>
 

@@ -7,6 +7,7 @@ const CITY_TO_TIMEZONE: Record<string, string> = {
   madrid: 'Europe/Madrid',
   paris: 'Europe/Paris',
   'rio de janeiro': 'America/Sao_Paulo',
+  tokyo: 'Asia/Tokyo',
 };
 
 function normalizeCityName(cityName: string) {

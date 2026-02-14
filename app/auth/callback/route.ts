@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   const role = requestUrl.searchParams.get('role'); // Role passed from sign-up form
-  const nextPath = requestUrl.searchParams.get('next'); // e.g. /auth/update-password for password reset
+  const nextPath = requestUrl.searchParams.get('next'); // e.g. /auth/reset-password for password reset
 
   const baseUrl = getBaseUrl();
 

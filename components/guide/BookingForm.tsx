@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { parseDate, type CalendarDate } from '@internationalized/date';
 import { addToast } from '@heroui/react';
 import { addHours, format, isBefore } from 'date-fns';
@@ -10,11 +11,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/date-picker';
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 
 type BookingFormProps = {
   onSubmit: (
     formData: FormData,
-  ) => Promise<{ success: boolean; error?: string; guideName?: string }>;
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    guideName?: string;
+    bookingId?: string;
+  }>;
   guideName: string;
   guideTimezone?: string;
 };
@@ -24,14 +31,17 @@ export function BookingForm({
   guideName,
   guideTimezone = 'UTC',
 }: BookingFormProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [date, setDate] = useState<CalendarDate | null>(null);
   const [time, setTime] = useState('');
+  // TODO: Pull this from guide profile/city records when timezone is missing.
+  const resolvedGuideTimezone = guideTimezone || 'UTC';
 
   const getSafeMinDate = () => {
-    const nowInGuideCity = toZonedTime(new Date(), guideTimezone);
+    const nowInGuideCity = toZonedTime(new Date(), resolvedGuideTimezone);
     return addHours(nowInGuideCity, 24);
   };
 
@@ -51,9 +61,9 @@ export function BookingForm({
 
     const selectedZonedDateTime = fromZonedTime(
       `${selectedDate.toString()}T${selectedTime}:00`,
-      guideTimezone,
+      resolvedGuideTimezone,
     );
-    const safeMinZonedDateTime = fromZonedTime(safeDate, guideTimezone);
+    const safeMinZonedDateTime = fromZonedTime(safeDate, resolvedGuideTimezone);
 
     return isBefore(selectedZonedDateTime, safeMinZonedDateTime);
   };
@@ -116,6 +126,34 @@ export function BookingForm({
       return;
     }
 
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) {
+      setError('Unable to connect to database');
+      return;
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setError('Please sign in before booking.');
+      return;
+    }
+
+    if (!user.email_confirmed_at) {
+      const verificationMessage =
+        'Please verify your email address before booking. Check your inbox.';
+      addToast({
+        title: 'Email verification required',
+        description: verificationMessage,
+        color: 'danger',
+      });
+      setError(verificationMessage);
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
@@ -133,6 +171,10 @@ export function BookingForm({
     setIsSubmitting(false);
 
     if (result.success) {
+      if (result.bookingId) {
+        router.push(`/traveler/bookings/${result.bookingId}?success=request_sent`);
+        return;
+      }
       setSuccess(true);
     } else if (result.error) {
       setError(result.error);
@@ -172,11 +214,15 @@ export function BookingForm({
           id="date"
           value={date}
           onChange={handleDateChange}
+          minDate={safeMinDate}
           minValue={safeMinDateValue}
           placeholderValue={safeMinDateValue}
           isRequired
         />
-        <p className="text-xs text-muted-foreground">Bookings require 24h notice.</p>
+        <p className="text-xs text-muted-foreground">
+          To give guides enough time to prepare, bookings must be made at least
+          24 hours in advance.
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -229,7 +275,7 @@ export function BookingForm({
       )}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? 'Sending...' : 'Send booking request'}
+        {isSubmitting ? 'Sending...' : 'Request Booking'}
       </Button>
 
       <p className="text-xs text-muted-foreground">

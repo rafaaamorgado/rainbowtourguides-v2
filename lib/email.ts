@@ -36,7 +36,7 @@ async function getUserEmail(userId: string): Promise<string | null> {
       return null;
     }
     return data.user.email;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -98,7 +98,7 @@ export async function sendBookingRequestEmail({
     await client.emails.send({
       from: getEmailFrom(),
       to: email,
-      subject: "New booking request on Rainbow Tour Guides",
+      subject: `New Booking Request from ${travelerName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>New Booking Request</h2>
@@ -110,7 +110,7 @@ export async function sendBookingRequestEmail({
         </div>
       `,
     });
-  } catch (error) {
+  } catch {
     // Don't break the main flow if email fails
   }
 }
@@ -169,8 +169,64 @@ export async function sendBookingStatusEmail({
         </div>
       `,
     });
-  } catch (error) {
+  } catch {
     // Don't break the main flow if email fails
+  }
+}
+
+/**
+ * Send traveler payment email after a guide approves the request.
+ * Includes a direct Stripe Checkout URL.
+ */
+export async function sendBookingApprovalPaymentEmail({
+  travelerEmail,
+  travelerUserId,
+  travelerName,
+  guideName,
+  paymentLink,
+}: {
+  travelerEmail?: string;
+  travelerUserId?: string;
+  travelerName: string;
+  guideName: string;
+  paymentLink: string;
+}): Promise<void> {
+  let email: string | undefined = travelerEmail;
+  if (!email && travelerUserId) {
+    email = (await getUserEmail(travelerUserId)) || undefined;
+  }
+
+  if (!email) {
+    return;
+  }
+
+  const client = getResendClient();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await client.emails.send({
+      from: getEmailFrom(),
+      to: email,
+      subject: 'Your request is accepted! Click here to pay',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Your Request Was Accepted</h2>
+          <p>Hi ${travelerName},</p>
+          <p>${guideName} has accepted your booking request.</p>
+          <p><strong>Your request is accepted! Click here to pay:</strong> <a href="${paymentLink}">${paymentLink}</a></p>
+          <p style="margin-top: 24px;">
+            <a href="${paymentLink}"
+               style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+              Complete Payment
+            </a>
+          </p>
+        </div>
+      `,
+    });
+  } catch {
+    // Don't break booking approval if email fails.
   }
 }
 
@@ -232,7 +288,7 @@ export async function sendBookingPaidEmail({
         </div>
       `,
       });
-    } catch (error) {
+    } catch {
       // Don't break the main flow if email fails
     }
   }
@@ -254,7 +310,7 @@ export async function sendBookingPaidEmail({
         </div>
       `,
       });
-    } catch (error) {
+    } catch {
       // Don't break the main flow if email fails
     }
   }
@@ -408,8 +464,7 @@ export async function sendNewGuideApplicationEmail({
         </div>
       `,
     });
-  } catch (error) {
+  } catch {
     // Don't break the main flow if email fails
   }
 }
-

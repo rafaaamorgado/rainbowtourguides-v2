@@ -31,6 +31,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { isMessagingEnabled } from '@/lib/messaging-rules';
+import {
+  HIDDEN_UNTIL_CONFIRMED,
+  isBookingContactVisible,
+} from '@/lib/booking-contact-visibility';
 
 type Booking = {
   id: string;
@@ -60,6 +64,21 @@ type Booking = {
   };
 };
 
+type BookingContacts = {
+  status: string;
+  canShowPrivateContact: boolean;
+  hiddenLabel: string;
+  traveler: {
+    email: string;
+    phone: string;
+  };
+  guide: {
+    email: string;
+    phone: string;
+    whatsapp: string;
+  };
+};
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -72,6 +91,7 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
   const [actionLoading, setActionLoading] = useState(false);
   const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contacts, setContacts] = useState<BookingContacts | null>(null);
 
   useEffect(() => {
     params.then((p) => setBookingId(p.id));
@@ -122,6 +142,23 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
     fetchBooking();
   }, [bookingId, router]);
 
+  useEffect(() => {
+    if (!bookingId) return;
+
+    async function fetchContacts() {
+      try {
+        const response = await fetch(`/api/bookings/${bookingId}/contacts`);
+        if (!response.ok) return;
+        const data = (await response.json()) as BookingContacts;
+        setContacts(data);
+      } catch {
+        // Silent fallback: UI will use masked defaults.
+      }
+    }
+
+    fetchContacts();
+  }, [bookingId, booking?.status]);
+
   // Set up realtime subscription for this specific booking
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -143,10 +180,13 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
           filter: `id=eq.${bookingId}`,
         },
         (payload) => {
+          const oldBooking = (payload.old || null) as Partial<Booking> | null;
+          const newBooking = (payload.new || null) as Partial<Booking> | null;
+
           console.log('[Realtime] Booking status changed:', {
-            bookingId: payload.new.id,
-            oldStatus: (payload.old as any)?.status,
-            newStatus: (payload.new as any).status,
+            bookingId: newBooking?.id,
+            oldStatus: oldBooking?.status,
+            newStatus: newBooking?.status,
             timestamp: new Date().toISOString(),
           });
 
@@ -154,17 +194,17 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
             prev
               ? {
                   ...prev,
-                  status: (payload.new as any).status,
-                  accepted_at: (payload.new as any).accepted_at,
-                  confirmed_at: (payload.new as any).confirmed_at,
-                  cancelled_at: (payload.new as any).cancelled_at,
-                  completed_at: (payload.new as any).completed_at,
+                  status: newBooking?.status || prev.status,
+                  accepted_at: newBooking?.accepted_at || null,
+                  confirmed_at: newBooking?.confirmed_at || null,
+                  cancelled_at: newBooking?.cancelled_at || null,
+                  completed_at: newBooking?.completed_at || null,
                 }
               : null,
           );
 
           // Log when chat becomes available
-          if (isMessagingEnabled((payload.new as any).status)) {
+          if (newBooking?.status && isMessagingEnabled(newBooking.status)) {
             console.log('[Realtime] 💬 Chat is now enabled for this booking!');
           }
         },
@@ -201,10 +241,8 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
 
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/bookings/${booking.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'accepted' }),
+      const response = await fetch(`/api/bookings/${booking.id}/approve`, {
+        method: 'POST',
       });
 
       if (!response.ok) {
@@ -312,6 +350,11 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
   const travelerName = booking.traveler?.full_name || 'Unknown Traveler';
   const cityName = booking.city?.name || 'Unknown City';
   const isPending = booking.status === 'pending';
+  const shouldShowPrivateContact = isBookingContactVisible(booking.status);
+  const travelerEmail = contacts?.traveler.email
+    || (shouldShowPrivateContact ? 'Not provided' : HIDDEN_UNTIL_CONFIRMED);
+  const travelerPhone = contacts?.traveler.phone
+    || (shouldShowPrivateContact ? 'Not provided' : HIDDEN_UNTIL_CONFIRMED);
 
   return (
     <div className="space-y-6">
@@ -396,7 +439,7 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
                   <FileText className="h-5 w-5 text-ink-soft mt-0.5" />
                   <div className="flex-1">
                     <p className="font-semibold text-ink mb-1">
-                      Traveler's Note
+                      Traveler&apos;s Note
                     </p>
                     <p className="text-ink-soft whitespace-pre-wrap bg-slate-50 p-3 rounded-lg">
                       {booking.traveler_note}
@@ -460,6 +503,22 @@ export default function GuideBookingDetailPage({ params }: PageProps) {
                       <p className="text-ink-soft">{booking.traveler.bio}</p>
                     </div>
                   )}
+
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <p className="text-sm font-semibold text-ink-soft mb-2">
+                      Contact
+                    </p>
+                    <div className="space-y-1 text-sm">
+                      <p className="text-ink-soft">
+                        <span className="font-semibold text-ink">Email:</span>{' '}
+                        {travelerEmail}
+                      </p>
+                      <p className="text-ink-soft">
+                        <span className="font-semibold text-ink">Phone:</span>{' '}
+                        {travelerPhone}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>

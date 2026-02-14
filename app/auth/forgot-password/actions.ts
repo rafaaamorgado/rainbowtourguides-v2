@@ -8,7 +8,7 @@ export async function sendPasswordResetEmail(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createSupabaseServerClient();
-    const redirectTo = `${getBaseUrl()}/auth/callback?next=/auth/update-password`;
+    const redirectTo = `${getBaseUrl()}/auth/reset-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,

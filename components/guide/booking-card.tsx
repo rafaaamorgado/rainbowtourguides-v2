@@ -26,6 +26,7 @@ interface BookingCardProps {
   guideId: string;
   cityId: string;
   guideCityName?: string | null;
+  guideTimezone?: string | null;
   basePrices: Partial<Record<Duration, number>>;
   currency?: string | null;
 }
@@ -34,6 +35,7 @@ export function BookingCard({
   guideId,
   cityId,
   guideCityName,
+  guideTimezone,
   basePrices,
   currency = 'USD',
 }: BookingCardProps) {
@@ -47,8 +49,10 @@ export function BookingCard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isMobileBookingOpen, setIsMobileBookingOpen] = useState(false);
-  const guideTimezone = resolveGuideTimezone(guideCityName);
-  const safeBookingStart = getSafeBookingStart(guideTimezone);
+  // TODO: Pull timezone from guide profile/city records when missing.
+  const resolvedGuideTimezone =
+    guideTimezone || resolveGuideTimezone(guideCityName);
+  const safeBookingStart = getSafeBookingStart(resolvedGuideTimezone);
   const safeBookingStartDate = toCalendarDateValue(safeBookingStart);
   const safeBookingStartTime = toTimeValue(safeBookingStart);
   const currencySymbol = currency === 'EUR' ? '€' : '$';
@@ -74,7 +78,9 @@ export function BookingCard({
       return;
     }
 
-    const safeBookingStartForValidation = getSafeBookingStart(guideTimezone);
+    const safeBookingStartForValidation = getSafeBookingStart(
+      resolvedGuideTimezone,
+    );
     const safeBookingStartDateForValidation = toCalendarDateValue(
       safeBookingStartForValidation,
     );
@@ -86,7 +92,12 @@ export function BookingCard({
 
     if (
       time &&
-      isBeforeSafeBookingStart(nextDate, time, safeBookingStartForValidation)
+      isBeforeSafeBookingStart(
+        nextDate,
+        time,
+        safeBookingStartForValidation,
+        resolvedGuideTimezone,
+      )
     ) {
       showNoticeToast();
       setTime('');
@@ -105,7 +116,8 @@ export function BookingCard({
       isBeforeSafeBookingStart(
         date,
         nextTime,
-        getSafeBookingStart(guideTimezone),
+        getSafeBookingStart(resolvedGuideTimezone),
+        resolvedGuideTimezone,
       )
     ) {
       showNoticeToast();
@@ -144,8 +156,24 @@ export function BookingCard({
         return;
       }
 
+      if (!user.email_confirmed_at) {
+        addToast({
+          title: 'Email verification required',
+          description:
+            'Please verify your email address before booking. Check your inbox.',
+          color: 'danger',
+        });
+        setLoading(false);
+        return;
+      }
+
       if (
-        isBeforeSafeBookingStart(date, time, getSafeBookingStart(guideTimezone))
+        isBeforeSafeBookingStart(
+          date,
+          time,
+          getSafeBookingStart(resolvedGuideTimezone),
+          resolvedGuideTimezone,
+        )
       ) {
         showNoticeToast();
         setError('Please give the guide at least 24 hours notice.');
@@ -181,8 +209,16 @@ export function BookingCard({
         return;
       }
 
-      // Redirect to traveler bookings page
-      router.push('/traveler/bookings?success=booking_created');
+      if (!data.bookingId) {
+        setError('Booking was created but no booking ID was returned.');
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to booking detail with success state for the request-first flow.
+      router.push(
+        `/traveler/bookings/${data.bookingId}?success=request_sent`,
+      );
     } catch (err) {
       console.error('Error creating booking:', err);
       setError('An unexpected error occurred. Please try again.');
@@ -224,10 +260,14 @@ export function BookingCard({
           <DatePicker
             value={date}
             onChange={handleDateChange}
+            minDate={safeBookingStart}
             minValue={safeBookingStartDate}
             placeholderValue={safeBookingStartDate}
           />
-          <p className="text-xs text-ink-soft">Bookings require 24h notice.</p>
+          <p className="text-xs text-ink-soft">
+            To give guides enough time to prepare, bookings must be made at
+            least 24 hours in advance.
+          </p>
         </div>
         <div className="space-y-1">
           <label className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
@@ -339,7 +379,7 @@ export function BookingCard({
               Creating request...
             </>
           ) : (
-            'Request to Book'
+            'Request Booking'
           )}
         </Button>
         <p className="text-xs text-center text-ink-soft">

@@ -204,11 +204,14 @@ export async function generateMetadata({
   }
 
   const guideName = guide.profile?.full_name || 'Local Guide';
+  const guideCity = guide.city?.name || 'Local City';
   const profilePictureUrl = guide.profile?.avatar_url || fallbackImage;
-  const title = `Book ${guideName} | Rainbow Tour Guides`;
+  const description = guide.bio?.substring(0, 160);
+  const title = `Book ${guideName} - ${guideCity} Tour Guide | Rainbow Tour Guides`;
 
   return {
     title,
+    description,
     openGraph: {
       images: [profilePictureUrl],
     },

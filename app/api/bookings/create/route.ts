@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
 
     // Get authenticated user
     const supabase = await createSupabaseServerClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
     const {
       data: { user },
       error: authError,
@@ -39,10 +41,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Calculate start and end timestamps
+    if (!user.email_confirmed_at) {
+      return NextResponse.json(
+        {
+          error:
+            'Please verify your email address before booking. Check your inbox.',
+        },
+        { status: 403 },
+      );
+    }
+
+    // Calculate start timestamp (request-first: no payment/Stripe step here).
     const startDateTime = new Date(`${date}T${time}`);
-    const endDateTime = new Date(startDateTime);
-    endDateTime.setHours(endDateTime.getHours() + duration);
 
     // Validate date is in the future
     if (startDateTime <= new Date()) {
@@ -57,7 +67,7 @@ export async function POST(request: NextRequest) {
       traveler_id: user.id,
       guide_id: guideId,
       city_id: cityId,
-      status: 'pending' as any,
+      status: 'pending',
       price_total: price.toString(),
       currency: currency || 'USD',
       start_at: startDateTime.toISOString(),
@@ -68,9 +78,8 @@ export async function POST(request: NextRequest) {
         : `Meeting location: ${location}`,
     };
 
-    const { data: booking, error: bookingError } = await (
-      supabase.from('bookings') as any
-    )
+    const { data: booking, error: bookingError } = await db
+      .from('bookings')
       .insert(bookingData)
       .select()
       .single();
@@ -86,23 +95,22 @@ export async function POST(request: NextRequest) {
     // Get guide and traveler details for email
     try {
       const [guideResult, travelerResult, cityResult] = await Promise.all([
-        supabase
+        db
           .from('profiles')
           .select('full_name')
           .eq('id', guideId)
           .single(),
-        supabase
+        db
           .from('profiles')
           .select('full_name')
           .eq('id', user.id)
           .single(),
-        supabase.from('cities').select('name').eq('id', cityId).single(),
+        db.from('cities').select('name').eq('id', cityId).single(),
       ]);
 
-      const guideName = (guideResult.data as any)?.full_name || 'Guide';
-      const travelerName =
-        (travelerResult.data as any)?.full_name || 'Traveler';
-      const cityName = (cityResult.data as any)?.name || 'the city';
+      const guideName = guideResult.data?.full_name || 'Guide';
+      const travelerName = travelerResult.data?.full_name || 'Traveler';
+      const cityName = cityResult.data?.name || 'the city';
 
       const formattedDate = startDateTime.toLocaleDateString('en-US', {
         weekday: 'long',
@@ -135,6 +143,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       bookingId: booking.id,
+      status: 'pending',
+      message: 'Request sent! Waiting for guide approval.',
     });
   } catch (error) {
     console.error('Unexpected error:', error);

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { addToast } from '@heroui/react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
-import { useToast } from '@/hooks/use-toast'; // Assuming toast hook exists or standard shadcn pattern
 
 const bookingSchema = z.object({
   date: z.date({ message: 'A date is required.' }),
@@ -104,6 +104,16 @@ export function BookingRequestForm({
 
       if (!user) {
         router.push('/auth/sign-in?returnUrl=' + window.location.pathname);
+        return;
+      }
+
+      if (!user.email_confirmed_at) {
+        addToast({
+          title: 'Email verification required',
+          description:
+            'Please verify your email address before booking. Check your inbox.',
+          color: 'danger',
+        });
         return;
       }
 
